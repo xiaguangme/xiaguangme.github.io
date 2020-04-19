@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>netty之池化buffer - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-20 07:54">
+                    星期一, 四月 20日 2020, 7:54 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    3.9k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    57
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="PooledByteBufAllocator-buffer分配"><a href="#PooledByteBufAllocator-buffer分配" class="headerlink" title="PooledByteBufAllocator buffer分配"></a>PooledByteBufAllocator buffer分配</h2><p>buffer分配的入口：<br>io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(int, int)<br>netty实际应用时分配调用栈：  </p>
+<table>
+<tr><td>CLASS_NAME</td><td>METHOD_NAME</td><td>LINE_NUM</td></tr>
+<tr><td>io/netty/buffer/PooledByteBufAllocator</td><td>newDirectBuffer</td><td>339</td></tr>
+<tr><td>io/netty/buffer/AbstractByteBufAllocator</td><td>directBuffer</td><td>185</td></tr>
+<tr><td>io/netty/buffer/AbstractByteBufAllocator</td><td>directBuffer</td><td>176</td></tr>
+<tr><td>io/netty/buffer/AbstractByteBufAllocator</td><td>ioBuffer</td><td>139</td></tr>
+<tr><td>io/netty/channel/DefaultMaxMessagesRecvByteBufAllocator$MaxMessageHandle</td><td>allocate</td><td>114</td></tr>
+<tr><td>io/netty/channel/nio/AbstractNioByteChannel$NioByteUnsafe</td><td>read</td><td>186</td></tr>
+<tr><td>io/netty/channel/nio/NioEventLoop</td><td>processSelectedKey</td><td>682</td></tr>
+<tr><td>io/netty/channel/nio/NioEventLoop</td><td>processSelectedKeysOptimized</td><td>628</td></tr>
+<tr><td>io/netty/channel/nio/NioEventLoop</td><td>processSelectedKeys</td><td>533</td></tr>
+<tr><td>io/netty/channel/nio/NioEventLoop</td><td>run</td><td>511</td></tr>
+<tr><td>io/netty/util/concurrent/SingleThreadEventExecutor$5</td><td>run</td><td>956</td></tr>
+</table>
+
+<h3 id="测试case代码"><a href="#测试case代码" class="headerlink" title="测试case代码"></a>测试case代码</h3><pre><code class="hljs plain">package io.netty.buffer;
+
+import org.junit.Assert;
+public class PooledByteBufTest &#123;
+
+	public static void main(String[] args) &#123;
+		  final PooledByteBufAllocator allocator &#x3D; new PooledByteBufAllocator(
+	                false,   &#x2F;&#x2F; preferDirect
+	                0,      &#x2F;&#x2F; nHeapArena
+	                1,      &#x2F;&#x2F; nDirectArena
+	                8192,   &#x2F;&#x2F; pageSize
+	                11,     &#x2F;&#x2F; maxOrder
+	                3,      &#x2F;&#x2F; tinyCacheSize
+	                3,      &#x2F;&#x2F; smallCacheSize
+	                3,      &#x2F;&#x2F; normalCacheSize
+	                true    &#x2F;&#x2F; useCacheForAllThreads
+	                );
+
+	        &#x2F;&#x2F; create tiny buffer
+	        final ByteBuf b1 &#x3D; allocator.directBuffer(24);
+	        &#x2F;&#x2F; create small buffer
+	        final ByteBuf b2 &#x3D; allocator.directBuffer(800);
+	        &#x2F;&#x2F; create normal buffer
+	        final ByteBuf b3 &#x3D; allocator.directBuffer(8192 * 2);
+
+	        Assert.assertNotNull(b1);
+	        Assert.assertNotNull(b2);
+	        Assert.assertNotNull(b3);
+
+	        &#x2F;&#x2F; then release buffer to deallocated memory while threadlocal cache has been disabled
+	        &#x2F;&#x2F; allocations counter value must equals deallocations counter value
+	        Assert.assertTrue(b1.release());
+	        Assert.assertTrue(b2.release());
+	        Assert.assertTrue(b3.release());
+	&#125;
+&#125;</code></pre>
+<h3 id="PoolChunk"><a href="#PoolChunk" class="headerlink" title="PoolChunk"></a>PoolChunk</h3><p>PoolChunk本身数据结构与设计思路参见PoolChunk注释：       </p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * Description of algorithm for PageRun/PoolSubpage allocation from PoolChunk</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Notation: The following terms are important to understand the code</span>
+<span class="hljs-comment"> * &gt; page  - a page is the smallest unit of memory chunk that can be allocated</span>
+<span class="hljs-comment"> * page是chunk中能分配的最小单元  </span>
+<span class="hljs-comment"> * &gt; chunk - a chunk is a collection of pages</span>
+<span class="hljs-comment"> * 一个chunk中有一组page  1对多  </span>
+<span class="hljs-comment"> * &gt; in this code chunkSize = 2^&#123;maxOrder&#125; * pageSize</span>
+<span class="hljs-comment"> * 代码中  chunksize大小计算如上  maxOrder 是啥？</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * To begin we allocate a byte array of size = chunkSize</span>
+<span class="hljs-comment"> * Whenever a ByteBuf of given size needs to be created we search for the first position</span>
+<span class="hljs-comment"> * in the byte array that has enough empty space to accommodate the requested size and</span>
+<span class="hljs-comment"> * return a (long) handle that encodes this offset information, (this memory segment is then</span>
+<span class="hljs-comment"> * marked as reserved so it is always used by exactly one ByteBuf and no more)</span>
+<span class="hljs-comment"> * 首先，当需要创建给定大小的ByteBuf时，我们分配一个size=chunkSize的字节数组，</span>
+<span class="hljs-comment"> * 在字节数组中搜索第一个有足够的空空间来容纳请求的大小的位置，</span>
+<span class="hljs-comment"> * 并返回一个（长）句柄来编码该偏移量信息（然后将该内存段标记为保留，因此它总是仅由一个ByteBuf使用，不再使用）</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * For simplicity all sizes are normalized according to PoolArena#normalizeCapacity method</span>
+<span class="hljs-comment"> * This ensures that when we request for memory segments of size &gt;= pageSize the normalizedCapacity</span>
+<span class="hljs-comment"> * equals the next nearest power of 2</span>
+<span class="hljs-comment"> * 为了简单起见，所有大小都按照PoolArena#normalizeCapacity方法进行规范化</span>
+<span class="hljs-comment"> * 这确保当我们请求大小大于等于pageSize的内存段时，normalized容量等于下一个最接近的2的幂</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * To search for the first offset in chunk that has at least requested size available we construct a</span>
+<span class="hljs-comment"> * complete balanced binary tree and store it in an array (just like heaps) - memoryMap</span>
+<span class="hljs-comment"> * 为了搜索块中至少有请求大小可用的第一个偏移量，我们构造了一个完整的平衡二叉树，并将其存储在一个数组（就像堆一样）-内存映射中</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * The tree looks like this (the size of each node being mentioned in the parenthesis)</span>
+<span class="hljs-comment"> * 树看起来是这样的（括号中提到的每个节点的大小）</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * depth=0        1 node (chunkSize)</span>
+<span class="hljs-comment"> * depth=1        2 nodes (chunkSize/2)</span>
+<span class="hljs-comment"> * ..</span>
+<span class="hljs-comment"> * ..</span>
+<span class="hljs-comment"> * depth=d        2^d nodes (chunkSize/2^d)</span>
+<span class="hljs-comment"> * ..</span>
+<span class="hljs-comment"> * depth=maxOrder 2^maxOrder nodes (chunkSize/2^&#123;maxOrder&#125; = pageSize)  pageSize 在最下一层  最顶层是chunksize 从上往下走，每过一层除以2  </span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * depth=maxOrder is the last level and the leafs consist of pages</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * With this tree available searching in chunkArray translates like this:</span>
+<span class="hljs-comment"> * To allocate a memory segment of size chunkSize/2^k we search for the first node (from left) at height k</span>
+<span class="hljs-comment"> * which is unused 要分配大小为chunkSize/2^k的内存段，我们在高度k处搜索第一个未使用的节点（从左开始）。 嗯嗯</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Algorithm:</span>
+<span class="hljs-comment"> * ----------</span>
+<span class="hljs-comment"> * Encode the tree in memoryMap with the notation  用符号将树编码在内存中</span>
+<span class="hljs-comment"> *   memoryMap[id] = x =&gt; in the subtree rooted at id, the first node that is free to be allocated</span>
+<span class="hljs-comment"> *   is at depth x (counted from depth=0) i.e., at depths [depth_of_id, x), there is no node that is free</span>
+<span class="hljs-comment"> * 在以id为根的子树中，可自由分配的第一个节点在深度x（从深度=0开始计算），即在深度[深度id，x的深度]处，没有可自由分配的节点</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> *  As we allocate &amp; free nodes, we update values stored in memoryMap so that the property is maintained</span>
+<span class="hljs-comment"> * 当我们分配空闲节点时，我们更新存储在memoryMap中的值，以便维护属性</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Initialization -</span>
+<span class="hljs-comment"> *   In the beginning we construct the memoryMap array by storing the depth of a node at each node</span>
+<span class="hljs-comment"> * 首先，我们通过在每个节点上存储一个节点的深度来构造memoryMap数组</span>
+<span class="hljs-comment"> *     i.e., memoryMap[id] = depth_of_id</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Observations:</span>
+<span class="hljs-comment"> * -------------</span>
+<span class="hljs-comment"> * 1) memoryMap[id] = depth_of_id  =&gt; it is free / unallocated</span>
+<span class="hljs-comment"> * 2) memoryMap[id] &gt; depth_of_id  =&gt; at least one of its child nodes is allocated, so we cannot allocate it, but</span>
+<span class="hljs-comment"> *                                    some of its children can still be allocated based on their availability</span>
+<span class="hljs-comment"> * 3) memoryMap[id] = maxOrder + 1 =&gt; the node is fully allocated &amp; thus none of its children can be allocated, it</span>
+<span class="hljs-comment"> *                                    is thus marked as unusable</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Algorithm: [allocateNode(d) =&gt; we want to find the first node (from left) at height h that can be allocated]</span>
+<span class="hljs-comment"> * ----------</span>
+<span class="hljs-comment"> * 1) start at root (i.e., depth = 0 or id = 1)</span>
+<span class="hljs-comment"> * 2) if memoryMap[1] &gt; d =&gt; cannot be allocated from this chunk</span>
+<span class="hljs-comment"> * 3) if left node value &lt;= h; we can allocate from left subtree so move to left and repeat until found</span>
+<span class="hljs-comment"> * 4) else try in right subtree</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Algorithm: [allocateRun(size)]</span>
+<span class="hljs-comment"> * ----------</span>
+<span class="hljs-comment"> * 1) Compute d = log_2(chunkSize/size)</span>
+<span class="hljs-comment"> * 2) Return allocateNode(d)</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Algorithm: [allocateSubpage(size)]</span>
+<span class="hljs-comment"> * ----------</span>
+<span class="hljs-comment"> * 1) use allocateNode(maxOrder) to find an empty (i.e., unused) leaf (i.e., page)</span>
+<span class="hljs-comment"> * 2) use this handle to construct the PoolSubpage object or if it already exists just call init(normCapacity)</span>
+<span class="hljs-comment"> *    note that this PoolSubpage object is added to subpagesPool in the PoolArena when we init() it</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Note:</span>
+<span class="hljs-comment"> * -----</span>
+<span class="hljs-comment"> * In the implementation for improving cache coherence,</span>
+<span class="hljs-comment"> * we store 2 pieces of information depth_of_id and x as two byte values in memoryMap and depthMap respectively</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * memoryMap[id]= depth_of_id  is defined above</span>
+<span class="hljs-comment"> * depthMap[id]= x  indicates that the first node which is free to be allocated is at depth x (from root)</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">final</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PoolChunk</span>&lt;<span class="hljs-title">T</span>&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title">PoolChunkMetric</span> </span>&#123;</code></pre>
+
+<p>io.netty.buffer.PoolArena.findSubpagePoolHead(int)  算出page header在page table中的index，小的page在前面    </p>
+<p>// trace 库地址 jdbc:h2:/Users/simon/twice-cooked-pork/trace-data/基于netty4做的resetserver的一次http请求trace/tracer.data.h2db  </p>
+<p>PoolChunk要解决的问题有：  </p>
+<ol>
+<li>快速查找未分配的地方并分配</li>
+<li>尽量不要有碎片，可以理解成尽量挨着紧凑的分配</li>
+</ol>
+<p>整个chunk的结构如下：  </p>
+<pre><code class="hljs html">                                                    +------+   chunksize 当L=11时，是16M
+L=0                                                 |   0  |
+                                   +----------------+------+------------------+
+                                   |                                          |
+                                   |                                          |
+                                   |                                          |
+                               +---v--+                                   +---v--+
+L=1                            |   1  |                                   |   2  |
+                        +------+------+------+                     +------+------+-------+
+                        |                    |                     |                     |
+                        |                    |                     |                     |
+                        |                    |                     |                     |
+                    +---v--+             +---v--+              +---v--+              +---v--+
+L=2                 |   3  |             |   4  |              |   5  |              |   6  |
+                 +--+------+-+         +-+------+--+        +--+------+--+         +-+------+--+
+                 |           |         |           |        |            |         |           |
+                 |           |         |           |        |            |         |           |
+                 |           |         |           |        |            |         |           |
+              +--v---+   +---v--+   +--v---+   +---v--+   +-v----+   +---v--+   +--v---+   +---v--+
+L=3           |  7   |   |   8  |   |  9   |   |  10  |   |  11  |   |  12  |   |  13  |   |  14  |
+              +------+   +------+   +------+   +------+   +------+   +------+   +------+   +------+
+               8K大小即page size</code></pre>
+<p>是一个完全二叉树，树的层高可以自定义，目前限制在14层内，默认是11层。<br>最底层是真正的chunk描述，最底层每个叶子是一个paage，大小为8K。那么当层数是11层时，chunk的size是16M。因为11层的话，最下面一层叶子是2的11次方，再乘以8K正好是16MB。<br>这棵树中每个节点还对对应其相应的大小是否被分配。什么叫其相应的大小？是这样的，每一层代表需要分配的大小的档次。暂且用档次这个词吧。最上面是16MB档次，最下面是8K档次，从最上面开始往下走一层，档次就除以2。<br>每次申请内存时，netty会先对其做规格化，所谓规格化就是最接近申请内存值的2de整数次幂。比如我申请900byte，那么规格化后就是1K。在规格化后，netty会在树上标志 0 1 3 7被使用了。下次要再申请8K内存时就要避开这个路径了，只能是 0 1 3 8 了，因为7那边已经不够了。其他大小同理。所以树上的节点是为了标志是否被使用过，以使得内存碎片减少尽量靠左紧凑分配。   对于单page内的内存使用浪费问题，netty又做了一层位图结构使其得以利用。对于chunk对象的查找，netty还做了缓存机制，下面有讲。 </p>
+<p>真正数据存放在 io.netty.buffer.PoolChunk.memory 这个字段中，调试时为：java.nio.DirectByteBuffer[pos=0 lim=16777216 cap=16777216]<br>16777216是16M  </p>
+<h4 id="作业"><a href="#作业" class="headerlink" title="作业"></a>作业</h4><p>仔细调试 1K 2k 3K 8K 11K 内存的多次分配与回收。</p>
+<h4 id="分配24byte过程"><a href="#分配24byte过程" class="headerlink" title="分配24byte过程"></a>分配24byte过程</h4><p>PooledUnsafeDirectByteBuf是用了对象池特性io.netty.buffer.PooledUnsafeDirectByteBuf.RECYCLER  </p>
+<h3 id="PoolArena"><a href="#PoolArena" class="headerlink" title="PoolArena"></a>PoolArena</h3><p><code>PoolArena</code> 这一层负责创建与维护PoolChunk，维护的方式是将用到的正在分配中的PoolChunk放到PoolChunkList这个列表中。<br>PoolChunkList是一个链是结构。<br>而且，PoolArena还<strong>按PoolChunk的使用量</strong>来<strong>分别维护到相对应</strong>的PoolChunkList中。  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// abstract class PoolArena&lt;T&gt; implements PoolArenaMetric &#123;</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; q050;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; q025;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; q000;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; qInit;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; q075;
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> PoolChunkList&lt;T&gt; q100;</code></pre>
+<p>这些PoolChunkList也是<strong>按使用量大小有序的链式的串在一起</strong>(参见PoolArena构造方法中初始化这些list字段的代码)，当使用量达到本级别时，会加入到下一级别的list中，比如达到25%了，那么就会加到50%列表中了。(参见io.netty.buffer.PoolChunkList.add(PoolChunk<T>))   </p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">add</span><span class="hljs-params">(PoolChunk&lt;T&gt; chunk)</span> </span>&#123;
+    <span class="hljs-keyword">if</span> (chunk.usage() &gt;= maxUsage) &#123;
+        nextList.add(chunk);
+        <span class="hljs-keyword">return</span>;
+    &#125;
+    add0(chunk);
+&#125;</code></pre>
+<p>PoolArena中还维护了两个PoolSubpage数组，每个数组里面的实例在PoolArena构造时初始化，刚初始化后每个PoolSubpage元素的前继与后继元素都是指向自己(PoolSubpage是支持链表式的一个结构)<br>在io.netty.buffer.PoolSubpage.addToPool(PoolSubpage<T>)时 会将io.netty.buffer.PoolChunk.allocateSubpage(int)过程中新构建出来的PoolSubpage实例<strong>加到head的next节点上(即后继节点)</strong>。 具体代码如下：  </p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> <span class="hljs-title">allocateSubpage</span><span class="hljs-params">(<span class="hljs-keyword">int</span> normCapacity)</span> </span>&#123;
+    <span class="hljs-comment">// Obtain the head of the PoolSubPage pool that is owned by the PoolArena and synchronize on it.</span>
+    <span class="hljs-comment">// This is need as we may add it back and so alter the linked-list structure.</span>
+    PoolSubpage&lt;T&gt; head = arena.findSubpagePoolHead(normCapacity); <span class="hljs-comment">// 这个是查找PoolArena的PoolSubpage数组</span>
+    <span class="hljs-keyword">int</span> d = maxOrder; <span class="hljs-comment">// subpages are only be allocated from pages i.e., leaves</span>
+    <span class="hljs-keyword">synchronized</span> (head) &#123;
+        <span class="hljs-keyword">int</span> id = allocateNode(d);
+        <span class="hljs-keyword">if</span> (id &lt; <span class="hljs-number">0</span>) &#123;
+            <span class="hljs-keyword">return</span> id;
+        &#125;
+
+        <span class="hljs-keyword">final</span> PoolSubpage&lt;T&gt;[] subpages = <span class="hljs-keyword">this</span>.subpages;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> pageSize = <span class="hljs-keyword">this</span>.pageSize;
+
+        freeBytes -= pageSize;
+
+        <span class="hljs-keyword">int</span> subpageIdx = subpageIdx(id);
+        PoolSubpage&lt;T&gt; subpage = subpages[subpageIdx];
+        <span class="hljs-keyword">if</span> (subpage == <span class="hljs-keyword">null</span>) &#123;
+            subpage = <span class="hljs-keyword">new</span> PoolSubpage&lt;T&gt;(head, <span class="hljs-keyword">this</span>, id, runOffset(id), pageSize, normCapacity); <span class="hljs-comment">// 此处会将新新构建出来的PoolSubpage实例加到head的next节点</span>
+            subpages[subpageIdx] = subpage;
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            subpage.init(head, normCapacity);
+        &#125;
+        <span class="hljs-keyword">return</span> subpage.allocate();
+    &#125;
+&#125;</code></pre>
+
+
+<h3 id="PoolArenad的cache与Recycler对象池"><a href="#PoolArenad的cache与Recycler对象池" class="headerlink" title="PoolArenad的cache与Recycler对象池"></a>PoolArenad的cache与Recycler对象池</h3><p>PooledByteBuf依赖PoolThreadCache做了一层对PoolChunk的缓存,PoolThreadCache靠MemoryRegionCache实现缓存。MemoryRegionCache靠队列来实现对PoolChunk的缓存(参见下面代码1)，MemoryRegionCache在buf释放时会调用其add接口将释放的PoolChunk对象和nioBuffer对象通过io.netty.buffer.PoolThreadCache.MemoryRegionCache.Entry<T>对象包装后加入(offer)到队列(参见下面堆栈1)。在io.netty.buffer.PoolThreadCache.MemoryRegionCache.allocate(PooledByteBuf<T>, int)时再从队列中直接poll出来，达成cache的目的。优化还没有结束，包装PoolChunk用的Entry对象是通过<code>Recycler</code>对象池完成分配(获取)已释放的。对象是本质上一个通过FastThreadLocal的Stack的数据结构，分配对应出栈，释放对象入栈。具体参见下面代码2。<br>Recycler<PooledUnsafeDirectByteBuf><br>是一个基于ThreadLocal结合stack玩起来的一个对象池数据结构，像上述这种就是PooledUnsafeDirectByteBuf的对象pool。回收的时候压栈，要用的时候出栈。<br>获取对象  io.netty.util.Recycler.get()<br>回收对象  io.netty.util.Recycler.DefaultHandle.recycle(Object)   </p>
+<p>代码1： 队列初始化  </p>
+<pre><code class="hljs java">Queue&lt;Entry&lt;T&gt;&gt; queue = PlatformDependent.newFixedMpscQueue(<span class="hljs-keyword">this</span>.size);</code></pre>
+<p>堆栈1：buf释放时会调用MemoryRegionCache add接口将释放的PoolChunk对象包装后入队：  </p>
+<pre><code class="hljs java">Thread [main] (Suspended (breakpoint at line <span class="hljs-number">393</span> in PoolThreadCache$MemoryRegionCache))	
+	PoolThreadCache$SubPageMemoryRegionCache&lt;T&gt;(PoolThreadCache$MemoryRegionCache&lt;T&gt;).add(PoolChunk&lt;T&gt;, ByteBuffer, <span class="hljs-keyword">long</span>) line: <span class="hljs-number">393</span>	
+	PoolThreadCache.add(PoolArena&lt;?&gt;, PoolChunk, ByteBuffer, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, SizeClass) line: <span class="hljs-number">209</span>	
+	PoolArena$DirectArena(PoolArena&lt;T&gt;).free(PoolChunk&lt;T&gt;, ByteBuffer, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, PoolThreadCache) line: <span class="hljs-number">273</span>	
+	PooledUnsafeDirectByteBuf(PooledByteBuf&lt;T&gt;).deallocate() line: <span class="hljs-number">171</span>	
+	PooledUnsafeDirectByteBuf(AbstractReferenceCountedByteBuf).release0(<span class="hljs-keyword">int</span>) line: <span class="hljs-number">136</span>	
+	PooledUnsafeDirectByteBuf(AbstractReferenceCountedByteBuf).release() line: <span class="hljs-number">124</span>	
+	PooledByteBufTest.main(String[]) line: <span class="hljs-number">43</span></code></pre>
+<p>代码2：Entry对象使用对象池    </p>
+<pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> Recycler&lt;Entry&gt; RECYCLER = <span class="hljs-keyword">new</span> Recycler&lt;Entry&gt;() &#123;
+    <span class="hljs-meta">@SuppressWarnings</span>(<span class="hljs-string">"unchecked"</span>)
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> Entry <span class="hljs-title">newObject</span><span class="hljs-params">(Handle&lt;Entry&gt; handle)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Entry(handle);
+    &#125;
+&#125;;
+
+<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Entry <span class="hljs-title">newEntry</span><span class="hljs-params">(PoolChunk&lt;?&gt; chunk, ByteBuffer nioBuffer, <span class="hljs-keyword">long</span> handle)</span> </span>&#123;
+    Entry entry = RECYCLER.get();
+    entry.chunk = chunk;
+    entry.nioBuffer = nioBuffer;
+    entry.handle = handle;
+    <span class="hljs-keyword">return</span> entry;
+&#125;
+
+<span class="hljs-meta">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">recycle</span><span class="hljs-params">(Object object)</span> </span>&#123;
+    <span class="hljs-keyword">if</span> (object != value) &#123;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"object does not belong to handle"</span>);
+    &#125;
+
+    Stack&lt;?&gt; stack = <span class="hljs-keyword">this</span>.stack;
+    <span class="hljs-keyword">if</span> (lastRecycledId != recycleId || stack == <span class="hljs-keyword">null</span>) &#123;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalStateException(<span class="hljs-string">"recycled already"</span>);
+    &#125;
+
+    stack.push(<span class="hljs-keyword">this</span>);
+&#125;</code></pre>
+
+<h3 id="PooledByteBufAllocator创建及其关联细节"><a href="#PooledByteBufAllocator创建及其关联细节" class="headerlink" title="PooledByteBufAllocator创建及其关联细节"></a>PooledByteBufAllocator创建及其关联细节</h3><ol>
+<li>PooledByteBufAllocator validateAndCalculateChunkSize 校验树高度不能超过14，且根据pageSize(可以外部指定)和树高计算出chunksize</li>
+<li>PooledByteBufAllocator validateAndCalculatePageShifts 校验pageSize最小不能小于4K，且pageSize必须是2的整数次方((pageSize &amp; pageSize - 1) != 0) （为什么(pageSize &amp; pageSize - 1) != 0能判断？因为2的n次方的二进制形式一定是第一位1后面接n个0，减1后就变成第一位0后面接n个1，相与之后一定是0；如果不是2的n次方的数的二进制形式一定是第一位是1，且，这个数减去1后，第一位一定还是1，因为第一位是1且后面全接0的数一定是2的整数次方的，那么不是2的整数次方的数后面一定不全是0，所以减去1后第一位肯定还是1，所以不管后面接的这些数相与是怎样的结果，第一位两个1相与出来肯定是1，肯定不为0，所以能用这个办法判断）</li>
+<li>创建tinySubpagePools数组并初始化里面的元素，默认数组大小32个，里面的元素是PoolSubpage，PoolSubpage还支持链式形式连接(他有前继和后继)</li>
+</ol>
+<h3 id="PoolChunk-分配与释放小于pagesize的buf"><a href="#PoolChunk-分配与释放小于pagesize的buf" class="headerlink" title="PoolChunk 分配与释放小于pagesize的buf"></a>PoolChunk 分配与释放小于pagesize的buf</h3><p>io.netty.buffer.PoolArena.free(PoolChunk<T>, ByteBuffer, long, int, PoolThreadCache)<br>位图相关：  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// long64位 取 高32位转成整数</span>
+<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> <span class="hljs-title">bitmapIdx</span><span class="hljs-params">(<span class="hljs-keyword">long</span> handle)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> (<span class="hljs-keyword">int</span>) (handle &gt;&gt;&gt; Integer.SIZE);
+    &#125;</code></pre>
+<p>PoolSubpage 支持位图<br>一个page 8192大小 一个块(element)大小32，那么一个page可以拆成256个，每申请一次numAvail减去1。<br>long型位图数组中有个8个元素，8192/16/64=8, 64是long的位数,。</p>
+<p>分配时bitmap中元素，以第一个元素为例子，按1 3 7 15 31 63 127网上涨，释放的时候按对应数据往下减，并且在释放时记录nextAvail值，便于下次申请时优先使用。<br>bitmap中的4个(bitmapLength)long来维护256个（maxNumElems=pageSize/elemSize）块是否使用的情况。  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">final</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PoolSubpage</span>&lt;<span class="hljs-title">T</span>&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title">PoolSubpageMetric</span> </span>&#123;
+
+    <span class="hljs-keyword">final</span> PoolChunk&lt;T&gt; chunk;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> memoryMapIdx;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> runOffset;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> pageSize;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span>[] bitmap;  <span class="hljs-comment">// 位图...,默认有8个元素 个数= pagesize &gt;&gt;&gt; 10 （pagesize / 16 / 64）64应该是long的位数，16是啥？一个element算256。 实际这个数组默认只用4个元素</span>
+
+    PoolSubpage&lt;T&gt; prev;
+    PoolSubpage&lt;T&gt; next;
+
+    <span class="hljs-keyword">boolean</span> doNotDestroy;
+    <span class="hljs-keyword">int</span> elemSize;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> maxNumElems; <span class="hljs-comment">// 一个page再分maxNumElems分  默认是256</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> bitmapLength; <span class="hljs-comment">// 默认是4  256 &gt;&gt;&gt; 6 = 4</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> nextAvail; <span class="hljs-comment">// 在有buf释放时会设置这个值，以使得他们在下次分配时优先使用这个</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> numAvail;
+    
+    <span class="hljs-function"><span class="hljs-keyword">long</span> <span class="hljs-title">allocate</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-keyword">if</span> (elemSize == <span class="hljs-number">0</span>) &#123;
+            <span class="hljs-keyword">return</span> toHandle(<span class="hljs-number">0</span>);
+        &#125;
+
+        <span class="hljs-keyword">if</span> (numAvail == <span class="hljs-number">0</span> || !doNotDestroy) &#123;
+            <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+        &#125;
+
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> bitmapIdx = getNextAvail();
+        <span class="hljs-keyword">int</span> q = bitmapIdx &gt;&gt;&gt; <span class="hljs-number">6</span>;
+        <span class="hljs-keyword">int</span> r = bitmapIdx &amp; <span class="hljs-number">63</span>;
+        <span class="hljs-keyword">assert</span> (bitmap[q] &gt;&gt;&gt; r &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">0</span>;
+        bitmap[q] |= <span class="hljs-number">1L</span> &lt;&lt; r;  <span class="hljs-comment">// 按1 3 7 15 31 63 127往上涨</span>
+
+        <span class="hljs-keyword">if</span> (-- numAvail == <span class="hljs-number">0</span>) &#123;
+            removeFromPool();
+        &#125;
+
+        <span class="hljs-keyword">return</span> toHandle(bitmapIdx);
+    &#125;
+    
+    
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">findNextAvail</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span>[] bitmap = <span class="hljs-keyword">this</span>.bitmap;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> bitmapLength = <span class="hljs-keyword">this</span>.bitmapLength;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; bitmapLength; i ++) &#123;
+            <span class="hljs-keyword">long</span> bits = bitmap[i];
+            <span class="hljs-keyword">if</span> (~bits != <span class="hljs-number">0</span>) &#123; <span class="hljs-comment">// 这个表示这个long上是否所有的位都用完了。。</span>
+                <span class="hljs-keyword">return</span> findNextAvail0(i, bits);
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+    &#125;
+    
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> <span class="hljs-title">findNextAvail0</span><span class="hljs-params">(<span class="hljs-keyword">int</span> i, <span class="hljs-keyword">long</span> bits)</span> </span>&#123;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> maxNumElems = <span class="hljs-keyword">this</span>.maxNumElems;
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> baseVal = i &lt;&lt; <span class="hljs-number">6</span>;
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> j = <span class="hljs-number">0</span>; j &lt; <span class="hljs-number">64</span>; j ++) &#123;
+            <span class="hljs-keyword">if</span> ((bits &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">0</span>) &#123; <span class="hljs-comment">// 判断是否是偶数</span>
+                <span class="hljs-keyword">int</span> val = baseVal | j;
+                <span class="hljs-keyword">if</span> (val &lt; maxNumElems) &#123;
+                    <span class="hljs-keyword">return</span> val;
+                &#125; <span class="hljs-keyword">else</span> &#123;
+                    <span class="hljs-keyword">break</span>;
+                &#125;
+            &#125;
+            bits &gt;&gt;&gt;= <span class="hljs-number">1</span>; <span class="hljs-comment">// 除以2 并向靠近的2的整数次幂对齐</span>
+        &#125;
+        <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+    &#125;</code></pre>
+<p>free时不是每次都会真正释放，在下面会先加入到MemoryRegionCache的queue中cache起来，当queue中放不下时才真正free，代码如下：  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// PoolArena.class</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">free</span><span class="hljs-params">(PoolChunk&lt;T&gt; chunk, ByteBuffer nioBuffer, <span class="hljs-keyword">long</span> handle, <span class="hljs-keyword">int</span> normCapacity, PoolThreadCache cache)</span> </span>&#123;
+    <span class="hljs-keyword">if</span> (chunk.unpooled) &#123;
+        <span class="hljs-keyword">int</span> size = chunk.chunkSize();
+        destroyChunk(chunk);
+        activeBytesHuge.add(-size);
+        deallocationsHuge.increment();
+    &#125; <span class="hljs-keyword">else</span> &#123;
+        SizeClass sizeClass = sizeClass(normCapacity);
+        <span class="hljs-keyword">if</span> (cache != <span class="hljs-keyword">null</span> &amp;&amp; cache.add(<span class="hljs-keyword">this</span>, chunk, nioBuffer, handle, normCapacity, sizeClass)) &#123;
+            <span class="hljs-comment">// cached so not free it.</span>
+            <span class="hljs-keyword">return</span>;
+        &#125;
+
+        freeChunk(chunk, handle, sizeClass, nioBuffer);
+    &#125;
+&#125;</code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/20/netty4-resource-leak-detector-impl/">
+                        <span class="hidden-mobile">netty之ResourceLeakDetector的使用与实现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "netty之池化buffer&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

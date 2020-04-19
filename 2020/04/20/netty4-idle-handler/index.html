@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>白菜油渣 - Code to 60 码到60岁</title>
+  <title>netty之idle handler处理 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -150,8 +150,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2020-04-19 20:00">
-                    星期日, 四月 19日 2020, 8:00 晚上
+                  <time datetime="2020-04-20 07:50">
+                    星期一, 四月 20日 2020, 7:50 早上
                   </time>
                 </div>
               
@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    11 字
+                    267 字
                   </span>
                 
 
@@ -171,7 +171,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    1
+                    3
                      分钟
                   </span>
                 
@@ -200,8 +200,13 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>白菜炒猪油渣，朴素的美食</p>
-<p><img src="/img/food/WechatIMG317.jpeg" srcset="/img/loading.gif" alt="白菜炒猪油渣"></p>
+              <ol>
+<li>初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  </li>
+<li>channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operationComplete动作来更新的，详细参见io.netty.handler.timeout.IdleStateHandler.writeListener</li>
+<li>AllIdleTimeoutTask 任务逻辑中会取lastReadTime, lastWriteTime大值，并拿nextDelay减去他们，这样就能得到下次任务要延期多就检查执行。    </li>
+</ol>
+<p>比如一开始是10：00，5分钟idle时间，那么会在10：05时检查(延迟5分钟)，如果在10：04发生了读写，那么在10：05检查时算出下一次延迟启动任务是4分钟后即10：09分。 </p>
+<p>读写超时是基于此做的事件，检查机制类似。<br>且在netty4中未使用 HashedWheelTimer，而是在线NioEventLoop的spin loop中完成触发。在spin loop中会从io.netty.util.concurrent.AbstractScheduledEventExecutor.scheduledTaskQueue中peek出最前面(也是最早到达的定时任务)的看其deadline是否小于当前时间，如果是则执行。<br>HashedWheelTimer是在netty3中用来做idle检测的。</p>
 
             </article>
             <hr>
@@ -211,17 +216,10 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/life/">life</a>
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
                     
                   </div>
                 
-                
-                  <div class="post-meta">
-                    <i class="iconfont icon-tags"></i>
-                    
-                      <a class="hover-with-bg" href="/tags/food/">food</a>
-                    
-                  </div>
                 
               </div>
               
@@ -232,9 +230,9 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/04/20/cpp-programming-scraps/">
+                      <a href="/2020/04/20/netty4-resource-leak-detector-impl/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">c cpp编程用到的系统边角与其拾遗</span>
+                        <span class="hidden-mobile">netty之ResourceLeakDetector的使用与实现</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -242,8 +240,8 @@
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/04/19/jvm-g1-gc-book/">
-                        <span class="hidden-mobile">《JVM G1源码分析和调优》读书笔记</span>
+                      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">
+                        <span class="hidden-mobile">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -383,7 +381,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "白菜油渣&nbsp;",
+        "netty之idle handler处理&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,

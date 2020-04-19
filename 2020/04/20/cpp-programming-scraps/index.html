@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>白菜油渣 - Code to 60 码到60岁</title>
+  <title>c cpp编程用到的系统边角与其拾遗 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -150,8 +150,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2020-04-19 20:00">
-                    星期日, 四月 19日 2020, 8:00 晚上
+                  <time datetime="2020-04-20 07:36">
+                    星期一, 四月 20日 2020, 7:36 早上
                   </time>
                 </div>
               
@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    11 字
+                    799 字
                   </span>
                 
 
@@ -171,7 +171,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    1
+                    13
                      分钟
                   </span>
                 
@@ -200,9 +200,72 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>白菜炒猪油渣，朴素的美食</p>
-<p><img src="/img/food/WechatIMG317.jpeg" srcset="/img/loading.gif" alt="白菜炒猪油渣"></p>
+              <h2 id="拾遗"><a href="#拾遗" class="headerlink" title="拾遗"></a>拾遗</h2><p>Q：unix编程怎么查一个函数在哪个头文件中<br>A: 可以用诸如 man 3 printf  </p>
+<p>Q: man后面接个数字什么意思，如man 3 printf<br>A：如下 man man中的引用</p>
+<blockquote>
+<p>下表显示了手册的 章节 号及其包含的手册页类型。<br>1   可执行程序或 shell 命令<br>2   系统调用(内核提供的函数)<br>3   库调用(程序库中的函数)<br>4   特殊文件(通常位于 /dev)<br>5   文件格式和规范，如 /etc/passwd<br>6   游戏<br>7   杂项(包括宏包和规范，如 man(7)，groff(7))<br>8   系统管理命令(通常只针对 root 用户)<br>9   内核例程 [非标准  </p>
+</blockquote>
+<p>Q: 怎么在man的所有章节中搜索<br>A： man -k printf   </p>
+<pre><code class="hljs shell">appweb@simon-ububtu18-desk-2:~/600.self/03.code/01.cpp/03.APUE$ man -k printf
+asprintf (3)         - print to allocated string
+dprintf (3)          - formatted output conversion
+fprintf (3)          - formatted output conversion
+fwprintf (3)         - formatted wide-character output conversion
+printf (1)           - format and print data
+printf (3)           - formatted output conversion
+snprintf (3)         - formatted output conversion
+sprintf (3)          - formatted output conversion
+swprintf (3)         - formatted wide-character output conversion
+vasprintf (3)        - print to allocated string
+vdprintf (3)         - formatted output conversion
+vfprintf (3)         - formatted output conversion
+vfwprintf (3)        - formatted wide-character output conversion
+vprintf (3)          - formatted output conversion
+vsnprintf (3)        - formatted output conversion
+vsprintf (3)         - formatted output conversion
+vswprintf (3)        - formatted wide-character output conversion
+vwprintf (3)         - formatted wide-character output conversion
+wprintf (3)          - formatted wide-character output conversion
+XtAsprintf (3)       - memory management functions</code></pre>
+<p>可以看到1和3中都有  1中是对应shell的 3中对应的是程序库中的    </p>
+<p>Q: 怎么查看编译器在哪些路径中搜索头文件<br>A：如下：<br>可以参见 <a href="https://stackoverflow.com/questions/344317/where-does-gcc-look-for-c-and-c-header-files" target="_blank" rel="noopener">https://stackoverflow.com/questions/344317/where-does-gcc-look-for-c-and-c-header-files</a><br>大意与验证如下：  </p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 对于c++的如下： </span>
+appweb@simon-ububtu18-desk-2:~/600.self/03.code/01.cpp/03.APUE$ `gcc -print-prog-name=cc1plus` -v
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/4.8/../../../../x86_64-linux-gnu/include"
+<span class="hljs-meta">#</span><span class="bash">include <span class="hljs-string">"..."</span> search starts here:</span>
+<span class="hljs-meta">#</span><span class="bash">include &lt;...&gt; search starts here:</span>
+ /usr/include/c++/4.8
+ /usr/include/x86_64-linux-gnu/c++/4.8
+ /usr/include/c++/4.8/backward
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed
+ /usr/include
+End of search list.
+^C
 
+<span class="hljs-meta">#</span><span class="bash"> 对于c的如下：  </span>
+appweb@simon-ububtu18-desk-2:~/600.self/03.code/01.cpp/03.APUE$ `gcc -print-prog-name=cpp` -v
+Using built-in specs.
+COLLECT_GCC=cpp
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18.04.1' --with-bugurl=file:///usr/share/doc/gcc-7/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++ --prefix=/usr --with-gcc-major-version-only --program-suffix=-7 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-libmpx --enable-plugin --enable-default-pie --with-system-zlib --with-target-system-zlib --enable-objc-gc=auto --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+Thread model: posix
+gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
+COLLECT_GCC_OPTIONS='-E' '-v' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/cc1 -E -quiet -v -imultiarch x86_64-linux-gnu - -mtune=generic -march=x86-64 -fstack-protector-strong -Wformat -Wformat-security
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/7/../../../../x86_64-linux-gnu/include"
+<span class="hljs-meta">#</span><span class="bash">include <span class="hljs-string">"..."</span> search starts here:</span>
+<span class="hljs-meta">#</span><span class="bash">include &lt;...&gt; search starts here:</span>
+ /usr/lib/gcc/x86_64-linux-gnu/7/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.</code></pre>
             </article>
             <hr>
             <div>
@@ -211,7 +274,7 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/life/">life</a>
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
                     
                   </div>
                 
@@ -219,7 +282,7 @@
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/food/">food</a>
+                      <a class="hover-with-bg" href="/tags/cpp/">cpp</a>
                     
                   </div>
                 
@@ -232,9 +295,9 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/04/20/cpp-programming-scraps/">
+                      <a href="/2020/04/20/not-include-but-why-successfully/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">c cpp编程用到的系统边角与其拾遗</span>
+                        <span class="hidden-mobile">使用部分函数时并未include其所在头文件，但是能编译成功且能运行，为什么？</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -242,8 +305,8 @@
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/04/19/jvm-g1-gc-book/">
-                        <span class="hidden-mobile">《JVM G1源码分析和调优》读书笔记</span>
+                      <a href="/2020/04/19/cabbage-residue/">
+                        <span class="hidden-mobile">白菜油渣</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -383,7 +446,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "白菜油渣&nbsp;",
+        "c cpp编程用到的系统边角与其拾遗&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
