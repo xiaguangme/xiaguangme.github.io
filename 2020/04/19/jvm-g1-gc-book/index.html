@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>《JVM G1源码分析和调优》读书笔记 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-19 19:57">
+                    星期日, 四月 19日 2020, 7:57 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    27
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="GC的相关算法与JVM的垃圾收集器"><a href="#GC的相关算法与JVM的垃圾收集器" class="headerlink" title="GC的相关算法与JVM的垃圾收集器"></a>GC的相关算法与JVM的垃圾收集器</h2><h3 id="GC的相关算法"><a href="#GC的相关算法" class="headerlink" title="GC的相关算法"></a>GC的相关算法</h3><ul>
+<li>分代管理</li>
+<li>复制算法</li>
+<li>标记清除</li>
+<li>标记压缩</li>
+</ul>
+<h3 id="JVM垃圾收集器"><a href="#JVM垃圾收集器" class="headerlink" title="JVM垃圾收集器"></a>JVM垃圾收集器</h3><p>P242 表11-1 不同类型垃圾回收期比较  </p>
+<ul>
+<li>串行收集器 Serial。  Serial GC用于新生代，用了复制算法；Serial Old GC作用于老年代，用的是标记-压缩算法。STW</li>
+<li>并行收集器 Parallel。Parallel new作用于新生代，使用了复制算法；Parallel old作用于老年代，用了标记-压缩算法。STW。并发收集是准确收集，不会产生浮动垃圾。</li>
+<li>并发收集器 Concurrent-Mark-Sweep。老年代垃圾回收器。使用了标记-清除算法。分为初始标记(Initial-Mark,STW)、并发标记(Concurrent-Mark)、再次标记(Remark,STW)、并发清除(Concurrent-Sweep)。CMS因为需要存储代际的引用关系，所以有额外的存储空间的消耗。CMS不是准确收集，会产生浮动垃圾。</li>
+<li>垃圾优先收集器 G1。按照分区进行收集，新生代的分区总是会回收，老生代则是并发标记后选择部分回收效果最好的分区。G1分为三种回收方式：<code>新生代回收</code>young、<code>混合回收</code>(mixed，既收集新生代也收集部分老年代)、<code>FUll GC</code>。<code>新生代回收</code>仅仅在开始前需要STW。<code>混合回收</code>分成两个阶段：并发标记阶段与垃圾回收阶段。并发标记阶段又分四个步骤：初始标记子阶段(initital-mark)、并发标记子阶段(concurrent-mark)、再标记子阶段(remark,STW)、清理子阶段(cleanup,STW)。因分区设计，G1引用关系的存储占用额外空间的消耗较大。G1不是准确收集，会产生浮动垃圾。</li>
+</ul>
+<h2 id="G1基本概念"><a href="#G1基本概念" class="headerlink" title="G1基本概念"></a>G1基本概念</h2><h3 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h3><p>G1是将内存分成一个个小区域使用。这些区域称之为Heap Region。扩展的有<code>YHR</code>(新生代分区)，<code>OHR</code>(老生代分区)，<code>HHR</code>(大对象分区)等等<br>为了达到分配效率与清理效率的平衡，HR的大小有上下限值，即1MB-32MB。结合整个堆空间分为2048个HR，那么通常G1管理的最大的堆是32MB*2048=64G。  </p>
+<h3 id="新生代大小"><a href="#新生代大小" class="headerlink" title="新生代大小"></a>新生代大小</h3><h4 id="用参数设置使得G1能推断出最大值与最小值"><a href="#用参数设置使得G1能推断出最大值与最小值" class="headerlink" title="用参数设置使得G1能推断出最大值与最小值"></a>用参数设置使得G1能推断出最大值与最小值</h4><p>涉及的参数有:</p>
+<ul>
+<li>新生代最大值MaxNewSize、最小值NewSize、Xmn(等价于MaxNewSize和NewSize，且MaxNewSize=NewSize)</li>
+<li>NewRatio，如果上条参数设置了，则忽略本参数</li>
+<li>如果仅仅设置了NewRatio，则新生代最大值与最小值相同：整个堆空间/(newRatio+1)</li>
+<li>如果没有设置最大值和最小值，或者只设置了其中一个，那么G1将根据参数G1MaxNewSizePercent(默认60)和G1NewSizePercent(默认是5)占整个堆空间的比例来计算。</li>
+</ul>
+<p><strong>如果G1推断出的新生代的最大值与最小值相等，则说明新生代不会动态变化，不会动态变化则可能导致后续新生代GC时不能满足期望的停顿时间</strong>，所以有文章提到G1不建议设置Xmn参数。  </p>
+<p>相关代码在 share/vm/gc_implementation/g1/g1collectorPolicy.cpp  </p>
+<h3 id="G1启发式推断新生代大小"><a href="#G1启发式推断新生代大小" class="headerlink" title="G1启发式推断新生代大小"></a>G1启发式推断新生代大小</h3><p>G1有一个线程专门抽样处理预测新生代列表的长度应该多大，并动态调整。  </p>
+<p>何时扩展以及一次扩展多少内存？<br>参数-XX:GCTimeRatio 表示GC与应用的耗费时间的比，G1默认是9。也就是说GC的耗时与应用耗时占比超过10%时，进行动态扩展。扩展大小的参数是G1ExpandByPercentOfAvailable，同时至少大于1MB，至多不能超过当前已经分配的大小的一倍。<br>代码在 size_t G1CollectorPolicy::expansion_amount()….<br>该书在第五章讲refine线程时对此点有更详细的阐述  </p>
+<h3 id="G1停顿预测模型"><a href="#G1停顿预测模型" class="headerlink" title="G1停顿预测模型"></a>G1停顿预测模型</h3><p>比较偏数学 我就很快跳过去了<br>G1的预测逻辑是基于衰减平均(Decaying Average)和衰减标准差。  </p>
+<h3 id="卡表和位图"><a href="#卡表和位图" class="headerlink" title="卡表和位图"></a>卡表和位图</h3><p>卡表(CardTable)是CMS中中常见概念之一。我理解成分区间对象引用关系的描述 的存放处或者说存放的数据结构。此书也是讲的较为简略，细节可以参见《垃圾回收算法手册：自动内存管理的艺术》  </p>
+<h3 id="对象头"><a href="#对象头" class="headerlink" title="对象头"></a>对象头</h3><p>讲JVM内存模型必讲对象头。可以参见我写的<a href="cnblogs.com/simoncook/p/11804427.html">JVM中对象模型及相应名词概念</a>  </p>
+<h3 id="栈帧、线程等"><a href="#栈帧、线程等" class="headerlink" title="栈帧、线程等"></a>栈帧、线程等</h3><p>栈帧可以参见 封亚飞 写的《揭秘Java虚拟机》第七章 Java栈帧，写的更详细。此书只是一笔带过，看了跟没看没啥差别。  </p>
+<h2 id="G1的对象分配"><a href="#G1的对象分配" class="headerlink" title="G1的对象分配"></a>G1的对象分配</h2><ul>
+<li>快速分配与慢速分配</li>
+<li>快速分配通过TLAB(Thread Local Allocation Buffer)实现。TLAB自己的分配是CAS操作。TLAB内部给对象分配是无锁的，因为只有自己线程用嘛。  </li>
+<li>TLAB机制或产生内存浪费，因为一个对象不会分配在两个TLAB区域，所以TLAB最末端的尾巴区域可能会残留空着。可以通过TLABRefillWasteFraction参数调整，表示允许产生浪费的比例。默认值是64，即表示1/64空间可以浪费。</li>
+<li>TLAB大小可以自动调整，但是上限不会超过HR的一半。、</li>
+<li>可以使用参数-XX:-ResizeTLAB禁用ResizeTLAB，并使用参数-XX:TLABSize指定一个大小。-XX:+PrintTLAB可以跟踪TLAB工作情况。</li>
+<li><strong>一般不建议修改TLAB参数，建议使用默认值</strong></li>
+</ul>
+<p>TLAB快速分配的代码在 HeapWord* CollectedHeap::allocate_from_tlab…  </p>
+<h2 id="G1的Refine线程"><a href="#G1的Refine线程" class="headerlink" title="G1的Refine线程"></a>G1的Refine线程</h2><p>先讲Rset</p>
+<h3 id="Rset"><a href="#Rset" class="headerlink" title="Rset"></a>Rset</h3><p>Rset是干什么用的？  </p>
+<ul>
+<li>Rset是一种抽象概念，记录了在不同代际之间的引用关系，目的是为了加速GC。</li>
+<li>通俗地说，可以用Rset记录从非收集部分指向收集部分的指针集合。对于这种记录述求，有两种方式，一是<code>我引用了谁</code>，称为<code>Point Out</code>；一是<code>谁引用了我</code>，称为<code>Point In</code>。G1采用后者。</li>
+<li>G1中需要记录代际之间的引用关系包括：老生代分区到新生代分区之间的引用关系(YGC时，这个引用关系是GC Roots的一部分，老生代引用过来的不能被回收掉嘛…)；老生代分区到老生代分区之间的引用关系(混合GC时用)</li>
+<li>Rset与卡表的关系参见P68图4-1</li>
+<li>G1引入了PRT，TODO：没看太懂</li>
+<li>DCQ与Refinemnet zone的四色区域没看太懂</li>
+</ul>
+<h3 id="Rset写屏障"><a href="#Rset写屏障" class="headerlink" title="Rset写屏障"></a>Rset写屏障</h3><p>为啥谈到写屏障，因为Refine是线程关注的是应用关系的变更，但是他是如何识别引用关系的变更的呢？就是靠写屏障完成。下面讲写屏障相关要点：  </p>
+<ul>
+<li>写屏障这个词我不知道为啥这样命名，直觉上不好理解。  </li>
+<li>我对其的理解就是，写操作前后的拦截器处理。比如我对字段赋值putfield，在赋值前我要告诉DCQ这个对象被我引用了，这就是写屏障动作。  </li>
+<li>书上的说法：<code>写屏障</code>是指在改变特定内存的值时，额外执行的一些动作。  </li>
+<li>CMS是通过写屏障记录引用刮不洗，G1也是。  </li>
+<li>写屏障会有优化，不是所有的引用关系变更都会被记录。  <ul>
+<li>不记录新生代到新生代的引用，或者新生代到老生代的引用，在写屏障时过滤</li>
+<li>过滤掉同一个分区内部引用，在Rset处理时过滤</li>
+<li>过滤掉空引用，在Rset处理时过滤</li>
+</ul>
+</li>
+</ul>
+<h3 id="Refine线程"><a href="#Refine线程" class="headerlink" title="Refine线程"></a>Refine线程</h3><ul>
+<li>Refine线程是一组，是一个线程池，不是一个。</li>
+<li>我对他的理解是，一个线程用于抽样，主要作用设置新生代分区的个数。其余线程用于管理Rset，Rset的更新不是同步完成的，是靠Refine线程异步完成的，异步又是靠DCQ dirty card queue队列暂存过渡的。 </li>
+<li>Refine涉及的JVM比较复杂，未细细研究</li>
+<li>相关参数：可以通过-XX:+G1TraceConcRefinement观察Refine线程工作情况。通过-XX:+G1SummarizeRSetStats观察Rset更新。</li>
+</ul>
+<h2 id="新生代回收"><a href="#新生代回收" class="headerlink" title="新生代回收"></a>新生代回收</h2><p>上面已经讲了，G1 GC分三种： <code>新生代回收</code>young、<code>混合回收</code>(mixed，既收集新生代也收集部分老年代)、<code>FUll GC</code>  </p>
+<p>步骤：  </p>
+<ol>
+<li>选择CSet</li>
+<li>根处理</li>
+<li>Rset处理</li>
+<li>复制</li>
+<li>Redirty 重构Rset</li>
+<li>释放空间  </li>
+</ol>
+<h3 id="相关日志"><a href="#相关日志" class="headerlink" title="相关日志"></a>相关日志</h3><p>可以用-XX:G1LogLevel=finest 打开更详细的日志<br>关键字 GC pause (G1 Evacuation Pause) (young)， 0.0182341 secs…  </p>
+<h3 id="参数调优"><a href="#参数调优" class="headerlink" title="参数调优"></a>参数调优</h3><h2 id="混合回收"><a href="#混合回收" class="headerlink" title="混合回收"></a>混合回收</h2><p><code>混合回收</code>分成两个阶段：</p>
+<ul>
+<li>并发标记阶段</li>
+<li>垃圾回收阶段(与新生代回收一致)  </li>
+</ul>
+<p>并发标记阶段又分四个步骤：</p>
+<ol>
+<li>初始标记子阶段(initital-mark)</li>
+<li>并发标记子阶段(concurrent-mark)</li>
+<li>再标记子阶段(remark,STW)</li>
+<li>清理子阶段(cleanup,STW</li>
+</ol>
+<p>并发标记的难点：<br>正在标记过程中的对象引用关系发生了改变。<br>通过三色标记法与STAB算法结合写屏障完成。<br>写屏障代码在 oop_store中,oop.inline.hpp  </p>
+<h3 id="相关日志-1"><a href="#相关日志-1" class="headerlink" title="相关日志"></a>相关日志</h3><p>关键字 GC pause (G1 Evacuation Pause) (mixed)， 0.0106341 secs…<br> GC pause (G1 Evacuation Pause) (young) (initial-mark),….  // 初始标记借用了YGC<br>[GC concurrent-mark-start]…<br>[GC concurrent-mark-end]…<br>[GC remark …]…<br>[GC cleanup …]…  </p>
+<h3 id="参数调优-1"><a href="#参数调优-1" class="headerlink" title="参数调优"></a>参数调优</h3><h2 id="Full-GC"><a href="#Full-GC" class="headerlink" title="Full GC"></a>Full GC</h2><p>JDK10之前FGC是串行的，JDK10之后支持并行。<br>代码在 G1CollectedHeap::do_collection<br>串行回收采用标记清除算法，步骤：  </p>
+<ol>
+<li>标记活跃对象</li>
+<li>计算新对象地址</li>
+<li>把所有对象都更新到新地址上</li>
+<li>移动对象完成压缩</li>
+</ol>
+<h3 id="相关日志-2"><a href="#相关日志-2" class="headerlink" title="相关日志"></a>相关日志</h3><p>[Full GC (Allocation Failure) …..  0.2036229 secs]….  </p>
+<h2 id="G1调优"><a href="#G1调优" class="headerlink" title="G1调优"></a>G1调优</h2><p>主要涉及的指标有： 吞吐量最大、停段时间尽量端、GC频率尽量低和堆空间的有效利用率高。<br>主要调优参数 参见P244 表11-2，主要涉及堆、RSet、标记和GC四个方面的参数。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/book-paper-study/">book-paper-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/GC/">GC</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/19/cabbage-residue/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">白菜油渣</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/19/netty4-fastthhreadlocal/">
+                        <span class="hidden-mobile">Netty4 FastThreadLocal及其相关类系列以及CPU cacheline padding补齐优化的相关知识</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "《JVM G1源码分析和调优》读书笔记&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
