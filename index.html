@@ -175,6 +175,41 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/netty4-transport-nio/">netty之nio传输层</a>
+
+      <a href="/2020/04/22/netty4-transport-nio/" class="index-excerpt">
+        
+        
+          
+        
+        <div>nio基本处理逻辑查看这里  
+Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK API构建出来的Selector再用反射将其中的selectedKeys、publicSelectedKeys替换成他优化过的SelectedSelectionKeySet实例。JDK API构建出来的Selector 代码：  
+// NioEven</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/20/netty4-pooled-buffer/">netty之池化buffer</a>
 
       <a href="/2020/04/20/netty4-pooled-buffer/" class="index-excerpt">
@@ -218,10 +253,11 @@ io/netty/buffer/PooledByteBufAllocatornewDi</div>
         
           
         
-        <div>netty之ResourceLeakDetector的使用与实现通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
+        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
 使用
 设置日志级别：  ServerBootstrap b =new ServerBootstrap();
-b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.clas</div>
+b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
+.option(ChannelOption.SO_BACK</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -534,48 +570,6 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/cabbage-residue/">白菜油渣</a>
-
-      <a href="/2020/04/19/cabbage-residue/" class="index-excerpt">
-        
-        
-          
-        
-        <div>白菜炒猪油渣，朴素的美食
-
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/life/">life</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/food/">food</a>
             
           </div>
         
