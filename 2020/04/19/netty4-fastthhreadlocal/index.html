@@ -232,11 +232,13 @@ newCapacity ++;</code></pre>
 <li>stringBuilder</li>
 <li>charsetEncoderCache</li>
 <li>charsetDecoderCache</li>
-<li>arrayList<br>这个11个是靠实例字段直接存储。<br>另外此类，还用了padding补齐的手段优化了CPU cacheline伪共享的问题。我猜测性能提升主要来源于此。  <pre><code class="hljs java"><span class="hljs-comment">// Cache line padding (must be public)</span>
+<li>arrayList<br>这个11个是靠实例字段直接存储。<br>另外此类，还用了padding补齐的手段优化了CPU cacheline伪共享的问题。我猜测性能提升主要来源于此。  </li>
+</ul>
+<pre><code class="hljs java"><span class="hljs-comment">// Cache line padding (must be public)</span>
 <span class="hljs-comment">// With CompressedOops enabled, an instance of this class should occupy at least 128 bytes.</span>
 <span class="hljs-keyword">public</span> <span class="hljs-keyword">long</span> rp1, rp2, rp3, rp4, rp5, rp6, rp7, rp8, rp9;</code></pre>
-<h3 id="关于padding补齐"><a href="#关于padding补齐" class="headerlink" title="关于padding补齐"></a>关于padding补齐</h3>该类为了解决cache line伪共享的问题，采用了padding补齐。<br>该类(4.1.32.Final版本)补齐后通过<a href="https://gitee.com/xiaguangme/sizeofobject" target="_blank" rel="noopener">sizeOfObject</a>(也可以用jol)算出来大小是136。  jol针对idea是有插件的，不像JDK带的jol要运行起来才能计算对象大小。idea那个插件是针对语法树分析后算的，因为就算你的类有编译错误，他也能算出来。使用时注意选择相应的压缩模式，右上角。<br>关于jol<a href="http://hg.openjdk.java.net/code-tools/jol/file/833f68a6ba34/jol-samples/src/main/java/org/openjdk/jol/samples/JOLSample_02_Alignment.java" target="_blank" rel="noopener">有官方的sample</a>是很不错的，还<a href="http://zhongmingmao.me/2016/07/01/jvm-jol-tutorial-1/" target="_blank" rel="noopener">有个博客</a>写的还行，包括字段重排等都有。   </li>
-</ul>
+
+<h3 id="关于padding补齐"><a href="#关于padding补齐" class="headerlink" title="关于padding补齐"></a>关于padding补齐</h3><p>该类为了解决cache line伪共享的问题，采用了padding补齐。<br>该类(4.1.32.Final版本)补齐后通过<a href="https://gitee.com/xiaguangme/sizeofobject" target="_blank" rel="noopener">sizeOfObject</a>(也可以用jol)算出来大小是136。  jol针对idea是有插件的，不像JDK带的jol要运行起来才能计算对象大小。idea那个插件是针对语法树分析后算的，因为就算你的类有编译错误，他也能算出来。使用时注意选择相应的压缩模式，右上角。<br>关于jol<a href="http://hg.openjdk.java.net/code-tools/jol/file/833f68a6ba34/jol-samples/src/main/java/org/openjdk/jol/samples/JOLSample_02_Alignment.java" target="_blank" rel="noopener">有官方的sample</a>是很不错的，还<a href="http://zhongmingmao.me/2016/07/01/jvm-jol-tutorial-1/" target="_blank" rel="noopener">有个博客</a>写的还行，包括字段重排等都有。   </p>
 <p><strong>为什么是136？按说128就行啊</strong>？ 这个事情我之前也思索了好久没有答案。直至翦哥今天跟我提到了一个别人前几天<a href="https://github.com/netty/netty/issues/9284" target="_blank" rel="noopener">提的issue</a>，才翻到原来有人和我们有一样的困惑，而且答案竟然是在netty版本迭代过程中InternalThreadLocalMap的父类加了个字段：ArrayList<Object> arrayList;，导致变成了136，之前4.0.33Final版本就是128，我确实使用了这个版本进行了验证，确实是。…. 竟然是这样，不可思议。  </p>
 <blockquote>
 <p>jiangxinlingdu commented 2 days ago<br>I have checked the code in old version and found that the size of InternalThreadLocalMap is 128Bytes in version 4.0.33. And now in latest code in github the size of InternalThreadLocalMap is 136. And the reason is that some has added two parameters: cleanerFlags (in class InternalThreadLocalMap) and arrayList (in parent class UnpaddedInternalThreadLocalMap).<br>In my view, the contributors has pushed the two parameters ignoring the Cache line padding. So it is a problem!  </p>
@@ -258,6 +260,7 @@ newCapacity ++;</code></pre>
         FastThreadLocal.removeAll();
     &#125;
 &#125;</code></pre>
+
 <p>所以<code>cleanupFastThreadLocals</code>字段意思是此线程<code>会</code>在执行完成时清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </p>
 <p>FastThreadLocalRunnable扩展了什么：  </p>
 <ul>
@@ -281,6 +284,15 @@ newCapacity ++;</code></pre>
                     
                   </div>
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+                    
+                  </div>
                 
               </div>
               

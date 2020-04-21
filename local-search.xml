@@ -18,6 +18,14 @@
     </categories>
     
     
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>netty4源码分析</tag>
+      
+    </tags>
+    
   </entry>
   
   
@@ -36,6 +44,14 @@
       
     </categories>
     
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>netty4源码分析</tag>
+      
+    </tags>
     
   </entry>
   
@@ -56,6 +72,14 @@
     </categories>
     
     
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>netty4源码分析</tag>
+      
+    </tags>
+    
   </entry>
   
   
@@ -74,6 +98,14 @@
       
     </categories>
     
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>netty4源码分析</tag>
+      
+    </tags>
     
   </entry>
   
@@ -146,7 +178,7 @@
       
       <tag>java</tag>
       
-      <tag>dubbo</tag>
+      <tag>dubbo源码分析</tag>
       
     </tags>
     
@@ -286,7 +318,7 @@
     <link href="/2020/04/19/netty4-fastthhreadlocal/"/>
     <url>/2020/04/19/netty4-fastthhreadlocal/</url>
     
-    <content type="html"><![CDATA[<h2 id="FastThreadLocal"><a href="#FastThreadLocal" class="headerlink" title="FastThreadLocal"></a>FastThreadLocal</h2><p>概述： ThreadLocal的一个特定变种改善，有更好的存取性能。<br>内部采用一个数组来代替ThreadLocal内部的hash表来存放变量。虽然这看起来是微不足道的，但是他确实比hash表性能好那么一点，在频繁存取时会更明显。 如果用DefaultThreadFactory创建线程，那么默认创建出来的就是FastThreadLocalThread，就会用FastThreadLocal。  </p><p>set数据靠InternalThreadLocalMap维护，InternalThreadLocalMap内部靠一个数组(就是上面说的)维护变量数据。  </p><p>扩展了什么:<br>按ThreadLocal API的约定行为，依赖InternalThreadLocalMap实现了这些行为，诸如get、set、remove等。<br>remove支持onRemoval回调。  </p><h2 id="InternalThreadLocalMap"><a href="#InternalThreadLocalMap" class="headerlink" title="InternalThreadLocalMap"></a>InternalThreadLocalMap</h2><h3 id="自身实例获取"><a href="#自身实例获取" class="headerlink" title="自身实例获取"></a>自身实例获取</h3><p>get方法是对外暴露去自身实例的，有两种方式取到InternalThreadLocalMap实例：</p><ul><li>如果当前线程是FastThreadLocalThreadInternal，直接取其实例变量ThreadLocalMap，内部称之为fastGet。  </li><li>如果是JDK的Thread，那么靠JDK的TheadLocal取到ThreadLocalMap，内部称之为slowGet。  </li></ul><h3 id="数据存取"><a href="#数据存取" class="headerlink" title="数据存取"></a>数据存取</h3><p>真正的存取变量是靠<code>indexedVariable</code>和<code>setIndexedVariable</code>方法完成。<br>阅读代码不难发现，是靠Object[]  indexedVariables这个数组达成数据存储的目的。  </p><h3 id="存放数据的数组扩容"><a href="#存放数据的数组扩容" class="headerlink" title="存放数据的数组扩容"></a>存放数据的数组扩容</h3><p>indexedVariables数组靠expandIndexedVariableTableAndSet动态扩容。初始长度是32。<br>扩容算法有点意思，是比当前index小的最大的2的n次方的值扩一倍，比如当前index是132，那么就会扩成256长度的数组。  </p><pre><code class="hljs java">Object[] oldArray = indexedVariables;<span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> oldCapacity = oldArray.length;<span class="hljs-keyword">int</span> newCapacity = index;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">1</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">2</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">4</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">8</span>;newCapacity |= newCapacity &gt;&gt;&gt; <span class="hljs-number">16</span>;newCapacity ++;</code></pre><h3 id="是否完全用数组存放数据？"><a href="#是否完全用数组存放数据？" class="headerlink" title="是否完全用数组存放数据？"></a>是否完全用数组存放数据？</h3><p>不完全是。因为<code>InternalThreadLocalMap</code>的父类<code>UnpaddedInternalThreadLocalMap</code>自带了一些常用的字段：  </p><ul><li>futureListenerStackDepth</li><li>localChannelReaderStackDepth</li><li>handlerSharableCache  </li><li>counterHashCode</li><li>random</li><li>typeParameterMatcherGetCache</li><li>typeParameterMatcherFindCache</li><li>stringBuilder</li><li>charsetEncoderCache</li><li>charsetDecoderCache</li><li>arrayList<br>这个11个是靠实例字段直接存储。<br>另外此类，还用了padding补齐的手段优化了CPU cacheline伪共享的问题。我猜测性能提升主要来源于此。  <pre><code class="hljs java"><span class="hljs-comment">// Cache line padding (must be public)</span><span class="hljs-comment">// With CompressedOops enabled, an instance of this class should occupy at least 128 bytes.</span><span class="hljs-keyword">public</span> <span class="hljs-keyword">long</span> rp1, rp2, rp3, rp4, rp5, rp6, rp7, rp8, rp9;</code></pre><h3 id="关于padding补齐"><a href="#关于padding补齐" class="headerlink" title="关于padding补齐"></a>关于padding补齐</h3>该类为了解决cache line伪共享的问题，采用了padding补齐。<br>该类(4.1.32.Final版本)补齐后通过<a href="https://gitee.com/xiaguangme/sizeofobject" target="_blank" rel="noopener">sizeOfObject</a>(也可以用jol)算出来大小是136。  jol针对idea是有插件的，不像JDK带的jol要运行起来才能计算对象大小。idea那个插件是针对语法树分析后算的，因为就算你的类有编译错误，他也能算出来。使用时注意选择相应的压缩模式，右上角。<br>关于jol<a href="http://hg.openjdk.java.net/code-tools/jol/file/833f68a6ba34/jol-samples/src/main/java/org/openjdk/jol/samples/JOLSample_02_Alignment.java" target="_blank" rel="noopener">有官方的sample</a>是很不错的，还<a href="http://zhongmingmao.me/2016/07/01/jvm-jol-tutorial-1/" target="_blank" rel="noopener">有个博客</a>写的还行，包括字段重排等都有。   </li></ul><p><strong>为什么是136？按说128就行啊</strong>？ 这个事情我之前也思索了好久没有答案。直至翦哥今天跟我提到了一个别人前几天<a href="https://github.com/netty/netty/issues/9284" target="_blank" rel="noopener">提的issue</a>，才翻到原来有人和我们有一样的困惑，而且答案竟然是在netty版本迭代过程中InternalThreadLocalMap的父类加了个字段：ArrayList<Object> arrayList;，导致变成了136，之前4.0.33Final版本就是128，我确实使用了这个版本进行了验证，确实是。…. 竟然是这样，不可思议。  </p><blockquote><p>jiangxinlingdu commented 2 days ago<br>I have checked the code in old version and found that the size of InternalThreadLocalMap is 128Bytes in version 4.0.33. And now in latest code in github the size of InternalThreadLocalMap is 136. And the reason is that some has added two parameters: cleanerFlags (in class InternalThreadLocalMap) and arrayList (in parent class UnpaddedInternalThreadLocalMap).<br>In my view, the contributors has pushed the two parameters ignoring the Cache line padding. So it is a problem!  </p></blockquote><blockquote><p>My doubt is solved by you, thank you!!!</p></blockquote><h2 id="FastThreadLocalThread与FastThreadLocalRunnable"><a href="#FastThreadLocalThread与FastThreadLocalRunnable" class="headerlink" title="FastThreadLocalThread与FastThreadLocalRunnable"></a>FastThreadLocalThread与FastThreadLocalRunnable</h2><p>FastThreadLocalThread概述：绑定了<code>InternalThreadLocalMap</code>的线程类。继承于JDK的<code>Thread</code>。<br>FastThreadLocalThread扩展了什么：  </p><ul><li>主要对外暴露了获取与设置<code>InternalThreadLocalMap</code>字段的接口。  </li><li>增加cleanupFastThreadLocals字段并在有Runnable参数的构造函数里，会将<code>cleanupFastThreadLocals</code>字段设置成true。</li></ul><p>因为如果通过FastThreadnLocalThread的有Runnable参数的构造函数构造的FastThreadLocalThread实例时，会将Runnable实例wrap成<code>FastThreadLocalRunnable</code>实例。  FastThreadLocalRunnable又会在其run方法中以finally的方式进行清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </p><pre><code class="hljs java"><span class="hljs-meta">@Override</span><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>&#123;    <span class="hljs-keyword">try</span> &#123;        runnable.run();    &#125; <span class="hljs-keyword">finally</span> &#123;        FastThreadLocal.removeAll();    &#125;&#125;</code></pre><p>所以<code>cleanupFastThreadLocals</code>字段意思是此线程<code>会</code>在执行完成时清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </p><p>FastThreadLocalRunnable扩展了什么：  </p><ul><li>如上面所说，会在run方法中用finally清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </li></ul><h2 id="DefaultThreadFactory"><a href="#DefaultThreadFactory" class="headerlink" title="DefaultThreadFactory"></a>DefaultThreadFactory</h2><p>扩展了什么：  </p><ul><li>实现了线程名前缀+自增线程号的模式 </li><li>实现了创建线程时默认使用<code>FastThreadLocalThread</code>实现</li></ul>]]></content>
+    <content type="html"><![CDATA[<h2 id="FastThreadLocal"><a href="#FastThreadLocal" class="headerlink" title="FastThreadLocal"></a>FastThreadLocal</h2><p>概述： ThreadLocal的一个特定变种改善，有更好的存取性能。<br>内部采用一个数组来代替ThreadLocal内部的hash表来存放变量。虽然这看起来是微不足道的，但是他确实比hash表性能好那么一点，在频繁存取时会更明显。 如果用DefaultThreadFactory创建线程，那么默认创建出来的就是FastThreadLocalThread，就会用FastThreadLocal。  </p><p>set数据靠InternalThreadLocalMap维护，InternalThreadLocalMap内部靠一个数组(就是上面说的)维护变量数据。  </p><p>扩展了什么:<br>按ThreadLocal API的约定行为，依赖InternalThreadLocalMap实现了这些行为，诸如get、set、remove等。<br>remove支持onRemoval回调。  </p><h2 id="InternalThreadLocalMap"><a href="#InternalThreadLocalMap" class="headerlink" title="InternalThreadLocalMap"></a>InternalThreadLocalMap</h2><h3 id="自身实例获取"><a href="#自身实例获取" class="headerlink" title="自身实例获取"></a>自身实例获取</h3><p>get方法是对外暴露去自身实例的，有两种方式取到InternalThreadLocalMap实例：</p><ul><li>如果当前线程是FastThreadLocalThreadInternal，直接取其实例变量ThreadLocalMap，内部称之为fastGet。  </li><li>如果是JDK的Thread，那么靠JDK的TheadLocal取到ThreadLocalMap，内部称之为slowGet。  </li></ul><h3 id="数据存取"><a href="#数据存取" class="headerlink" title="数据存取"></a>数据存取</h3><p>真正的存取变量是靠<code>indexedVariable</code>和<code>setIndexedVariable</code>方法完成。<br>阅读代码不难发现，是靠Object[]  indexedVariables这个数组达成数据存储的目的。  </p><h3 id="存放数据的数组扩容"><a href="#存放数据的数组扩容" class="headerlink" title="存放数据的数组扩容"></a>存放数据的数组扩容</h3><p>indexedVariables数组靠expandIndexedVariableTableAndSet动态扩容。初始长度是32。<br>扩容算法有点意思，是比当前index小的最大的2的n次方的值扩一倍，比如当前index是132，那么就会扩成256长度的数组。  </p><pre><code class="hljs java">Object[] oldArray = indexedVariables;<span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> oldCapacity = oldArray.length;<span class="hljs-keyword">int</span> newCapacity = index;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">1</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">2</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">4</span>;newCapacity |= newCapacity &gt;&gt;&gt;  <span class="hljs-number">8</span>;newCapacity |= newCapacity &gt;&gt;&gt; <span class="hljs-number">16</span>;newCapacity ++;</code></pre><h3 id="是否完全用数组存放数据？"><a href="#是否完全用数组存放数据？" class="headerlink" title="是否完全用数组存放数据？"></a>是否完全用数组存放数据？</h3><p>不完全是。因为<code>InternalThreadLocalMap</code>的父类<code>UnpaddedInternalThreadLocalMap</code>自带了一些常用的字段：  </p><ul><li>futureListenerStackDepth</li><li>localChannelReaderStackDepth</li><li>handlerSharableCache  </li><li>counterHashCode</li><li>random</li><li>typeParameterMatcherGetCache</li><li>typeParameterMatcherFindCache</li><li>stringBuilder</li><li>charsetEncoderCache</li><li>charsetDecoderCache</li><li>arrayList<br>这个11个是靠实例字段直接存储。<br>另外此类，还用了padding补齐的手段优化了CPU cacheline伪共享的问题。我猜测性能提升主要来源于此。  </li></ul><pre><code class="hljs java"><span class="hljs-comment">// Cache line padding (must be public)</span><span class="hljs-comment">// With CompressedOops enabled, an instance of this class should occupy at least 128 bytes.</span><span class="hljs-keyword">public</span> <span class="hljs-keyword">long</span> rp1, rp2, rp3, rp4, rp5, rp6, rp7, rp8, rp9;</code></pre><h3 id="关于padding补齐"><a href="#关于padding补齐" class="headerlink" title="关于padding补齐"></a>关于padding补齐</h3><p>该类为了解决cache line伪共享的问题，采用了padding补齐。<br>该类(4.1.32.Final版本)补齐后通过<a href="https://gitee.com/xiaguangme/sizeofobject" target="_blank" rel="noopener">sizeOfObject</a>(也可以用jol)算出来大小是136。  jol针对idea是有插件的，不像JDK带的jol要运行起来才能计算对象大小。idea那个插件是针对语法树分析后算的，因为就算你的类有编译错误，他也能算出来。使用时注意选择相应的压缩模式，右上角。<br>关于jol<a href="http://hg.openjdk.java.net/code-tools/jol/file/833f68a6ba34/jol-samples/src/main/java/org/openjdk/jol/samples/JOLSample_02_Alignment.java" target="_blank" rel="noopener">有官方的sample</a>是很不错的，还<a href="http://zhongmingmao.me/2016/07/01/jvm-jol-tutorial-1/" target="_blank" rel="noopener">有个博客</a>写的还行，包括字段重排等都有。   </p><p><strong>为什么是136？按说128就行啊</strong>？ 这个事情我之前也思索了好久没有答案。直至翦哥今天跟我提到了一个别人前几天<a href="https://github.com/netty/netty/issues/9284" target="_blank" rel="noopener">提的issue</a>，才翻到原来有人和我们有一样的困惑，而且答案竟然是在netty版本迭代过程中InternalThreadLocalMap的父类加了个字段：ArrayList<Object> arrayList;，导致变成了136，之前4.0.33Final版本就是128，我确实使用了这个版本进行了验证，确实是。…. 竟然是这样，不可思议。  </p><blockquote><p>jiangxinlingdu commented 2 days ago<br>I have checked the code in old version and found that the size of InternalThreadLocalMap is 128Bytes in version 4.0.33. And now in latest code in github the size of InternalThreadLocalMap is 136. And the reason is that some has added two parameters: cleanerFlags (in class InternalThreadLocalMap) and arrayList (in parent class UnpaddedInternalThreadLocalMap).<br>In my view, the contributors has pushed the two parameters ignoring the Cache line padding. So it is a problem!  </p></blockquote><blockquote><p>My doubt is solved by you, thank you!!!</p></blockquote><h2 id="FastThreadLocalThread与FastThreadLocalRunnable"><a href="#FastThreadLocalThread与FastThreadLocalRunnable" class="headerlink" title="FastThreadLocalThread与FastThreadLocalRunnable"></a>FastThreadLocalThread与FastThreadLocalRunnable</h2><p>FastThreadLocalThread概述：绑定了<code>InternalThreadLocalMap</code>的线程类。继承于JDK的<code>Thread</code>。<br>FastThreadLocalThread扩展了什么：  </p><ul><li>主要对外暴露了获取与设置<code>InternalThreadLocalMap</code>字段的接口。  </li><li>增加cleanupFastThreadLocals字段并在有Runnable参数的构造函数里，会将<code>cleanupFastThreadLocals</code>字段设置成true。</li></ul><p>因为如果通过FastThreadnLocalThread的有Runnable参数的构造函数构造的FastThreadLocalThread实例时，会将Runnable实例wrap成<code>FastThreadLocalRunnable</code>实例。  FastThreadLocalRunnable又会在其run方法中以finally的方式进行清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </p><pre><code class="hljs java"><span class="hljs-meta">@Override</span><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>&#123;    <span class="hljs-keyword">try</span> &#123;        runnable.run();    &#125; <span class="hljs-keyword">finally</span> &#123;        FastThreadLocal.removeAll();    &#125;&#125;</code></pre><p>所以<code>cleanupFastThreadLocals</code>字段意思是此线程<code>会</code>在执行完成时清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </p><p>FastThreadLocalRunnable扩展了什么：  </p><ul><li>如上面所说，会在run方法中用finally清理当前线程上所有的<code>FastThreadLocal</code>实例中的数据。  </li></ul><h2 id="DefaultThreadFactory"><a href="#DefaultThreadFactory" class="headerlink" title="DefaultThreadFactory"></a>DefaultThreadFactory</h2><p>扩展了什么：  </p><ul><li>实现了线程名前缀+自增线程号的模式 </li><li>实现了创建线程时默认使用<code>FastThreadLocalThread</code>实现</li></ul>]]></content>
     
     
     <categories>
@@ -295,6 +327,14 @@
       
     </categories>
     
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>netty4源码分析</tag>
+      
+    </tags>
     
   </entry>
   
