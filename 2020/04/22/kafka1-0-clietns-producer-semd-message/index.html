@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>归档 - Code to 60 码到60岁</title>
+  <title>clients-producer-组包发送消息 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -46,7 +46,7 @@
 
 
 <body>
-  <header style="height: 50vh;">
+  <header style="height: 40vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -147,6 +147,38 @@
             </span>
 
             
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 07:57">
+                    星期三, 四月 22日 2020, 7:57 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    0 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    1
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
           </div>
 
           
@@ -157,103 +189,91 @@
 
   <main>
     
-      <div class="container nopadding-md">
-        <div class="py-5" id="board"
-          >
-          
-          <div class="container">
-            <div class="row">
-              <div class="col-12 col-md-10 m-auto">
-                
-
-<div class="list-group">
-  <p class="h4">共计 21 篇文章</p>
-  <hr>
-  
-    
       
-      <p class="h5">2020</p>
-    
-    <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/20/dev-tools-on-ubuntu/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">ubuntu开发机所需工具，做个记录，不断补充</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/20/about-dubbo-extension-loader/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">关于dubbo扩展点的一点分析</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/20/guice-features-brief-introducting/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">guice的能力简述</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/20/not-include-but-why-successfully/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">使用部分函数时并未include其所在头文件，但是能编译成功且能运行，为什么？</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/20/cpp-programming-scraps/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">c cpp编程用到的系统边角与其拾遗</span>
-      <span style="float: right;">04-20</span>
-    </a>
-  
-    
-    <a href="/2020/04/19/cabbage-residue/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">白菜油渣</span>
-      <span style="float: right;">04-19</span>
-    </a>
-  
-    
-    <a href="/2020/04/19/jvm-g1-gc-book/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">《JVM G1源码分析和调优》读书笔记</span>
-      <span style="float: right;">04-19</span>
-    </a>
-  
-    
-    <a href="/2020/04/19/netty4-fastthhreadlocal/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">Netty4 FastThreadLocal及CPU cacheline padding补齐</span>
-      <span style="float: right;">04-19</span>
-    </a>
-  
-    
-    <a href="/2020/04/19/some-make-files/" class="list-group-item list-group-item-action">
-      <span class="archive-post-title">几个递进的make file</span>
-      <span style="float: right;">04-19</span>
-    </a>
-  
-</div>
 
-  <nav aria-label="navigation">
-    <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/archives/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span><a class="page-number" href="/archives/page/3/">3</a><a class="extend next" rel="next" href="/archives/page/3/"><i class="iconfont icon-arrowright"></i></a>
-    </span>
-  </nav>
-  
-  <script>
-    for (ele of document.getElementById("pagination").getElementsByTagName("a")) {
-      ele.href += '#board';
-    }
-  </script>
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p><img src="https://img2018.cnblogs.com/blog/127449/201911/127449-20191106232751318-1568618563.png" srcset="/img/loading.gif" alt=""></p>
 
-
-
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
               </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">kafka-clients 1.0 高阶API消费消息(未完)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-clietns-producer/">
+                        <span class="hidden-mobile">clients-producer-网络处理与请求响应对接部分</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
             </div>
+
+            
           </div>
         </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
     
   </main>
 
@@ -317,6 +337,34 @@
 
 
 
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
 
 
   <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
@@ -336,7 +384,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "归档&nbsp;",
+        "clients-producer-组包发送消息&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
@@ -380,6 +428,19 @@
 
 
 
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
 
 
 
@@ -392,6 +453,14 @@
 
 
 
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
 
 
 

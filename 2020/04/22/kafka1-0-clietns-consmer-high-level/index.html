@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>kafka-clients 1.0 高阶API消费消息(未完) - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 07:58">
+                    星期三, 四月 22日 2020, 7:58 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.9k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    25
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="消费消息的请求-按序"><a href="#消费消息的请求-按序" class="headerlink" title="消费消息的请求(按序)"></a>消费消息的请求(按序)</h2><ul>
+<li>org/apache/kafka/common/requests/RequestHeader  </li>
+<li>org/apache/kafka/common/requests/ApiVersionsRequest  </li>
+<li>org/apache/kafka/common/requests/MetadataRequest  批量查询topic的元数据信息  </li>
+<li>org/apache/kafka/common/requests/FindCoordinatorRequest    从拿到的topic的元数据中取出leader节点 作为组协调者  </li>
+<li>org/apache/kafka/common/requests/JoinGroupRequest  </li>
+<li>org/apache/kafka/common/requests/SyncGroupRequest  </li>
+<li>org/apache/kafka/common/requests/OffsetFetchRequest  </li>
+<li>org/apache/kafka/common/requests/ListOffsetRequest  </li>
+<li>org/apache/kafka/common/requests/FetchRequest  </li>
+<li>org/apache/kafka/common/requests/HeartbeatRequest   </li>
+</ul>
+<p><a href="https://www.cnblogs.com/simoncook/p/11317367.html" target="_blank" rel="noopener">请求接口文档参考</a><br><a href="https://www.cnblogs.com/simoncook/p/11317477.html" target="_blank" rel="noopener">响应接口文档参考</a>  </p>
+<h2 id="RequestHeader"><a href="#RequestHeader" class="headerlink" title="RequestHeader"></a>RequestHeader</h2><p>请求头  </p>
+<table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr>
+<tr><td>api_key</td><td>INT16</td><td>null</td><td>请求接口编号</td></tr>
+<tr><td>api_version</td><td>INT16</td><td>null</td><td>api版本</td></tr>
+<tr><td>correlation_id</td><td>INT32</td><td>null</td><td>用户提供的一个整数id，用于响应时由响应体带回来</td></tr>
+<tr><td>client_id</td><td>NULLABLE_STRING</td><td>null</td><td>用户提供的client id</td></tr>
+</table>  
+
+<h2 id="ApiVersionsRequest"><a href="#ApiVersionsRequest" class="headerlink" title="ApiVersionsRequest"></a>ApiVersionsRequest</h2><p>查询API版本信息  </p>
+<h3 id="请求-version-1"><a href="#请求-version-1" class="headerlink" title="请求 version:1"></a>请求 version:1</h3><p>仅仅有请求头  </p>
+<h3 id="响应-version-1"><a href="#响应-version-1" class="headerlink" title="响应 version:1"></a>响应 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>错误码</td></tr>
+<tr><td>api_versions</td><td>ARRAY({api_key:INT16,min_version:INT16,max_version:INT16})</td><td>null</td><td>broker能支持的api各版本列表。含最低版本，最高版本.</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>由于配额冲突而阻止请求的持续时间（毫秒）（如果请求未违反任何配额，则为零</td></tr>
+</table>  
+
+<p>虽是请求broker端，但是实际还是用的client中的API完成的逻辑：<br>ApiVersionsResponse.apiVersionsResponse<br>根据<code>messageFormatVersion</code> 消息格式版本推导出各API版本情况。<br>API版本 最小的是0 。写的固定的。  最大的是 requestSchemas的length -1 即requestSchemas最大版本。<br>此处不仅返回每个API的最小版本与最大版本，还返回能支持的API列表。如因版本问题不能支持的API是不会返回的。<br>能否支持的判断依据是，API依赖的最小消息格式版本小于当前的消息格式版本，那么就支持。  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">for</span> (ApiKeys apiKey : ApiKeys.values()) &#123;
+    <span class="hljs-keyword">if</span> (apiKey.minRequiredInterBrokerMagic &lt;= minMagic) &#123;
+        versionList.add(neApiVersionsResponse.ApiVersion(apiKey));
+    &#125;
+&#125;</code></pre>
+
+<h2 id="MetadataRequest"><a href="#MetadataRequest" class="headerlink" title="MetadataRequest"></a>MetadataRequest</h2><p>批量查询topic的元数据信息  </p>
+<h3 id="请求-version-5"><a href="#请求-version-5" class="headerlink" title="请求 version:5"></a>请求 version:5</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>topics</td><td>ARRAY(STRING)</td><td>null</td><td>需要查元数据的topic的列表，如果不送则查所有topic的元数据</td></tr>
+<tr><td>allow_auto_topic_creation</td><td>BOOLEAN</td><td>null</td><td>在broker配置了允许自动创建topic时是否自动创建topic</td></tr>
+</table>  
+
+<h3 id="响应-version-4"><a href="#响应-version-4" class="headerlink" title="响应 version:4"></a>响应 version:4</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>由于配额冲突而阻止请求的持续时间（毫秒）（如果请求未违反任何配额，则为零）</td></tr>
+<tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>所有 活着的 broker的id ip port的信息</td></tr>
+<tr><td>cluster_id</td><td>NULLABLE_STRING</td><td>null</td><td>集群id</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>controller角色的broker的id</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>topic元数据，分区数、leader broker的id、副本所在broker id列表、isr broker id列表</td></tr>
+</table>  
+
+<p>broker端处理<br>在broker端   </p>
+<ol>
+<li>过滤出授权的topics KafkaApis.handleTopicMetadataRequest  </li>
+<li>查询出授权topics的元数据  KafkaApis.getTopicMetadata  </li>
+<li>1 从缓存中拿，拿到(跟topics的size相同)即返回  </li>
+<li>2 处理没拿到的topic  </li>
+<li>2.1 允许创建topic的，就按默认副本数和默认分区数创建，不能创建的或者创建出错的返回出错信息。创建topic前提是协调者可用。否则COORDINATOR_NOT_AVAILABLE。  </li>
+<li>2.2 返回创建后的metadata<br>元数据信息有缓存 <code>kafka.server.MetadataCache.cache</code>：topic &lt;–&gt; [partitionNo &lt;–&gt; 分区状态封装]<br><code>MetadataCache</code>中一系列getxxx方法都是用来读取检索的。<br>元数据缓存的更新参见 《MetadataCache更新》  </li>
+</ol>
+<h2 id="FindCoordinatorRequest"><a href="#FindCoordinatorRequest" class="headerlink" title="FindCoordinatorRequest"></a>FindCoordinatorRequest</h2><p>查询协调者  </p>
+<h3 id="请求-version-1-1"><a href="#请求-version-1-1" class="headerlink" title="请求 version:1"></a>请求 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr>
+<tr><td>coordinator_key</td><td>STRING</td><td>null</td><td>组协调时是组id<br>事务协调时是事务id</td></tr>
+<tr><td>coordinator_type</td><td>INT8</td><td>null</td><td>协调类型(0 = group, 1 = transaction)</td></tr>
+</table>  
+
+<h3 id="响应-version-1-1"><a href="#响应-version-1-1" class="headerlink" title="响应 version:1"></a>响应 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>error_message</td><td>NULLABLE_STRING</td><td>null</td><td>Response error message</td></tr>
+<tr><td>coordinator</td><td>{node_id:INT32,host:STRING,port:INT32}</td><td>null</td><td>协调者broker的id ip port</td></tr>
+</table>  
+
+<p>组协调与事务协调都用这个请求<br>coordinatorKey 组协调是组id  事务协调时是事务id<br>分区对应的leader节点就是组协调者  </p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> coordinatorEndpoint = topicMetadata.partitionMetadata.asScala
+   .find(_.partition == partition)
+   .map(_.leader) <span class="hljs-comment">// SimonNote: leader节点作为协调者</span></code></pre>
+<p>这个请求的响应也就是将协调者信息(node_id，host，port)返回去  </p>
+<h2 id="JoinGroupRequest"><a href="#JoinGroupRequest" class="headerlink" title="JoinGroupRequest"></a>JoinGroupRequest</h2><p>加入消费组的请求  </p>
+<h3 id="请求-version-2"><a href="#请求-version-2" class="headerlink" title="请求 version:2"></a>请求 version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>group_id</td><td>STRING</td><td>null</td><td>唯一的组标志</td></tr>
+<tr><td>session_timeout</td><td>INT32</td><td>null</td><td>会话时间，超过这个时间没收到心跳，协调者就认为这个消费者挂了</td></tr>
+<tr><td>rebalance_timeout</td><td>INT32</td><td>null</td><td>协调者在重新平衡组时等待每个成员重新加入的最长时间</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>由组协调者分配的成员ID，如果是第一次加入，则为空。</td></tr>
+<tr><td>protocol_type</td><td>STRING</td><td>null</td><td>组协调协议实现类的唯一名称</td></tr>
+<tr><td>group_protocols</td><td>ARRAY({protocol_name:STRING,protocol_metadata:BYTES})</td><td>null</td><td>组成员能支持的组协调协议列表</td></tr>
+</table>  
+
+<h3 id="响应-version-2"><a href="#响应-version-2" class="headerlink" title="响应 version:2"></a>响应 version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>组的年代？</td></tr>
+<tr><td>group_protocol</td><td>STRING</td><td>null</td><td>协调者选中的组协议</td></tr>
+<tr><td>leader_id</td><td>STRING</td><td>null</td><td>组中的leader</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>第一次加入的时候组协调者给分的成员id</td></tr>
+<tr><td>members</td><td>ARRAY({member_id:STRING,member_metadata:BYTES})</td><td>null</td><td>组内成员？</td></tr>
+</table>  
+
+<h3 id="kafka-coordinator-group-GroupCoordinator-handleJoinGroup"><a href="#kafka-coordinator-group-GroupCoordinator-handleJoinGroup" class="headerlink" title="kafka.coordinator.group.GroupCoordinator.handleJoinGroup"></a>kafka.coordinator.group.GroupCoordinator.handleJoinGroup</h3><h4 id="一系列的check"><a href="#一系列的check" class="headerlink" title="一系列的check:"></a>一系列的check:</h4><ol>
+<li>协调者是否可用   </li>
+<li>是否是本分区的协调者   </li>
+<li>消费组id是否合法(是否为空)    </li>
+<li>是否协调者正在load中，<code>GroupMetadataManager</code>会管理当前partition是否在load中  </li>
+<li>sessionTimeoutMs是否在组配置的最大最小范围内  </li>
+</ol>
+<p>向<code>groupManager</code>加入新建的<code>GroupMetadata</code>实例(如果没有的话，有就直接下一步了),<code>GroupMetadata</code>有哪些东西，下面注释写了一部分，但是还包含事务消息用一些offset   </p>
+<pre><code class="hljs scala"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * Group contains the following metadata:</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> *  Membership metadata:</span>
+<span class="hljs-comment"> *  1. Members registered in this group</span>
+<span class="hljs-comment"> *  2. Current protocol assigned to the group (e.g. partition assignment strategy for consumers)</span>
+<span class="hljs-comment"> *  3. Protocol metadata associated with group members</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> *  State metadata:</span>
+<span class="hljs-comment"> *  1. group state</span>
+<span class="hljs-comment"> *  2. generation id</span>
+<span class="hljs-comment"> *  3. leader id</span>
+<span class="hljs-comment"> */</span></code></pre>
+
+<h4 id="doJoinGroup"><a href="#doJoinGroup" class="headerlink" title="doJoinGroup"></a><code>doJoinGroup</code></h4><p>一系列的check后，根据<code>group.currentState</code>做相应处理<br><code>group.currentState</code>  </p>
+<p><code>GroupMetadata.scala</code>中有对group状态定义及action及走向到哪的明确详细描述，<strong>非常重要</strong>     </p>
+<h2 id="SyncGroupRequest"><a href="#SyncGroupRequest" class="headerlink" title="SyncGroupRequest"></a>SyncGroupRequest</h2><h3 id="请求-version-1-2"><a href="#请求-version-1-2" class="headerlink" title="请求 version:1"></a>请求 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>group_id</td><td>STRING</td><td>null</td><td>group唯一标志</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>代的标志？</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>第一次加入的时候组协调者给分的成员id</td></tr>
+<tr><td>group_assignment</td><td>ARRAY({member_id:STRING,member_assignment:BYTES})</td><td>null</td><td>null</td></tr>
+</table>  
+
+<h3 id="响应-version-1-2"><a href="#响应-version-1-2" class="headerlink" title="响应 version:1"></a>响应 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>member_assignment</td><td>BYTES</td><td>null</td><td>null</td></tr>
+</table>  
+
+<h2 id="OffsetFetchRequest"><a href="#OffsetFetchRequest" class="headerlink" title="OffsetFetchRequest"></a>OffsetFetchRequest</h2><h3 id="请求-version-3"><a href="#请求-version-3" class="headerlink" title="请求 version:3"></a>请求 version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>group_id</td><td>STRING</td><td>null</td><td>group id</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32})})</td><td>null</td><td>topic列表，支持多个topic</td></tr>
+</table>  
+
+<h3 id="响应-version-3"><a href="#响应-version-3" class="headerlink" title="响应 version:3"></a>响应 version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,offset:INT64,metadata:NULLABLE_STRING,error_code:INT16})})</td><td>null</td><td>列表：topic-[{分区号-offset，元数据信息}]</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+<h2 id="ListOffsetRequest"><a href="#ListOffsetRequest" class="headerlink" title="ListOffsetRequest"></a>ListOffsetRequest</h2><h3 id="请求-version-2-1"><a href="#请求-version-2-1" class="headerlink" title="请求 version:2"></a>请求 version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>replica_id</td><td>INT32</td><td>null</td><td>follower的broker的id. 正常消费用-1.</td></tr>
+<tr><td>isolation_level</td><td>INT8</td><td>null</td><td>事务消息可见性设置。 使用 READ_UNCOMMITTED (isolation_level = 0)能看到所有消息. 使用 READ_COMMITTED (isolation_level = 1), 非事务消息和已经提交的消息能被看到. 更具体一点, READ_COMMITTED 返回比当前 LSO (last stable offset)小的offset, 并允许返回已经取消的事务</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,timestamp:INT64})})</td><td>null</td><td>列表：topic,partitions{分区号，时间戳}</td></tr>
+</table>  
+
+
+<h3 id="响应-version-2-1"><a href="#响应-version-2-1" class="headerlink" title="响应 version:2"></a>响应 version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,timestamp:INT64,offset:INT64})})</td><td>null</td><td>列表：topic 分区号 错误码 时间戳 offset</td></tr>
+</table> 
+
+<h2 id="FetchRequest"><a href="#FetchRequest" class="headerlink" title="FetchRequest"></a>FetchRequest</h2><h3 id="请求-version-6"><a href="#请求-version-6" class="headerlink" title="请求 version:6"></a>请求 version:6</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>replica_id</td><td>INT32</td><td>null</td><td>follower的broker的id. 正常消费用-1</td></tr>
+<tr><td>max_wait_time</td><td>INT32</td><td>null</td><td>等待响应的最大时间 单位ms.</td></tr>
+<tr><td>min_bytes</td><td>INT32</td><td>null</td><td>最小字节</td></tr>
+<tr><td>max_bytes</td><td>INT32</td><td>null</td><td>最大字节. 单条消息如果超过这个大小也将返回</td></tr>
+<tr><td>isolation_level</td><td>INT8</td><td>null</td><td>事务隔离级别</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,fetch_offset:INT64,log_start_offset:INT64,max_bytes:INT32})})</td><td>null</td><td>列表： topic 分区号 取的offset log开始的 offset？？ 最大字节.</td></tr>
+</table>  
+
+
+<h3 id="响应-version-6"><a href="#响应-version-6" class="headerlink" title="响应 version:6"></a>响应 version:6</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64,last_stable_offset:INT64,log_start_offset:INT64,aborted_transactions:ARRAY({producer_id:INT64,first_offset:INT64})},record_set:RECORDS})})</td><td>null</td><td>列表： topic 分区头: 分区号 高水位值 LSO(上次稳定offset)， log开始offset，取消事务：生产者id 第一个offset。 消息记录集</td></tr>
+</table>  
+
+<h2 id="HeartbeatRequest"><a href="#HeartbeatRequest" class="headerlink" title="HeartbeatRequest"></a>HeartbeatRequest</h2><h3 id="请求-version-1-3"><a href="#请求-version-1-3" class="headerlink" title="请求 version:1"></a>请求 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>group_id</td><td>STRING</td><td>null</td><td>group id</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>group的年代</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>第一次加入的时候组协调者给分的成员id</td></tr>
+</table>  
+
+<h3 id="响应-version-1-3"><a href="#响应-version-1-3" class="headerlink" title="响应 version:1"></a>响应 version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>响应码</td></tr>
+</table>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-replica-sync/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">副本同步</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-clietns-producer-semd-message/">
+                        <span class="hidden-mobile">clients-producer-组包发送消息</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "kafka-clients 1.0 高阶API消费消息(未完)&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

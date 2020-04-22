@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>MetadataCache更新 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 07:59">
+                    星期三, 四月 22日 2020, 7:59 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.1k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    19
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="MetadataCache什么时候更新"><a href="#MetadataCache什么时候更新" class="headerlink" title="MetadataCache什么时候更新"></a>MetadataCache什么时候更新</h2><p>updateCache方法用来更新缓存的。   </p>
+<h3 id="发起线程-controller-event-thread"><a href="#发起线程-controller-event-thread" class="headerlink" title="发起线程  controller-event-thread"></a>发起线程  controller-event-thread</h3><h4 id="controller选举的时候"><a href="#controller选举的时候" class="headerlink" title="controller选举的时候"></a>controller选举的时候</h4><table>
+<tr><td>CLASS_NAME   </td><td>  METHOD_NAME</td><td>    LINE_NUM</td></tr>  
+<tr><td>kafka/controller/KafkaController </td><td>  sendUpdateMetadataRequest </td><td>     1043</td></tr>  
+<tr><td>kafka/controller/KafkaController  </td><td> onControllerFailover  </td><td>    288</td></tr>  
+<tr><td>kafka/controller/KafkaController  </td><td> elect   </td><td>  1658</td></tr>  
+<tr><td>kafka/controller/KafkaController$Startup$   </td><td> process  </td><td> 1581</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td>apply$mcV$sp </td><td>  53</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td>apply  </td><td>   53</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td> apply  </td><td>   53</td></tr>  
+<tr><td>kafka/metrics/KafkaTimer</td><td> time </td><td>32</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread  </td><td>  doWork  </td><td>  64</td></tr>  
+<tr><td>kafka/utils/ShutdownableThread  </td><td>   run  </td><td>70</td></tr>  
+</table>  
+
+<p>启动的时候选举，启动这个动作也是个事件  </p>
+<pre><code class="hljs scala">
+<span class="hljs-comment">// KafkaController.scala</span>
+  <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">Startup</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ControllerEvent</span> </span>&#123;
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">state</span> </span>= <span class="hljs-type">ControllerState</span>.<span class="hljs-type">ControllerChange</span>
+
+    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">process</span></span>(): <span class="hljs-type">Unit</span> = &#123;
+      registerSessionExpirationListener()
+      registerControllerChangeListener()
+      elect()
+    &#125;
+
+  &#125;</code></pre>
+
+<h4 id="broker启动的时候"><a href="#broker启动的时候" class="headerlink" title="broker启动的时候"></a>broker启动的时候</h4><table><tr><td>CLASS_NAME  </td><td>   METHOD_NAME  </td><td>  LINE_NUM</td></tr>
+<tr><td>kafka/controller/KafkaController  </td><td> sendUpdateMetadataRequest    </td><td> 1043</td></tr>
+<tr><td>kafka/controller/KafkaController  </td><td> onBrokerStartup   </td><td>  387</td></tr>
+<tr><td>kafka/controller/KafkaController$BrokerChange  </td><td>   process  </td><td> 1208</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td>apply$mcV$sp </td><td>  53</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td>apply </td><td>    53</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td> apply </td><td>    53</td></tr>
+<tr><td>kafka/metrics/KafkaTimer </td><td>time </td><td>32</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread   </td><td> doWork </td><td>   64</td></tr>
+<tr><td>kafka/utils/ShutdownableThread   </td><td>  run </td><td> 70</td></tr></table>
+
+<h4 id="topic删除的时候"><a href="#topic删除的时候" class="headerlink" title="topic删除的时候"></a>topic删除的时候</h4><table><tr><td>CLASS_NAME  </td><td>   METHOD_NAME   </td><td>  LINE_NUM  </td></tr>
+<tr><td>kafka/controller/KafkaController   </td><td> sendUpdateMetadataRequest    </td><td>  1043 </td></tr>
+<tr><td>kafka/controller/TopicDeletionManager   </td><td> kafka$controller$TopicDeletionManager$$onTopicDeletion  </td><td>268  </td></tr>
+<tr><td>kafka/controller/TopicDeletionManager$$anonfun$resumeDeletions$2  </td><td>apply   </td><td>   333  </td></tr>
+<tr><td>kafka/controller/TopicDeletionManager$$anonfun$resumeDeletions$2  </td><td>apply  </td><td>    333  </td></tr>
+<tr><td>scala/collection/immutable/Set$Set1    </td><td>  foreach  </td><td>  94   </td></tr>
+<tr><td>kafka/controller/TopicDeletionManager   </td><td> resumeDeletions    </td><td>  333  </td></tr>
+<tr><td>kafka/controller/TopicDeletionManager   </td><td> enqueueTopicsForDeletion  </td><td>110  </td></tr>
+<tr><td>kafka/controller/KafkaController$TopicDeletion   </td><td>  process   </td><td> 1280 </td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td> apply$mcV$sp  </td><td>  53   </td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1  </td><td>apply </td><td>     53   </td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1 </td><td> apply  </td><td>    53   </td></tr>
+<tr><td>kafka/metrics/KafkaTimer  </td><td>time  </td><td>32   </td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread  </td><td>   doWork   </td><td>  64   </td></tr>
+<tr><td>kafka/utils/ShutdownableThread    </td><td>  run   </td><td>70</td></tr></table>   
+
+<h4 id="topic创建或者修改的时候"><a href="#topic创建或者修改的时候" class="headerlink" title="topic创建或者修改的时候"></a>topic创建或者修改的时候</h4><table><tr><td>CLASS_NAME</td><td>    METHOD_NAME</td><td>    LINE_NUM</td></tr>
+<tr><td>kafka/controller/ControllerBrokerRequestBatch</td><td>    updateMetadataRequestBrokerSet</td><td>    291</td></tr>  
+<tr><td>kafka/controller/ControllerBrokerRequestBatch    </td><td>newBatch    </td><td>294</td></tr>  
+<tr><td>kafka/controller/PartitionStateMachine    </td><td>handleStateChanges</td><td>    105</td></tr>  
+<tr><td>kafka/controller/KafkaController</td><td>    onNewPartitionCreation    </td><td>499</td></tr>  
+<tr><td>kafka/controller/KafkaController</td><td>    onNewTopicCreation</td><td>    485</td></tr>  
+<tr><td>kafka/controller/KafkaController$TopicChange</td><td>    process    </td><td>1237</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td>    apply$mcV$sp</td><td>    53</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1    </td><td>apply</td><td>    53</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1    </td><td>apply    </td><td>53</td></tr>  
+<tr><td>kafka/metrics/KafkaTimer</td><td>    time    </td><td>32</td></tr>  
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread</td><td>    doWork    </td><td>64</td></tr>  
+<tr><td>kafka/utils/ShutdownableThread    </td><td>run    </td><td>70</td></tr>  </table>  
+
+
+<p>topic创建这个是从队列中拿到事件再处理的方式<br>队列是<code>kafka.controller.ControllerEventManager.queue</code><br>放入过程如下，本质还是监听zk的path的child的变化：  </p>
+<table><tr><td>CLASS_NAME</td><td>    METHOD_NAME    </td><td>LINE_NUM</td></tr>
+<tr><td>kafka/controller/ControllerEventManager</td><td>put</td><td>    44</td></tr>
+<tr><td>kafka/controller/TopicChangeListener    </td><td>handleChildChange    </td><td>1712</td></tr>
+<tr><td>org/I0Itec/zkclient/ZkClient$10    </td><td>run</td><td>    848</td></tr>
+<tr><td>org/I0Itec/zkclient/ZkEventThread    </td><td>run</td><td>    85</td></tr></table>
+
+<p>注册监听器的代码如下:  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// class KafkaController</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">registerTopicChangeListener</span></span>() = &#123;
+    zkUtils.subscribeChildChanges(<span class="hljs-type">BrokerTopicsPath</span>, topicChangeListener)
+  &#125;</code></pre>
+
+<p>顺带说一下有6个地方订阅了zk的子节点的变化：  </p>
+<ul>
+<li>DynamicConfigManager.startup</li>
+<li>registerTopicChangeListener</li>
+<li>registerIsrChangeNotificationListener</li>
+<li>registerTopicDeletionListener</li>
+<li>registerBrokerChangeListener</li>
+<li>registerLogDirEventNotificationListener </li>
+</ul>
+<p>处理创建topic事件：  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ControllerChannelManager.scala  class ControllerBrokerRequestBatch</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sendRequestsToBrokers</span></span>(controllerEpoch: <span class="hljs-type">Int</span>) &#123;
+  <span class="hljs-comment">// .......</span>
+      <span class="hljs-keyword">val</span> updateMetadataRequest = &#123;
+        <span class="hljs-keyword">val</span> liveBrokers = <span class="hljs-keyword">if</span> (updateMetadataRequestVersion == <span class="hljs-number">0</span>) &#123;
+          <span class="hljs-comment">// .......</span>
+        &#125; <span class="hljs-keyword">else</span> &#123;
+          controllerContext.liveOrShuttingDownBrokers.map &#123; broker =&gt;
+            <span class="hljs-keyword">val</span> endPoints = broker.endPoints.map &#123; endPoint =&gt;
+              <span class="hljs-keyword">new</span> <span class="hljs-type">UpdateMetadataRequest</span>.<span class="hljs-type">EndPoint</span>(endPoint.host, endPoint.port, endPoint.securityProtocol, endPoint.listenerName)
+            &#125;
+            <span class="hljs-keyword">new</span> <span class="hljs-type">UpdateMetadataRequest</span>.<span class="hljs-type">Broker</span>(broker.id, endPoints.asJava, broker.rack.orNull)
+          &#125;
+        &#125;
+        <span class="hljs-keyword">new</span> <span class="hljs-type">UpdateMetadataRequest</span>.<span class="hljs-type">Builder</span>(updateMetadataRequestVersion, controllerId, controllerEpoch, partitionStates.asJava,
+          liveBrokers.asJava)
+      &#125;
+      updateMetadataRequestBrokerSet.foreach &#123; broker =&gt;
+        controller.sendRequest(broker, <span class="hljs-type">ApiKeys</span>.<span class="hljs-type">UPDATE_METADATA</span>, updateMetadataRequest, <span class="hljs-literal">null</span>)
+      &#125;
+      <span class="hljs-comment">// .......</span>
+    &#125;</code></pre>
+
+<p>topic创建时更新metadata再进一步的过程<br>构建发送请求事件放入发送队列等待发送线程发送<br>构建发送请求事件代码如下：  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ControllerChannelManager</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sendRequest</span></span>(brokerId: <span class="hljs-type">Int</span>, apiKey: <span class="hljs-type">ApiKeys</span>, request: <span class="hljs-type">AbstractRequest</span>.<span class="hljs-type">Builder</span>[_ &lt;: <span class="hljs-type">AbstractRequest</span>],
+                  callback: <span class="hljs-type">AbstractResponse</span> =&gt; <span class="hljs-type">Unit</span> = <span class="hljs-literal">null</span>) &#123;
+    brokerLock synchronized &#123;
+      <span class="hljs-keyword">val</span> stateInfoOpt = brokerStateInfo.get(brokerId)
+      stateInfoOpt <span class="hljs-keyword">match</span> &#123;
+        <span class="hljs-keyword">case</span> <span class="hljs-type">Some</span>(stateInfo) =&gt;
+          stateInfo.messageQueue.put(<span class="hljs-type">QueueItem</span>(apiKey, request, callback))
+        <span class="hljs-keyword">case</span> <span class="hljs-type">None</span> =&gt;
+          warn(<span class="hljs-string">"Not sending request %s to broker %d, since it is offline."</span>.format(request, brokerId))
+      &#125;
+    &#125;
+  &#125;</code></pre>
+<p>调用栈：  </p>
+<table>
+<tr><td>CLASS_NAME</td><td>METHOD_NAME</td><td>LINE_NUM</td></tr>
+<tr><td>kafka/controller/ControllerChannelManager</td><td>sendRequest</td><td>81</td></tr>
+<tr><td>kafka/controller/KafkaController</td><td>sendRequest</td><td>662</td></tr>
+<tr><td>kafka/controller/ControllerBrokerRequestBatch$$anonfun$sendRequestsToBrokers$2</td><td>apply</td><td>405</td></tr>
+<tr><td>kafka/controller/ControllerBrokerRequestBatch$$anonfun$sendRequestsToBrokers$2</td><td>apply</td><td>405</td></tr>
+<tr><td>scala/collection/mutable/HashMap$$anonfun$foreach$1</td><td>apply</td><td>130</td></tr>
+<tr><td>scala/collection/mutable/HashMap$$anonfun$foreach$1</td><td>apply</td><td>130</td></tr>
+<tr><td>scala/collection/mutable/HashTable$class</td><td>foreachEntry</td><td>241</td></tr>
+<tr><td>scala/collection/mutable/HashMap</td><td>foreachEntry</td><td>40</td></tr>
+<tr><td>scala/collection/mutable/HashMap</td><td>foreach</td><td>130</td></tr>
+<tr><td>kafka/controller/ControllerBrokerRequestBatch</td><td>sendRequestsToBrokers</td><td>502</td></tr>
+<tr><td>kafka/controller/PartitionStateMachine</td><td>handleStateChanges</td><td>105</td></tr>
+<tr><td>kafka/controller/KafkaController</td><td>onNewPartitionCreation</td><td>499</td></tr>
+<tr><td>kafka/controller/KafkaController</td><td>onNewTopicCreation</td><td>485</td></tr>
+<tr><td>kafka/controller/KafkaController$TopicChange</td><td>process</td><td>1237</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td>apply$mcV$sp</td><td>53</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td>apply</td><td>53</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread$$anonfun$doWork$1</td><td>apply</td><td>53</td></tr>
+<tr><td>kafka/metrics/KafkaTimer</td><td>time</td><td>32</td></tr>
+<tr><td>kafka/controller/ControllerEventManager$ControllerEventThread</td><td>doWork</td><td>64</td></tr>
+<tr><td>kafka/utils/ShutdownableThread</td><td>run</td><td>70</td></tr>
+</table>
+
+<p>发送线程发送请求：<br>代码如下： </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ControllerChannelManager.scala class RequestSendThread</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">doWork</span></span>(): <span class="hljs-type">Unit</span> = &#123;
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">backoff</span></span>(): <span class="hljs-type">Unit</span> = <span class="hljs-type">CoreUtils</span>.swallowTrace(<span class="hljs-type">Thread</span>.sleep(<span class="hljs-number">100</span>))
+
+    <span class="hljs-keyword">val</span> <span class="hljs-type">QueueItem</span>(apiKey, requestBuilder, callback) = queue.take()
+    <span class="hljs-comment">//...</span>
+    <span class="hljs-keyword">while</span> (isRunning.get() &amp;&amp; !isSendSuccessful) &#123;
+        <span class="hljs-comment">// if a broker goes down for a long time, then at some point the controller's zookeeper listener will trigger a</span>
+        <span class="hljs-comment">// removeBroker which will invoke shutdown() on this thread. At that point, we will stop retrying.</span>
+        <span class="hljs-keyword">try</span> &#123;
+          <span class="hljs-keyword">if</span> (!brokerReady()) &#123;
+            isSendSuccessful = <span class="hljs-literal">false</span>
+            backoff()
+          &#125;
+          <span class="hljs-keyword">else</span> &#123;
+            <span class="hljs-keyword">val</span> clientRequest = networkClient.newClientRequest(brokerNode.idString, requestBuilder,
+              time.milliseconds(), <span class="hljs-literal">true</span>)
+            clientResponse = <span class="hljs-type">NetworkClientUtils</span>.sendAndReceive(networkClient, clientRequest, time)
+            isSendSuccessful = <span class="hljs-literal">true</span>
+          &#125;
+        &#125; <span class="hljs-keyword">catch</span> &#123;
+          <span class="hljs-keyword">case</span> e: <span class="hljs-type">Throwable</span> =&gt; <span class="hljs-comment">// if the send was not successful, reconnect to broker and resend the message</span>
+            warn((<span class="hljs-string">"Controller %d epoch %d fails to send request %s to broker %s. "</span> +
+              <span class="hljs-string">"Reconnecting to broker."</span>).format(controllerId, controllerContext.epoch,
+                requestBuilder.toString, brokerNode.toString), e)
+            networkClient.close(brokerNode.idString)
+            isSendSuccessful = <span class="hljs-literal">false</span>
+            backoff()
+        &#125;
+      &#125;
+      <span class="hljs-comment">// ......</span>
+  &#125;</code></pre>
+
+
+<h3 id="响应线程"><a href="#响应线程" class="headerlink" title="响应线程"></a>响应线程</h3><table>
+<tr><td>CLASS_NAME</td><td>METHOD_NAME</td><td>LINE_NUM</td></tr>
+<tr><td>kafka/server/MetadataCache</td><td>kafka$server$MetadataCache$$addOrUpdatePartitionInfo</td><td>150</td></tr>
+<tr><td>kafka/utils/CoreUtils$</td><td>inLock</td><td>219</td></tr>
+<tr><td>kafka/utils/CoreUtils$</td><td>inWriteLock</td><td>225</td></tr>
+<tr><td>kafka/server/MetadataCache</td><td>updateCache</td><td>184</td></tr>
+<tr><td>kafka/server/ReplicaManager</td><td>maybeUpdateMetadataCache</td><td>988</td></tr>
+<tr><td>kafka/server/KafkaApis</td><td>handleUpdateMetadataRequest</td><td>212</td></tr>
+<tr><td>kafka/server/KafkaApis</td><td>handle</td><td>142</td></tr>
+<tr><td>kafka/server/KafkaRequestHandler</td><td>run</td><td>72</td></tr>
+</table>
+
+<p>线程信息：  kafka-request-handler-5<br>靠 <code>partitionMetadataLock</code>读写锁控制cache数据的读取与写入的线程安全。元数据信息在发送请求中已经构造好了。此处还涉live broker的更新等。    </p>
+<p>应该还要补充：leader切换和isr变化等</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-replica-sync/">
+                        <span class="hidden-mobile">副本同步</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "MetadataCache更新&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>副本同步 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 07:59">
+                    星期三, 四月 22日 2020, 7:59 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.5k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    40
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="几个概念的解释"><a href="#几个概念的解释" class="headerlink" title="几个概念的解释"></a>几个概念的解释</h2><ul>
+<li>LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。</li>
+<li>HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别<a href="https://stackoverflow.com/questions/39203215/kafka-difference-between-log-end-offsetleo-vs-high-watermarkhw" target="_blank" rel="noopener">参见这里</a>  </li>
+<li>LSO 事务消息涉及。最后稳定offset。如果是事务消息(即已提交读模式)，这是消费者能看到的最大位置。可以参见《offset range查询》中 <code>查询最新offset</code> 段落。</li>
+<li>epoch leader的年代。0.11版本引入这个概念，为了解决0，8版本在broker挂掉的过程中消息可能丢失和错乱的问题。具体可以参见huxi的<a href="https://www.cnblogs.com/huxi2b/p/7453543.html" target="_blank" rel="noopener">Kafka水位(high watermark)与leader epoch的讨论</a>  </li>
+</ul>
+<blockquote>
+<p>The high watermark indicated the offset of messages that are fully replicated, while the end-of-log offset might be larger if there are newly appended records to the leader partition which are not replicated yet.</p>
+</blockquote>
+<h2 id="副本同步主要结构"><a href="#副本同步主要结构" class="headerlink" title="副本同步主要结构"></a>副本同步主要结构</h2><p>主要涉及的类有：<code>AbstractFetcherThread</code>,<code>ReplicaFetcherThread</code>,<code>PartitionFetchState</code>,<code>ReplicaFetcherManager</code>,<code>ShutdownableThread</code>,<code>ReplicaManager</code> , <code>ReplicaFetcherManager</code> </p>
+<h2 id="Follower机器逻辑简述"><a href="#Follower机器逻辑简述" class="headerlink" title="Follower机器逻辑简述"></a>Follower机器逻辑简述</h2><h3 id="线程创建部分"><a href="#线程创建部分" class="headerlink" title="线程创建部分"></a>线程创建部分</h3><ol>
+<li>handleLeaderAndIsrRequest是入口，在handleLeaderAndIsrRequest时会触发<code>ReplicaManager</code>的<code>becomeLeaderOrFollower</code>,<code>makeFollowers</code></li>
+<li>触发<code>ReplicaFetcherManager</code>的<code>addFetcherForPartitions</code></li>
+<li>用<code>ReplicaFetcherManager</code>的<code>createFetcherThread</code>方法创建fetcher线程。new ReplicaFetcherThread….    </li>
+</ol>
+<p>一些字段的赋值说明：  </p>
+<ul>
+<li>线程名 s”${prefix}ReplicaFetcherThread-$fetcherId-${sourceBroker.id}”  </li>
+<li>clientId 就是线程名</li>
+<li>isInterruptible 创建时用固定值是false</li>
+<li>includeLogTruncation 创建时用固定值是true，<strong>这也就是意味着PartitionFetchState对象一开始建出来时truncatingLog字段是true</strong>  </li>
+</ul>
+<h3 id="Follower机器逻辑执行部分"><a href="#Follower机器逻辑执行部分" class="headerlink" title="Follower机器逻辑执行部分"></a>Follower机器逻辑执行部分</h3><p>ReplicaFetcherThread类的结构继承关系是：<br>ShutdownableThread<br>|– AbstractFetcherThread<br>|—|– ReplicaFetcherThread  </p>
+<p>因为<code>ShutdownableThread</code>是个spin线程，子类实现doWork方法即可对接业务逻辑。<br><code>AbstractFetcherThread</code>中的doWork逻辑组织：  </p>
+<ul>
+<li>maybeTruncate 处理可能需要截断的日志，针对LEO大于HW(highwater mark的简称，下同)的，要截断到HW位置。  </li>
+<li>构建<code>FetchRequest</code>请求拉数据。</li>
+<li>处理<code>FetchRequest</code>请求的响应，<code>processFetchRequest</code>。注意：该请求不一定能请求到消息数据(Record)，而且该请求也不是仅仅请求消息，还请求leader的高水位等值。 </li>
+</ul>
+<p>maybeTruncate逻辑：  </p>
+<ul>
+<li>过滤出<code>PartitionFetchState</code>实例<code>isTruncatingLog</code>为true的分区。PartitionFetchState的truncatingLog字段什么时候为true，目前分析是ReplicaFetcherThread线程刚创建时，默认赋值了true，也就是一开始可能会截断。  ReplicaFetcherThread.buildLeaderEpochRequest。  </li>
+<li>根据上步过滤出来的结果，构建根据epoch查询offset的请求<code>OffsetsForLeaderEpochRequest</code>。ReplicaFetcherThread.fetchEpochsFromLeader。 </li>
+<li>根据查询回来的结果，设置(纠正)正确的offset。我理解成只要mark了正确的位置即可，后面写的时候覆盖写即可，不要真正删除。(待证实)  AbstractFetcherThread.markTruncationComplete 。  </li>
+</ul>
+<p>处理<code>FetchRequest</code>请求的响应的逻辑：  </p>
+<ul>
+<li>根据结果判断有误错误码</li>
+<li>结果正常的 调用<code>processPartitionData</code>，并更新分区状态   partitionStates.updateAndMoveToEnd(topicPartition, new PartitionFetchState(newOffset))  <code>ReplicaFetcherThread.processPartitionData</code></li>
+<li><code>processPartitionData</code>由<code>ReplicaFetcherThread</code>实现，主要逻辑有:   <ul>
+<li>写副本日志 replica.log.get.appendAsFollower(records)</li>
+<li>更新副本的HW。 highWatermark 可以理解成 大家都已经确认的offset，否则就没必要维护这个了，直接用LEO或者LSO好  与LEO的区别<a href="https://stackoverflow.com/questions/39203215/kafka-difference-between-log-end-offsetleo-vs-high-watermarkhw" target="_blank" rel="noopener">参见这里</a>. 要构建用例恰好在这行前挂掉follower。</li>
+<li>维护到副本对象的元数据中。 一次fetch请求并不能更新副本的highWatermark，需要下一次fethc请求才能完成上一次的。replica.highWatermark = new LogOffsetMetadata(followerHighWatermark)    </li>
+</ul>
+</li>
+</ul>
+<h2 id="leader与follower的HW-LEO更新过程"><a href="#leader与follower的HW-LEO更新过程" class="headerlink" title="leader与follower的HW LEO更新过程"></a>leader与follower的HW LEO更新过程</h2><h3 id="Leader机器逻辑执行部分"><a href="#Leader机器逻辑执行部分" class="headerlink" title="Leader机器逻辑执行部分"></a>Leader机器逻辑执行部分</h3><p>处理fetch请求的调用栈，消费者客户端与follower同步的fetch请求走的是一个逻辑，靠是否是来自follower做了些逻辑上的差异处理  </p>
+<pre><code class="hljs java">ReplicaManager.kafka$server$ReplicaManager$$read$<span class="hljs-number">1</span>(TopicPartition, FetchRequest$PartitionData, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, ReplicaQuota, IsolationLevel) line: <span class="hljs-number">856</span>	
+ReplicaManager$$anonfun$readFromLocalLog$<span class="hljs-number">1</span>.apply(Tuple2&lt;TopicPartition,PartitionData&gt;) line: <span class="hljs-number">962</span>	
+ReplicaManager$$anonfun$readFromLocalLog$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">961</span>	
+ResizableArray$class.foreach(ResizableArray, Function1) line: 59	
+ArrayBuffer&lt;A&gt;.foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">48</span>	
+ReplicaManager.readFromLocalLog(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq&lt;Tuple2&lt;TopicPartition,PartitionData&gt;&gt;, ReplicaQuota, IsolationLevel) line: <span class="hljs-number">961</span>	
+ReplicaManager.readFromLog$<span class="hljs-number">1</span>(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq, ReplicaQuota, IsolationLevel, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">790</span>	
+ReplicaManager.fetchMessages(<span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq&lt;Tuple2&lt;TopicPartition,PartitionData&gt;&gt;, ReplicaQuota, Function1&lt;Seq&lt;Tuple2&lt;TopicPartition,FetchPartitionData&gt;&gt;,BoxedUnit&gt;, IsolationLevel) line: <span class="hljs-number">803</span>	
+KafkaApis.handleFetchRequest(RequestChannel$Request) line: <span class="hljs-number">597</span>	
+KafkaApis.handle(RequestChannel$Request) line: <span class="hljs-number">101</span></code></pre>
+
+<p>涉及到的位点信息及更新逻辑：<br>fetchOffset  fetch开始位点，来自于fetch请求体<br>highWatermark 更新逻辑 </p>
+<p>kafka.server.ReplicaManager.readFromLocalLog(…).read(…) 操作逻辑：<br>标志度量数据<br>获取副本对象localReplica 获取逻辑是根据replica id(即broker id)获取，发fetch请求的时候 请求体中会带上replica id<br>val initialHighWatermark = localReplica.highWatermark.messageOffset  </p>
+<p><span style="font-weight:bold;color:red;">更新leader节点上维护远端副本的LEO信息</span><br>有点绕  就是<span style="font-weight:bold;color:red;">在leader节点上也 维护了 远端LEO的信息</span>  ，因为<span style="font-weight:bold;color:red;">leader节点高水位要靠远端的LEO来更新，leader节点高水位的更新逻辑就是 所有远端副本的LEO的最小值</span><br>调用栈如下：  </p>
+<pre><code class="hljs java">Replica.logEndOffset_$eq(LogOffsetMetadata) line: <span class="hljs-number">98</span>	
+Replica.updateLogReadResult(LogReadResult) line: <span class="hljs-number">83</span>	
+Partition.updateReplicaLogReadResult(Replica, LogReadResult) line: <span class="hljs-number">276</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Tuple2&lt;TopicPartition,LogReadResult&gt;) line: <span class="hljs-number">1314</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Object) line: <span class="hljs-number">1308</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(A) line: <span class="hljs-number">234</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">234</span>	
+ResizableArray$class.foreach(ResizableArray, Function1) line: 59	
+ArrayBuffer&lt;A&gt;.foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">48</span>	
+TraversableLike$class.map(TraversableLike, Function1, CanBuildFrom) line: 234	
+ArrayBuffer&lt;A&gt;(AbstractTraversable&lt;A&gt;).map(Function1&lt;A,B&gt;, CanBuildFrom&lt;Traversable&lt;A&gt;,B,That&gt;) line: <span class="hljs-number">104</span>	
+ReplicaManager.updateFollowerLogReadResults(<span class="hljs-keyword">int</span>, Seq&lt;Tuple2&lt;TopicPartition,LogReadResult&gt;&gt;) line: <span class="hljs-number">1308</span>	
+ReplicaManager.readFromLog$<span class="hljs-number">1</span>(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq, ReplicaQuota, IsolationLevel, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">799</span>	
+ReplicaManager.fetchMessages(<span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq&lt;Tuple2&lt;TopicPartition,PartitionData&gt;&gt;, ReplicaQuota, Function1&lt;Seq&lt;Tuple2&lt;TopicPartition,FetchPartitionData&gt;&gt;,BoxedUnit&gt;, IsolationLevel) line: <span class="hljs-number">803</span>	
+KafkaApis.handleFetchRequest(RequestChannel$Request) line: <span class="hljs-number">597</span></code></pre>
+<p>可以看出来是在leader处理fetch请求的时候做的逻辑，fetch请求带上来fetch offset就当成了远端副本的LEO  </p>
+<p><strong>TODO</strong> </p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><ol>
+<li>创建同步fetch线程<br>ReplicaFetcherManager.createFetcherThread(int, BrokerEndPoint) line: 30<br>ReplicaFetcherManager(AbstractFetcherManager).kafka$server$AbstractFetcherManager$$addAndStartFetcherThread$1(BrokerAndFetcherId, BrokerIdAndFetcherId) line: 80<br>AbstractFetcherManager$$anonfun$addFetcherForPartitions$2.apply(Tuple2&lt;BrokerAndFetcherId,Map&lt;TopicPartition,BrokerAndInitialOffset&gt;&gt;) line: 94<br>AbstractFetcherManager$$anonfun$addFetcherForPartitions$2.apply(Object) line: 85<br>TraversableLike$WithFilter$$anonfun$foreach$1.apply(A) line: 733<br>Map$Map1&lt;A,B&gt;.foreach(Function1&lt;Tuple2&lt;A,B&gt;,U&gt;) line: 116<br>TraversableLike$WithFilter.foreach(Function1&lt;A,U&gt;) line: 732<br>ReplicaFetcherManager(AbstractFetcherManager).addFetcherForPartitions(Map&lt;TopicPartition,BrokerAndInitialOffset&gt;) line: 85<br>ReplicaManager.makeFollowers(int, int, Map&lt;Partition,PartitionState&gt;, int, Map&lt;TopicPartition,Errors&gt;) line: 1272<br>ReplicaManager.becomeLeaderOrFollower(int, LeaderAndIsrRequest, Function2&lt;Iterable<Partition>,Iterable<Partition>,BoxedUnit&gt;) line: 1065<br>KafkaApis.handleLeaderAndIsrRequest(RequestChannel$Request) line: 173<br>KafkaApis.handle(RequestChannel$Request) line: 103<br>KafkaRequestHandler.run() line: 65<br>KafkaThread(Thread).run() line: 748    </li>
+</ol>
+<ol start="2">
+<li>构建请求<br>ReplicaFetcherThread.buildFetchRequest(Seq&lt;Tuple2&lt;TopicPartition,PartitionFetchState&gt;&gt;) line: 234<br>AbstractFetcherThread$$anonfun$2.apply() line: 104<br>AbstractFetcherThread$$anonfun$2.apply() line: 103<br>CoreUtils$.inLock(Lock, Function0<T>) line: 217<br>ReplicaFetcherThread(AbstractFetcherThread).doWork() line: 103<br>ReplicaFetcherThread(ShutdownableThread).run() line: 64      </li>
+</ol>
+<hr>
+<hr>
+<hr>
+<p>看的过程中的临时记录：  </p>
+<pre><code class="hljs java">[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">18</span>:<span class="hljs-number">07</span>:<span class="hljs-number">13</span>,<span class="hljs-number">787</span>] INFO Handling request:RequestHeader(apiKey=OFFSET_FOR_LEADER_EPOCH, apiVersion=<span class="hljs-number">0</span>, clientId=broker-<span class="hljs-number">0</span>-fetcher-<span class="hljs-number">0</span>, correlationId=<span class="hljs-number">0</span>) -- &#123;topics=[&#123;topic=test.vv19,partitions=[&#123;partition=<span class="hljs-number">0</span>,leader_epoch=<span class="hljs-number">25</span>&#125;]&#125;]&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">49385</span>-<span class="hljs-number">0</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+
+
+
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">22</span>:<span class="hljs-number">13</span>:<span class="hljs-number">02</span>,<span class="hljs-number">501</span>] INFO testEnter0002-<span class="hljs-number">001</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">37</span>]lso.messageOffset: [<span class="hljs-number">37</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">22</span>:<span class="hljs-number">13</span>:<span class="hljs-number">02</span>,<span class="hljs-number">502</span>] INFO testEnter0002-<span class="hljs-number">002</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">37</span>]lso.messageOffset: [<span class="hljs-number">37</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">22</span>:<span class="hljs-number">13</span>:<span class="hljs-number">03</span>,<span class="hljs-number">006</span>] INFO testEnter0005-Received response:apikey:FETCH correlationId <span class="hljs-number">24</span>; (com.code260.ss.KafkaTestUtils$)
+
+
+
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply$mcV$sp() line: <span class="hljs-number">62</span>	
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">61</span>	
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">61</span>	
+CoreUtils$.inLock(Lock, Function0&lt;T&gt;) line: <span class="hljs-number">217</span>	
+CoreUtils$.inWriteLock(ReadWriteLock, Function0&lt;T&gt;) line: <span class="hljs-number">225</span>	
+LeaderEpochFileCache.assign(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">long</span>) line: <span class="hljs-number">60</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>$$anonfun$apply$<span class="hljs-number">9</span>.apply(MutableRecordBatch) line: <span class="hljs-number">689</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>$$anonfun$apply$<span class="hljs-number">9</span>.apply(Object) line: <span class="hljs-number">687</span>	
+Iterator$class.foreach(Iterator, Function1) line: 891	
+Wrappers$JIteratorWrapper&lt;A&gt;(AbstractIterator&lt;A&gt;).foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">1334</span>	
+IterableLike$class.foreach(IterableLike, Function1) line: 72	
+Wrappers$JIterableWrapper&lt;A&gt;(AbstractIterable&lt;A&gt;).foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">54</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">687</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">624</span>	
+Log.maybeHandleIOException(Function0&lt;String&gt;, Function0&lt;T&gt;) line: <span class="hljs-number">1669</span>	
+Log.append(MemoryRecords, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">624</span>	
+Log.appendAsLeader(MemoryRecords, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">597</span>	
+Partition$$anonfun$<span class="hljs-number">13</span>.apply() line: <span class="hljs-number">500</span>	
+Partition$$anonfun$<span class="hljs-number">13</span>.apply() line: <span class="hljs-number">488</span>	
+CoreUtils$.inLock(Lock, Function0&lt;T&gt;) line: <span class="hljs-number">217</span>	
+CoreUtils$.inReadLock(ReadWriteLock, Function0&lt;T&gt;) line: <span class="hljs-number">223</span>	
+Partition.appendRecordsToLeader(MemoryRecords, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">487</span>	
+ReplicaManager$$anonfun$appendToLocalLog$<span class="hljs-number">2</span>.apply(Tuple2&lt;TopicPartition,MemoryRecords&gt;) line: <span class="hljs-number">724</span>	
+ReplicaManager$$anonfun$appendToLocalLog$<span class="hljs-number">2</span>.apply(Object) line: <span class="hljs-number">708</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(A) line: <span class="hljs-number">234</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">234</span>	
+HashMap$$anonfun$foreach$<span class="hljs-number">1</span>.apply(DefaultEntry&lt;A,B&gt;) line: <span class="hljs-number">130</span>	
+HashMap$$anonfun$foreach$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">130</span>	
+HashTable$class.foreachEntry(HashTable, Function1) line: 236	
+HashMap&lt;A,B&gt;.foreachEntry(Function1&lt;DefaultEntry&lt;A,B&gt;,U&gt;) line: <span class="hljs-number">40</span>	
+HashMap&lt;A,B&gt;.foreach(Function1&lt;Tuple2&lt;A,B&gt;,U&gt;) line: <span class="hljs-number">130</span>	
+TraversableLike$class.map(TraversableLike, Function1, CanBuildFrom) line: 234	
+HashMap&lt;A,B&gt;(AbstractTraversable&lt;A&gt;).map(Function1&lt;A,B&gt;, CanBuildFrom&lt;Traversable&lt;A&gt;,B,That&gt;) line: <span class="hljs-number">104</span>	
+ReplicaManager.appendToLocalLog(<span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, Map&lt;TopicPartition,MemoryRecords&gt;, <span class="hljs-keyword">short</span>) line: <span class="hljs-number">708</span>	
+ReplicaManager.appendRecords(<span class="hljs-keyword">long</span>, <span class="hljs-keyword">short</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, Map&lt;TopicPartition,MemoryRecords&gt;, Function1&lt;Map&lt;TopicPartition,PartitionResponse&gt;,BoxedUnit&gt;, Option&lt;Lock&gt;, Function1&lt;Map&lt;TopicPartition,RecordsProcessingStats&gt;,BoxedUnit&gt;) line: <span class="hljs-number">458</span>	
+KafkaApis.handleProduceRequest(RequestChannel$Request) line: <span class="hljs-number">460</span>	
+KafkaApis.handle(RequestChannel$Request) line: <span class="hljs-number">100</span>	
+KafkaRequestHandler.run() line: <span class="hljs-number">65</span>	
+KafkaThread(Thread).run() line: <span class="hljs-number">748</span>	
+
+
+
+
+
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply$mcV$sp() line: <span class="hljs-number">62</span>	
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">61</span>	
+LeaderEpochFileCache$$anonfun$assign$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">61</span>	
+CoreUtils$.inLock(Lock, Function0&lt;T&gt;) line: <span class="hljs-number">217</span>	
+CoreUtils$.inWriteLock(ReadWriteLock, Function0&lt;T&gt;) line: <span class="hljs-number">225</span>	
+LeaderEpochFileCache.assign(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">long</span>) line: <span class="hljs-number">60</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>$$anonfun$apply$<span class="hljs-number">9</span>.apply(MutableRecordBatch) line: <span class="hljs-number">689</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>$$anonfun$apply$<span class="hljs-number">9</span>.apply(Object) line: <span class="hljs-number">687</span>	
+Iterator$class.foreach(Iterator, Function1) line: 891	
+Wrappers$JIteratorWrapper&lt;A&gt;(AbstractIterator&lt;A&gt;).foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">1334</span>	
+IterableLike$class.foreach(IterableLike, Function1) line: 72	
+Wrappers$JIterableWrapper&lt;A&gt;(AbstractIterable&lt;A&gt;).foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">54</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">687</span>	
+Log$$anonfun$append$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">624</span>	
+Log.maybeHandleIOException(Function0&lt;String&gt;, Function0&lt;T&gt;) line: <span class="hljs-number">1669</span>	
+Log.append(MemoryRecords, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">624</span>	
+Log.appendAsFollower(MemoryRecords) line: <span class="hljs-number">607</span>	
+ReplicaFetcherThread.processPartitionData(TopicPartition, <span class="hljs-keyword">long</span>, ReplicaFetcherThread$PartitionData) line: <span class="hljs-number">123</span>	
+ReplicaFetcherThread.processPartitionData(TopicPartition, <span class="hljs-keyword">long</span>, AbstractFetcherThread$PartitionData) line: <span class="hljs-number">62</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>$$anonfun$apply$<span class="hljs-number">2</span>.apply(PartitionFetchState) line: <span class="hljs-number">184</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>$$anonfun$apply$<span class="hljs-number">2</span>.apply(Object) line: <span class="hljs-number">172</span>	
+Some&lt;A&gt;(Option&lt;A&gt;).foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">257</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>.apply(Tuple2&lt;TopicPartition,PartitionData&gt;) line: <span class="hljs-number">172</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">169</span>	
+ResizableArray$class.foreach(ResizableArray, Function1) line: 59	
+ArrayBuffer&lt;A&gt;.foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">48</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply$mcV$sp() line: <span class="hljs-number">169</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">169</span>	
+AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply() line: <span class="hljs-number">169</span>	
+CoreUtils$.inLock(Lock, Function0&lt;T&gt;) line: <span class="hljs-number">217</span>	
+ReplicaFetcherThread(AbstractFetcherThread).processFetchRequest(AbstractFetcherThread$FetchRequest) line: <span class="hljs-number">167</span>	
+ReplicaFetcherThread(AbstractFetcherThread).doWork() line: <span class="hljs-number">113</span>	
+ReplicaFetcherThread(ShutdownableThread).run() line: <span class="hljs-number">64</span>	
+
+
+
+
+ReplicaFetcherThread.fetchEpochsFromLeader(Map&lt;TopicPartition,Object&gt;) line: <span class="hljs-number">332</span>	
+ReplicaFetcherThread(AbstractFetcherThread).maybeTruncate() line: <span class="hljs-number">130</span>	
+ReplicaFetcherThread(AbstractFetcherThread).doWork() line: <span class="hljs-number">102</span>	
+ReplicaFetcherThread(ShutdownableThread).run() line: <span class="hljs-number">64</span>	 
+
+  
+
+kafka.server.ReplicaManager.lastOffsetForLeaderEpoch  
+  
+
+kafka.server.ReplicaFetcherThread.maybeTruncate(fetchedEpochs: Map[TopicPartition, EpochEndOffset])  
+  
+
+
+kafka.server.ReplicaFetcherThread.handleOffsetOutOfRange(topicPartition: TopicPartition)  
+  
+kafka.server.ReplicaFetcherThread.maybeTruncate(fetchedEpochs: Map[TopicPartition, EpochEndOffset])</code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-metadata-update/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MetadataCache更新</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">
+                        <span class="hidden-mobile">kafka-clients 1.0 高阶API消费消息(未完)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "副本同步&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

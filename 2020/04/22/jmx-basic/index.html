@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>JMX基本概念 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 07:54">
+                    星期三, 四月 22日 2020, 7:54 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    19
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h3 id="Object-name的语法"><a href="#Object-name的语法" class="headerlink" title="Object name的语法"></a>Object name的语法</h3><ol>
+<li>形似 com.sun.someapp:type=Whatsit,name=25  </li>
+<li>com.sun.someapp 是domain，冒号后面的是key-property-list，每组kv的顺序随意，但是不能有空格，空格字符有特殊含义，不能有冒号。domain名不能含有冒号，不能含有/。  </li>
+<li>key-property-list中的key支持<em>和？somedomain:type=Thread,</em>   </li>
+<li>支持逗号连接多个值作为条件，com.sun.someapp:type=Whatsit,name=”25,26”  </li>
+<li>整个Object name大小写敏感  </li>
+<li>Object name预定之一 用java package的形式开头来命名  </li>
+<li>每个对象名应该包含一个type= key 属性.<br>具体可以参见官方文档<a href="https://www.oracle.com/technetwork/java/javase/tech/best-practices-jsp-136021.html" target="_blank" rel="noopener">Java Management Extensions (JMX) - Best Practices</a></li>
+</ol>
+<h3 id="四种bean概念"><a href="#四种bean概念" class="headerlink" title="四种bean概念"></a>四种bean概念</h3><p>JMX标准提供了四种不同的 MBean：</p>
+<ol>
+<li>Standard MBean<br>Standard MBean是JMX管理构件中最简单的一种，只需要开发一个MBean接口（为了实现Standard MBean，必须遵循一套继承规范。必须<strong>每一个MBean定义一个接口</strong>，而且这个接口的名字必须是其被管理的资源的对象类的名称后面加上”MBean”），一个实现MBean接口的类，并且把它们注册到MBeanServer中就可以了。</li>
+<li>Dynamic MBean<br>不再需要为没个bean定义接口了，可以实现javax.management.DynamicMBean做成通用的。tomcat大量使用。 用属性访问器动态地访问属性，并用一个一般化的 invoke() 方法调用方法。可用的方法是在 MBeanInfo 接口中指定的。这种方式更灵活，但是不具有像 Standard MBean 那样的类型安全性。它极大地降低了耦合性，可管理的 POJO（纯粹的老式 Java 对象）不需要实现特定的接口。</li>
+<li>Model MBean<br>配合javax.management.modelmbean.RequiredModelMBean使用。提供了一个改进的抽象层，并扩展了 Dynamic MBean 模型以进一步减少对给定实现的依赖性。这对于可能使用多个版本的 JVM 或者需要用松散耦合管理第三方类的情况会有帮助。Dynamic MBean 与 Model MBean 之间的主要区别是，在 Model MBean 中有额外的元数据。</li>
+<li>Open MBean<br>是受限的 Model MBean，它限制类型为固定的一组类型，以得到最大的可移植性。通过限制数据类型，可以使用更多的适配器，并且像 SMTP 这样的技术可以更容易适应 Java 应用程序的管理。这种变体还指定了数组和表等标准结构以改进复合对象的管理。</li>
+</ol>
+<h3 id="四种bean示例"><a href="#四种bean示例" class="headerlink" title="四种bean示例"></a>四种bean示例</h3><h4 id="Standard-MBean-示例"><a href="#Standard-MBean-示例" class="headerlink" title="Standard MBean 示例"></a>Standard MBean 示例</h4><pre><code class="hljs java"><span class="hljs-keyword">package</span> test;
+
+<span class="hljs-keyword">import</span> java.io.IOException;
+<span class="hljs-keyword">import</span> java.lang.management.ManagementFactory;
+
+<span class="hljs-keyword">import</span> javax.management.InstanceAlreadyExistsException;
+<span class="hljs-keyword">import</span> javax.management.MBeanRegistrationException;
+<span class="hljs-keyword">import</span> javax.management.MBeanServer;
+<span class="hljs-keyword">import</span> javax.management.MBeanServerFactory;
+<span class="hljs-keyword">import</span> javax.management.MalformedObjectNameException;
+<span class="hljs-keyword">import</span> javax.management.NotCompliantMBeanException;
+<span class="hljs-keyword">import</span> javax.management.ObjectName;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@since</span> 2019-11-16</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">JMXMBeanTest</span> </span>&#123;
+
+	<span class="hljs-comment">/**</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@param</span> args</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@throws</span> MalformedObjectNameException</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@throws</span> NotCompliantMBeanException</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@throws</span> MBeanRegistrationException</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@throws</span> InstanceAlreadyExistsException</span>
+<span class="hljs-comment">	 * <span class="hljs-doctag">@throws</span> IOException</span>
+<span class="hljs-comment">	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> MalformedObjectNameException, InstanceAlreadyExistsException,</span>
+<span class="hljs-function">			MBeanRegistrationException, NotCompliantMBeanException, IOException </span>&#123;
+		MBeanServer mBeanServer = <span class="hljs-keyword">null</span>;
+		<span class="hljs-keyword">if</span> (MBeanServerFactory.findMBeanServer(<span class="hljs-keyword">null</span>).size() &gt; <span class="hljs-number">0</span>) &#123;
+			mBeanServer = MBeanServerFactory.findMBeanServer(<span class="hljs-keyword">null</span>).get(<span class="hljs-number">0</span>);
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			mBeanServer = ManagementFactory.getPlatformMBeanServer();
+		&#125;
+		ObjectName jmxObjectName = <span class="hljs-keyword">new</span> ObjectName(<span class="hljs-string">"jxmstudy:name=HelloWord"</span>);
+		Hello hello = <span class="hljs-keyword">new</span> Hello();
+		hello.setName(<span class="hljs-string">"Simon"</span>);
+		mBeanServer.registerMBean(hello, jmxObjectName);
+		System.in.read();
+	&#125;
+
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">HelloMBean</span> </span>&#123;
+
+		<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">getName</span><span class="hljs-params">()</span></span>;
+
+		<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setName</span><span class="hljs-params">(String name)</span></span>;
+
+	&#125;
+
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Hello</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">HelloMBean</span> </span>&#123;
+
+		<span class="hljs-keyword">private</span> String name;
+
+		<span class="hljs-meta">@Override</span>
+		<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">getName</span><span class="hljs-params">()</span> </span>&#123;
+			<span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.name;
+		&#125;
+
+		<span class="hljs-meta">@Override</span>
+		<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setName</span><span class="hljs-params">(String name)</span> </span>&#123;
+			<span class="hljs-keyword">this</span>.name = name;
+		&#125;
+	&#125;
+
+&#125;</code></pre>
+
+<h4 id="Dynamic-MBean示例"><a href="#Dynamic-MBean示例" class="headerlink" title="Dynamic MBean示例"></a>Dynamic MBean示例</h4><p>可以用 commons-modeler-2.0.1.jar完成，也可以参见tomcat的代码<br>具体做法是用配置文件描述mbean定义，然后走一个他自己开发的mbean公共机制完成注册，比如 org/apache/catalina/connector/mbeans-descriptors.xml 就是tomcat连接器jmx bean的描述。它有很多mbeans-descriptors.xml配置文件，针对不同组件各组件一个。<br><a href="https://www.iteye.com/blog/tyrion-2065129" target="_blank" rel="noopener">Tomcat7中的JMX使用（二）Dynamic MBean</a> 这篇文章分析了。  </p>
+<h4 id="Model-MBean示例"><a href="#Model-MBean示例" class="headerlink" title="Model MBean示例"></a>Model MBean示例</h4><blockquote>
+<p>————————————————<br>版权声明：本文为CSDN博主「朱小厮」的原创文章，遵循 CC 4.0 BY-SA   版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href="https://blog.csdn.net/u013256816/article/details/52817247" target="_blank" rel="noopener">https://blog.csdn.net/u013256816/article/details/52817247</a>  </p>
+</blockquote>
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.test.jmx.modelBean;
+
+
+<span class="hljs-keyword">import</span> javax.management.*;
+<span class="hljs-keyword">import</span> javax.management.modelmbean.*;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * Created by hidden on 2016/10/9.</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ModelMBeanUtils</span> </span>&#123;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> READABLE = <span class="hljs-keyword">true</span>;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> WRITABLE = <span class="hljs-keyword">true</span>;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> BOOLEAN = <span class="hljs-keyword">true</span>;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> String STRING_CLASS = <span class="hljs-string">"java.lang.String"</span>;
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> RequiredModelMBean <span class="hljs-title">createModelerMBean</span><span class="hljs-params">()</span> </span>&#123;
+        RequiredModelMBean model = <span class="hljs-keyword">null</span>;
+        <span class="hljs-keyword">try</span> &#123;
+            model = <span class="hljs-keyword">new</span> RequiredModelMBean();
+            model.setManagedResource(<span class="hljs-keyword">new</span> Hello(), <span class="hljs-string">"ObjectReference"</span>);
+            ModelMBeanInfo info = createModelMBeanInfo();
+            model.setModelMBeanInfo(info);
+        &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;
+            e.printStackTrace();
+        &#125;
+        <span class="hljs-keyword">return</span> model;
+    &#125;
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ModelMBeanInfo <span class="hljs-title">createModelMBeanInfo</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">//                        属性                                        //</span>
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">// 构造name属性信息</span>
+        Descriptor portAttrDesc = <span class="hljs-keyword">new</span> DescriptorSupport();
+        portAttrDesc.setField(<span class="hljs-string">"name"</span>, <span class="hljs-string">"Name"</span>);
+        portAttrDesc.setField(<span class="hljs-string">"descriptorType"</span>, <span class="hljs-string">"attribute"</span>);
+        portAttrDesc.setField(<span class="hljs-string">"displayName"</span>, <span class="hljs-string">"Name"</span>);
+        portAttrDesc.setField(<span class="hljs-string">"getMethod"</span>, <span class="hljs-string">"getName"</span>);
+        portAttrDesc.setField(<span class="hljs-string">"setMethod"</span>, <span class="hljs-string">"setName"</span>);
+        ModelMBeanAttributeInfo nameAttrInfo = <span class="hljs-keyword">new</span> ModelMBeanAttributeInfo(<span class="hljs-comment">//</span>
+                <span class="hljs-string">"Name"</span>, <span class="hljs-comment">// 属性名</span>
+                STRING_CLASS, <span class="hljs-comment">//属性类型</span>
+                <span class="hljs-string">"people name"</span>, <span class="hljs-comment">// 描述文字</span>
+                READABLE, WRITABLE, !BOOLEAN, <span class="hljs-comment">// 读写</span>
+                portAttrDesc <span class="hljs-comment">// 属性描述</span>
+        );
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">//                        方法                                        //</span>
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">// 构造 getName操作描述符信息</span>
+        Descriptor getStateDesc = <span class="hljs-keyword">new</span> DescriptorSupport(<span class="hljs-keyword">new</span> String[] &#123;
+                <span class="hljs-string">"name=getName"</span>,
+                <span class="hljs-string">"descriptorType=operation"</span>,
+                <span class="hljs-string">"class=com.test.jmx.modelBean.Hello"</span>,
+                <span class="hljs-string">"role=operation"</span>
+        &#125;);
+
+        ModelMBeanOperationInfo getName = <span class="hljs-keyword">new</span> ModelMBeanOperationInfo(<span class="hljs-comment">//</span>
+                <span class="hljs-string">"getName"</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-string">"get name attribute"</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-string">"java.lang.String"</span>, <span class="hljs-comment">//</span>
+                MBeanOperationInfo.ACTION, <span class="hljs-comment">//</span>
+                getStateDesc <span class="hljs-comment">//</span>
+        );
+
+        <span class="hljs-comment">// 构造 setName操作描述符信息</span>
+        Descriptor setStateDesc = <span class="hljs-keyword">new</span> DescriptorSupport(<span class="hljs-keyword">new</span> String[] &#123;
+                <span class="hljs-string">"name=setName"</span>, <span class="hljs-string">"descriptorType=operation"</span>, <span class="hljs-string">"class=com.test.jmx.modelBean.Hello"</span>,
+                <span class="hljs-string">"role=operation"</span> &#125;);
+
+        MBeanParameterInfo[] setStateParms = <span class="hljs-keyword">new</span> MBeanParameterInfo[] &#123; (<span class="hljs-keyword">new</span> MBeanParameterInfo(
+                <span class="hljs-string">"name"</span>, <span class="hljs-string">"java.lang.String"</span>, <span class="hljs-string">"new name value"</span>)) &#125;;
+
+        ModelMBeanOperationInfo setName = <span class="hljs-keyword">new</span> ModelMBeanOperationInfo(<span class="hljs-comment">//</span>
+                <span class="hljs-string">"setName"</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-string">"set name attribute"</span>, <span class="hljs-comment">//</span>
+                setStateParms, <span class="hljs-comment">//</span>
+                <span class="hljs-string">"void"</span>, <span class="hljs-comment">//</span>
+                MBeanOperationInfo.ACTION, <span class="hljs-comment">//</span>
+                setStateDesc <span class="hljs-comment">//</span>
+        );
+
+        <span class="hljs-comment">//构造 printHello()操作的信息</span>
+        ModelMBeanOperationInfo print1Info = <span class="hljs-keyword">new</span> ModelMBeanOperationInfo(<span class="hljs-comment">//</span>
+                <span class="hljs-string">"printHello"</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-string">"void"</span>, <span class="hljs-comment">//</span>
+                MBeanOperationInfo.INFO, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span> <span class="hljs-comment">//</span>
+        );
+        <span class="hljs-comment">// 构造printHello(String whoName)操作信息</span>
+        ModelMBeanOperationInfo print2Info;
+        MBeanParameterInfo[] param2 = <span class="hljs-keyword">new</span> MBeanParameterInfo[<span class="hljs-number">1</span>];
+        param2[<span class="hljs-number">0</span>] = <span class="hljs-keyword">new</span> MBeanParameterInfo(<span class="hljs-string">"whoName"</span>, STRING_CLASS, <span class="hljs-string">"say hello to who"</span>);
+        print2Info = <span class="hljs-keyword">new</span> ModelMBeanOperationInfo(<span class="hljs-comment">//</span>
+                <span class="hljs-string">"printHello"</span>, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span>,<span class="hljs-comment">//</span>
+                param2,<span class="hljs-comment">//</span>
+                <span class="hljs-string">"void"</span>, <span class="hljs-comment">//</span>
+                MBeanOperationInfo.INFO, <span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span><span class="hljs-comment">//</span>
+        );
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">//                        最后总合                                    //</span>
+        <span class="hljs-comment">//////////////////////////////////////////////////////////////////</span>
+        <span class="hljs-comment">// create ModelMBeanInfo</span>
+        ModelMBeanInfo mbeanInfo = <span class="hljs-keyword">new</span> ModelMBeanInfoSupport(<span class="hljs-comment">//</span>
+                RequiredModelMBean<span class="hljs-class">.<span class="hljs-keyword">class</span>.<span class="hljs-title">getName</span>(), // <span class="hljs-title">MBean</span>类</span>
+<span class="hljs-class">                <span class="hljs-title">null</span>, // 描述文字</span>
+                new ModelMBeanAttributeInfo[] &#123; // 所有的属性信息（数组）
+                        nameAttrInfo &#125;,<span class="hljs-comment">//只有一个属性</span>
+                <span class="hljs-keyword">null</span>, <span class="hljs-comment">// 所有的构造函数信息</span>
+                <span class="hljs-keyword">new</span> ModelMBeanOperationInfo[] &#123; <span class="hljs-comment">// 所有的操作信息（数组）</span>
+                        getName,
+                        setName,
+                        print1Info,
+                        print2Info &#125;,<span class="hljs-comment">//</span>
+                <span class="hljs-keyword">null</span>, <span class="hljs-comment">// 所有的通知信息(本例无)</span>
+                <span class="hljs-keyword">null</span><span class="hljs-comment">//MBean描述</span>
+        );
+        <span class="hljs-keyword">return</span> mbeanInfo;
+    &#125;
+&#125;</code></pre>
+
+<h3 id="启动参数"><a href="#启动参数" class="headerlink" title="启动参数"></a>启动参数</h3><p>简答配置如：<br>-Dcom.sun.management.jmxremote.port=8085<br>-Dcom.sun.management.jmxremote.ssl=false<br>-Dcom.sun.management.jmxremote.authenticate=false</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-clietns-producer/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">clients-producer-网络处理与请求响应对接部分</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/netty4-transport-nio/">
+                        <span class="hidden-mobile">netty之nio传输层</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "JMX基本概念&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
