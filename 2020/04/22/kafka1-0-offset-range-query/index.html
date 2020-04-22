@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>offset range 查询 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 08:02">
+                    星期三, 四月 22日 2020, 8:02 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    790 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    14
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="offset-range-查询"><a href="#offset-range-查询" class="headerlink" title="offset range 查询"></a>offset range 查询</h2><p>我们在实际使用过程中经常需要查询某个topic的某分区的offset的range<br>命令行：  </p>
+<pre><code class="hljs shell">kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -2      
+kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -1</code></pre>
+
+<p>-1 -2 的特殊含义：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ListOffsetRequest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AbstractRequest</span> </span>&#123;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> EARLIEST_TIMESTAMP = -<span class="hljs-number">2L</span>;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> LATEST_TIMESTAMP = -<span class="hljs-number">1L</span>;
+&#125;</code></pre>
+
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>KafkaConsumer.endOffsets(Collection<TopicPartition>)<br>KafkaConsumer.beginningOffsets(Collection<TopicPartition>)<br>Fetcher.beginningOrEndOffset(Collection<TopicPartition>, long, long)<br>Fetcher.retrieveOffsetsByTimes(Map&lt;TopicPartition, Long&gt;, long, boolean)<br>Fetcher.sendListOffsetRequests(boolean, Map&lt;TopicPartition, Long&gt;)  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// Group the partitions by node.</span>
+        <span class="hljs-keyword">final</span> Map&lt;Node, Map&lt;TopicPartition, Long&gt;&gt; timestampsToSearchByNode = <span class="hljs-keyword">new</span> HashMap&lt;&gt;();
+        <span class="hljs-keyword">for</span> (Map.Entry&lt;TopicPartition, Long&gt; entry: timestampsToSearch.entrySet()) &#123;
+            TopicPartition tp  = entry.getKey();
+            PartitionInfo info = metadata.fetch().partition(tp);
+            <span class="hljs-keyword">if</span> (info == <span class="hljs-keyword">null</span>) &#123;
+                metadata.add(tp.topic());
+                log.debug(<span class="hljs-string">"Partition &#123;&#125; is unknown for fetching offset, wait for metadata refresh"</span>, tp);
+                <span class="hljs-keyword">return</span> RequestFuture.staleMetadata();
+            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (info.leader() == <span class="hljs-keyword">null</span>) &#123;
+                log.debug(<span class="hljs-string">"Leader for partition &#123;&#125; unavailable for fetching offset, wait for metadata refresh"</span>, tp);
+                <span class="hljs-keyword">return</span> RequestFuture.leaderNotAvailable();
+            &#125; <span class="hljs-keyword">else</span> &#123;
+                Node node = info.leader();
+                Map&lt;TopicPartition, Long&gt; topicData = timestampsToSearchByNode.get(node);
+                <span class="hljs-keyword">if</span> (topicData == <span class="hljs-keyword">null</span>) &#123;
+                    topicData = <span class="hljs-keyword">new</span> HashMap&lt;&gt;();
+                    timestampsToSearchByNode.put(node, topicData);
+                &#125;
+                topicData.put(entry.getKey(), entry.getValue());
+            &#125;
+        &#125;
+
+        <span class="hljs-keyword">final</span> RequestFuture&lt;Map&lt;TopicPartition, OffsetData&gt;&gt; listOffsetRequestsFuture = <span class="hljs-keyword">new</span> RequestFuture&lt;&gt;();
+        <span class="hljs-keyword">final</span> Map&lt;TopicPartition, OffsetData&gt; fetchedTimestampOffsets = <span class="hljs-keyword">new</span> HashMap&lt;&gt;();
+        <span class="hljs-keyword">final</span> AtomicInteger remainingResponses = <span class="hljs-keyword">new</span> AtomicInteger(timestampsToSearchByNode.size());
+        <span class="hljs-keyword">for</span> (Map.Entry&lt;Node, Map&lt;TopicPartition, Long&gt;&gt; entry : timestampsToSearchByNode.entrySet()) &#123;
+            sendListOffsetRequest(entry.getKey(), entry.getValue(), requireTimestamps)
+                    .addListener(<span class="hljs-keyword">new</span> RequestFutureListener&lt;Map&lt;TopicPartition, OffsetData&gt;&gt;() &#123;
+                        <span class="hljs-meta">@Override</span>
+                        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSuccess</span><span class="hljs-params">(Map&lt;TopicPartition, OffsetData&gt; value)</span> </span>&#123;
+                            <span class="hljs-keyword">synchronized</span> (listOffsetRequestsFuture) &#123;
+                                fetchedTimestampOffsets.putAll(value);
+                                <span class="hljs-keyword">if</span> (remainingResponses.decrementAndGet() == <span class="hljs-number">0</span> &amp;&amp; !listOffsetRequestsFuture.isDone())
+                                    listOffsetRequestsFuture.complete(fetchedTimestampOffsets);
+                            &#125;
+                        &#125;
+
+                        <span class="hljs-meta">@Override</span>
+                        <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onFailure</span><span class="hljs-params">(RuntimeException e)</span> </span>&#123;
+                            <span class="hljs-keyword">synchronized</span> (listOffsetRequestsFuture) &#123;
+                                <span class="hljs-comment">// This may cause all the requests to be retried, but should be rare.</span>
+                                <span class="hljs-keyword">if</span> (!listOffsetRequestsFuture.isDone())
+                                    listOffsetRequestsFuture.raise(e);
+                            &#125;
+                        &#125;
+                    &#125;);
+        &#125;
+        <span class="hljs-keyword">return</span> listOffsetRequestsFuture;</code></pre>
+<p>简单点说：就是找到leader节点然后给其发送<code>ListOffsetRequest</code>请求。这个<a href="https://www.cnblogs.com/simoncook/p/11317367.html" target="_blank" rel="noopener">请求</a>是按时间进行offset定位。    </p>
+<h3 id="broker端"><a href="#broker端" class="headerlink" title="broker端"></a>broker端</h3><p>KafkaApis.handleListOffsetRequestV1AndAbove(request: RequestChannel.Request)  </p>
+<h4 id="查询最新offset"><a href="#查询最新offset" class="headerlink" title="查询最新offset"></a>查询最新offset</h4><p>这个值应该是在生产的时候维护好的  </p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> lastFetchableOffset = offsetRequest.isolationLevel <span class="hljs-keyword">match</span> &#123;
+  <span class="hljs-keyword">case</span> <span class="hljs-type">IsolationLevel</span>.<span class="hljs-type">READ_COMMITTED</span> =&gt; localReplica.lastStableOffset.messageOffset
+  <span class="hljs-keyword">case</span> <span class="hljs-type">IsolationLevel</span>.<span class="hljs-type">READ_UNCOMMITTED</span> =&gt; localReplica.highWatermark.messageOffset
+&#125;</code></pre>
+<p>这个地方也能反映出<span style="font-weight:bold;color:red;"> LEO，LSO，highwater的区别</span>！！  </p>
+<h4 id="查询最早offset"><a href="#查询最早offset" class="headerlink" title="查询最早offset"></a>查询最早offset</h4><p>kafka.log.Log.fetchOffsetsByTimestamp(targetTimestamp: Long)<br>这个值应该是在生产的时候维护好的  </p>
+<pre><code class="hljs scala"><span class="hljs-meta">@threadsafe</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Log</span>(<span class="hljs-params">@volatile var dir: <span class="hljs-type">File</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          @volatile var config: <span class="hljs-type">LogConfig</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          @volatile var logStartOffset: <span class="hljs-type">Long</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          @volatile var recoveryPoint: <span class="hljs-type">Long</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          scheduler: <span class="hljs-type">Scheduler</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          brokerTopicStats: <span class="hljs-type">BrokerTopicStats</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          time: <span class="hljs-type">Time</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          val maxProducerIdExpirationMs: <span class="hljs-type">Int</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          val producerIdExpirationCheckIntervalMs: <span class="hljs-type">Int</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          val topicPartition: <span class="hljs-type">TopicPartition</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          val producerStateManager: <span class="hljs-type">ProducerStateManager</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">          logDirFailureChannel: <span class="hljs-type">LogDirFailureChannel</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">Logging</span> <span class="hljs-keyword">with</span> <span class="hljs-title">KafkaMetricsGroup</span> </span>&#123;
+<span class="hljs-comment">// ......</span>
+<span class="hljs-keyword">if</span> (targetTimestamp == <span class="hljs-type">ListOffsetRequest</span>.<span class="hljs-type">EARLIEST_TIMESTAMP</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-type">Some</span>(<span class="hljs-type">TimestampOffset</span>(<span class="hljs-type">RecordBatch</span>.<span class="hljs-type">NO_TIMESTAMP</span>, logStartOffset))</code></pre>
+
+<h4 id="按时间戳查询offset"><a href="#按时间戳查询offset" class="headerlink" title="按时间戳查询offset"></a>按时间戳查询offset</h4><p>先确定target segment</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> targetSeg = &#123;
+  <span class="hljs-comment">// Get all the segments whose largest timestamp is smaller than target timestamp</span>
+  <span class="hljs-keyword">val</span> earlierSegs = segmentsCopy.takeWhile(_.largestTimestamp &lt; targetTimestamp)
+  <span class="hljs-comment">// We need to search the first segment whose largest timestamp is greater than the target timestamp if there is one.</span>
+  <span class="hljs-keyword">if</span> (earlierSegs.length &lt; segmentsCopy.length)
+    <span class="hljs-type">Some</span>(segmentsCopy(earlierSegs.length))
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-type">None</span>
+&#125;</code></pre>
+<p>再到seg的index根据时间查找<br>LogSegment.findOffsetByTimestamp(timestamp: Long, startingOffset: Long)<br>先定位到index然后再二分查找</p>
+<pre><code class="hljs scala">
+<span class="hljs-comment">// LogSegment.scala</span>
+<span class="hljs-keyword">val</span> timestampOffset = timeIndex.lookup(timestamp)
+<span class="hljs-keyword">val</span> position = index.lookup(math.max(timestampOffset.offset, startingOffset)).position
+
+<span class="hljs-comment">// AbstractIndex.scala</span>
+
+  <span class="hljs-comment">/**</span>
+<span class="hljs-comment">   * Lookup lower and upper bounds for the given target.</span>
+<span class="hljs-comment">   */</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">indexSlotRangeFor</span></span>(idx: <span class="hljs-type">ByteBuffer</span>, target: <span class="hljs-type">Long</span>, searchEntity: <span class="hljs-type">IndexSearchEntity</span>): (<span class="hljs-type">Int</span>, <span class="hljs-type">Int</span>) = &#123;
+    <span class="hljs-comment">// check if the index is empty</span>
+    <span class="hljs-keyword">if</span>(_entries == <span class="hljs-number">0</span>)
+      <span class="hljs-keyword">return</span> (<span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>)
+
+    <span class="hljs-comment">// check if the target offset is smaller than the least offset</span>
+    <span class="hljs-keyword">if</span>(compareIndexEntry(parseEntry(idx, <span class="hljs-number">0</span>), target, searchEntity) &gt; <span class="hljs-number">0</span>)
+      <span class="hljs-keyword">return</span> (<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>)
+
+    <span class="hljs-comment">// binary search for the entry</span>
+    <span class="hljs-keyword">var</span> lo = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">var</span> hi = _entries - <span class="hljs-number">1</span>
+    <span class="hljs-keyword">while</span>(lo &lt; hi) &#123;
+      <span class="hljs-keyword">val</span> mid = ceil(hi/<span class="hljs-number">2.0</span> + lo/<span class="hljs-number">2.0</span>).toInt
+      <span class="hljs-keyword">val</span> found = parseEntry(idx, mid)
+      <span class="hljs-keyword">val</span> compareResult = compareIndexEntry(found, target, searchEntity)
+      <span class="hljs-keyword">if</span>(compareResult &gt; <span class="hljs-number">0</span>)
+        hi = mid - <span class="hljs-number">1</span>
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(compareResult &lt; <span class="hljs-number">0</span>)
+        lo = mid
+      <span class="hljs-keyword">else</span>
+        <span class="hljs-keyword">return</span> (mid, mid)
+    &#125;
+
+    (lo, <span class="hljs-keyword">if</span> (lo == _entries - <span class="hljs-number">1</span>) <span class="hljs-number">-1</span> <span class="hljs-keyword">else</span> lo + <span class="hljs-number">1</span>)
+  &#125;</code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/hotspot-callstub/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CallStub相关</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-message-write/">
+                        <span class="hidden-mobile">消息写入</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "offset range 查询&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

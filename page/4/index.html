@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>分类 - Code to 60 码到60岁</title>
+  <title>Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -46,7 +46,7 @@
 
 
 <body>
-  <header style="height: 50vh;">
+  <header style="height: 100vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -137,10 +137,10 @@
 </nav>
 
     <div class="view intro-2" id="background" parallax=true
-         style="background: url('/img/c-1.jpeg') no-repeat center center;
+         style="background: url('/img/index_default.jpeg') no-repeat center center;
            background-size: cover;">
       <div class="full-bg-img">
-        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="container text-center white-text fadeInUp">
             <span class="h2" id="subtitle">
               
@@ -149,6 +149,10 @@
             
           </div>
 
+          
+            <div class="scroll-down-bar">
+              <i class="iconfont icon-arrowdown"></i>
+            </div>
           
         </div>
       </div>
@@ -159,14 +163,69 @@
     
       <div class="container nopadding-md">
         <div class="py-5" id="board"
-          >
+          style=margin-top:0>
           
           <div class="container">
             <div class="row">
               <div class="col-12 col-md-10 m-auto">
                 
 
-<ul class="category-tree-list"><li class="category-tree-list-item"><a class="category-tree-list-link" href="/categories/book-paper-study/">book-paper-study</a><span class="category-tree-list-count">1</span></li><li class="category-tree-list-item"><a class="category-tree-list-link" href="/categories/life/">life</a><span class="category-tree-list-count">1</span></li><li class="category-tree-list-item"><a class="category-tree-list-link" href="/categories/opensource-code-study/">opensource-code-study</a><span class="category-tree-list-count">21</span></li><li class="category-tree-list-item"><a class="category-tree-list-link" href="/categories/program-language-practice/">program-language-practice</a><span class="category-tree-list-count">6</span></li><li class="category-tree-list-item"><a class="category-tree-list-link" href="/categories/think/">think</a><span class="category-tree-list-count">1</span></li></ul>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/19/MySenseOfWorth/">我的价值观</a>
+
+      <a href="/2020/04/19/MySenseOfWorth/" class="index-excerpt">
+        
+        
+          
+        
+        <div>我的价值观
+一个底线：遵纪守法，远离黄赌毒。
+一个标准：感恩上进，持续努力，享受尽职。
+一个方法论：三人行必有我师，三人行我亦能成师。
+一个技巧：顺势而为。
+一个兜底：凡事有最坏的打算。
+
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/think/">think</a>
+            
+          </div>
+        
+        
+      </div>
+    </div>
+  </div>
+
+
+
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <a class="extend prev" rel="prev" href="/page/3/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+    </span>
+  </nav>
+  
+  <script>
+    for (ele of document.getElementById("pagination").getElementsByTagName("a")) {
+      ele.href += '#board';
+    }
+  </script>
+
+
 
               </div>
             </div>
@@ -255,7 +314,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "分类&nbsp;",
+        "三人行必有我师，三人行我亦能成师&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,

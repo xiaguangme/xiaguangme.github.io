@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>消息写入 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 08:01">
+                    星期三, 四月 22日 2020, 8:01 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.8k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    33
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="消息写入"><a href="#消息写入" class="headerlink" title="消息写入"></a>消息写入</h2><h3 id="生产消息时的rpc请求日志"><a href="#生产消息时的rpc请求日志" class="headerlink" title="生产消息时的rpc请求日志"></a>生产消息时的rpc请求日志</h3><p>leader节点  </p>
+<pre><code class="hljs java">[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">266</span>] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=<span class="hljs-number">5</span>, clientId=broker-<span class="hljs-number">0</span>-fetcher-<span class="hljs-number">0</span>, correlationId=<span class="hljs-number">8855</span>) -- &#123;replica_id=<span class="hljs-number">0</span>,max_wait_time=<span class="hljs-number">500</span>,min_bytes=<span class="hljs-number">1</span>,max_bytes=<span class="hljs-number">10485760</span>,isolation_level=<span class="hljs-number">0</span>,topics=[&#123;topic=test.vv19,partitions=[&#123;partition=<span class="hljs-number">0</span>,fetch_offset=<span class="hljs-number">35</span>,log_start_offset=<span class="hljs-number">0</span>,max_bytes=<span class="hljs-number">1048576</span>&#125;]&#125;]&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">49385</span>-<span class="hljs-number">0</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">266</span>] INFO testEnter0006-replica:<span class="hljs-number">0</span> newLogEndOffset:<span class="hljs-number">35</span> oldLogEndOffsetMetadata <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">267</span>] INFO testEnter0007-maybeIncrementLeaderHW:Set(<span class="hljs-number">35</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2765</span>]) newHighWatermark:<span class="hljs-number">35</span> oldHighWatermark <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">610</span>] INFO Handling request:RequestHeader(apiKey=METADATA, apiVersion=<span class="hljs-number">5</span>, clientId=producer-<span class="hljs-number">1</span>, correlationId=<span class="hljs-number">34</span>) -- &#123;topics=[test.vv19],allow_auto_topic_creation=<span class="hljs-keyword">true</span>&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">60308</span>-<span class="hljs-number">1</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">769</span>] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=<span class="hljs-number">5</span>, clientId=broker-<span class="hljs-number">0</span>-fetcher-<span class="hljs-number">0</span>, correlationId=<span class="hljs-number">8856</span>) -- &#123;replica_id=<span class="hljs-number">0</span>,max_wait_time=<span class="hljs-number">500</span>,min_bytes=<span class="hljs-number">1</span>,max_bytes=<span class="hljs-number">10485760</span>,isolation_level=<span class="hljs-number">0</span>,topics=[&#123;topic=test.vv19,partitions=[&#123;partition=<span class="hljs-number">0</span>,fetch_offset=<span class="hljs-number">35</span>,log_start_offset=<span class="hljs-number">0</span>,max_bytes=<span class="hljs-number">1048576</span>&#125;]&#125;]&#125; from connection 
+********************************
+
+
+<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">49385</span>-<span class="hljs-number">0</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">769</span>] INFO testEnter0006-replica:<span class="hljs-number">0</span> newLogEndOffset:<span class="hljs-number">35</span> oldLogEndOffsetMetadata <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">769</span>] INFO testEnter0007-maybeIncrementLeaderHW:Set(<span class="hljs-number">35</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2765</span>]) newHighWatermark:<span class="hljs-number">35</span> oldHighWatermark <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">773</span>] INFO Handling request:RequestHeader(apiKey=PRODUCE, apiVersion=<span class="hljs-number">5</span>, clientId=producer-<span class="hljs-number">1</span>, correlationId=<span class="hljs-number">35</span>) -- &#123;acks=-<span class="hljs-number">1</span>,timeout=<span class="hljs-number">30000</span>,partitionSizes=[test.vv19-<span class="hljs-number">0</span>=<span class="hljs-number">79</span>]&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">60308</span>-<span class="hljs-number">1</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">834</span>] INFO Updated PartitionLeaderEpoch. New: &#123;epoch:<span class="hljs-number">27</span>, offset:<span class="hljs-number">35</span>&#125;, Current: &#123;epoch:<span class="hljs-number">25</span>, offset34&#125; <span class="hljs-keyword">for</span> Partition: test.vv19-<span class="hljs-number">0</span>. Cache now contains <span class="hljs-number">11</span> entries. (kafka.server.epoch.LeaderEpochFileCache)
+********************************
+
+
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">313</span>] INFO testEnter0007-maybeIncrementLeaderHW:Set(<span class="hljs-number">35</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2765</span>], <span class="hljs-number">36</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2844</span>]) newHighWatermark:<span class="hljs-number">35</span> oldHighWatermark <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+********************************
+
+
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">400</span>] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=<span class="hljs-number">5</span>, clientId=broker-<span class="hljs-number">0</span>-fetcher-<span class="hljs-number">0</span>, correlationId=<span class="hljs-number">8857</span>) -- &#123;replica_id=<span class="hljs-number">0</span>,max_wait_time=<span class="hljs-number">500</span>,min_bytes=<span class="hljs-number">1</span>,max_bytes=<span class="hljs-number">10485760</span>,isolation_level=<span class="hljs-number">0</span>,topics=[&#123;topic=test.vv19,partitions=[&#123;partition=<span class="hljs-number">0</span>,fetch_offset=<span class="hljs-number">36</span>,log_start_offset=<span class="hljs-number">0</span>,max_bytes=<span class="hljs-number">1048576</span>&#125;]&#125;]&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">49385</span>-<span class="hljs-number">0</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">400</span>] INFO testEnter0006-replica:<span class="hljs-number">0</span> newLogEndOffset:<span class="hljs-number">36</span> oldLogEndOffsetMetadata <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">401</span>] INFO testEnter0007-maybeIncrementLeaderHW:Set(<span class="hljs-number">36</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2844</span>]) newHighWatermark:<span class="hljs-number">36</span> oldHighWatermark <span class="hljs-number">35</span>; (com.code260.ss.KafkaTestUtils$)
+********************************
+
+
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">922</span>] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=<span class="hljs-number">5</span>, clientId=broker-<span class="hljs-number">0</span>-fetcher-<span class="hljs-number">0</span>, correlationId=<span class="hljs-number">8858</span>) -- &#123;replica_id=<span class="hljs-number">0</span>,max_wait_time=<span class="hljs-number">500</span>,min_bytes=<span class="hljs-number">1</span>,max_bytes=<span class="hljs-number">10485760</span>,isolation_level=<span class="hljs-number">0</span>,topics=[&#123;topic=test.vv19,partitions=[&#123;partition=<span class="hljs-number">0</span>,fetch_offset=<span class="hljs-number">36</span>,log_start_offset=<span class="hljs-number">0</span>,max_bytes=<span class="hljs-number">1048576</span>&#125;]&#125;]&#125; from connection <span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">9094</span>-<span class="hljs-number">172.16</span><span class="hljs-number">.113</span><span class="hljs-number">.38</span>:<span class="hljs-number">49385</span>-<span class="hljs-number">0</span>;securityProtocol:PLAINTEXT,principal:User:ANONYMOUS (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">923</span>] INFO testEnter0006-replica:<span class="hljs-number">0</span> newLogEndOffset:<span class="hljs-number">36</span> oldLogEndOffsetMetadata <span class="hljs-number">36</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">923</span>] INFO testEnter0007-maybeIncrementLeaderHW:Set(<span class="hljs-number">36</span> [<span class="hljs-number">0</span> : <span class="hljs-number">2844</span>]) newHighWatermark:<span class="hljs-number">36</span> oldHighWatermark <span class="hljs-number">36</span>; (com.code260.ss.KafkaTestUtils$)</code></pre>
+
+
+
+<p>更新leader上维护的follower的LEO testEnter0006 时的调用栈<br>也是在处理follower发布过来的fetch请求时更新  </p>
+<pre><code class="hljs java">Replica.logEndOffset_$eq(LogOffsetMetadata) line: <span class="hljs-number">98</span>	
+Replica.updateLogReadResult(LogReadResult) line: <span class="hljs-number">83</span>	
+Partition.updateReplicaLogReadResult(Replica, LogReadResult) line: <span class="hljs-number">276</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Tuple2&lt;TopicPartition,LogReadResult&gt;) line: <span class="hljs-number">1314</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Object) line: <span class="hljs-number">1308</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(A) line: <span class="hljs-number">234</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">234</span>	
+ResizableArray$class.foreach(ResizableArray, Function1) line: 59	
+ArrayBuffer&lt;A&gt;.foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">48</span>	
+TraversableLike$class.map(TraversableLike, Function1, CanBuildFrom) line: 234	
+ArrayBuffer&lt;A&gt;(AbstractTraversable&lt;A&gt;).map(Function1&lt;A,B&gt;, CanBuildFrom&lt;Traversable&lt;A&gt;,B,That&gt;) line: <span class="hljs-number">104</span>	
+ReplicaManager.updateFollowerLogReadResults(<span class="hljs-keyword">int</span>, Seq&lt;Tuple2&lt;TopicPartition,LogReadResult&gt;&gt;) line: <span class="hljs-number">1308</span>	
+ReplicaManager.readFromLog$<span class="hljs-number">1</span>(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq, ReplicaQuota, IsolationLevel, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">799</span>	
+ReplicaManager.fetchMessages(<span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq&lt;Tuple2&lt;TopicPartition,PartitionData&gt;&gt;, ReplicaQuota, Function1&lt;Seq&lt;Tuple2&lt;TopicPartition,FetchPartitionData&gt;&gt;,BoxedUnit&gt;, IsolationLevel) line: <span class="hljs-number">803</span>	
+KafkaApis.handleFetchRequest(RequestChannel$Request) line: <span class="hljs-number">597</span></code></pre>
+
+
+<p>更新leader的HW testEnter0007-maybeIncrementLeaderHW 调用栈<br>在处理follower发布过来的fetch请求时更新  </p>
+<pre><code class="hljs java">Partition.kafka$cluster$Partition$$maybeIncrementLeaderHW(Replica, <span class="hljs-keyword">long</span>) line: <span class="hljs-number">396</span>	
+Partition$$anonfun$maybeExpandIsr$<span class="hljs-number">1</span>.apply$mcZ$sp() line: <span class="hljs-number">325</span>	
+Partition$$anonfun$maybeExpandIsr$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">309</span>	
+Partition$$anonfun$maybeExpandIsr$<span class="hljs-number">1</span>.apply() line: <span class="hljs-number">309</span>	
+CoreUtils$.inLock(Lock, Function0&lt;T&gt;) line: <span class="hljs-number">217</span>	
+CoreUtils$.inWriteLock(ReadWriteLock, Function0&lt;T&gt;) line: <span class="hljs-number">225</span>	
+Partition.maybeExpandIsr(<span class="hljs-keyword">int</span>, LogReadResult) line: <span class="hljs-number">307</span>	
+Partition.updateReplicaLogReadResult(Replica, LogReadResult) line: <span class="hljs-number">283</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Tuple2&lt;TopicPartition,LogReadResult&gt;) line: <span class="hljs-number">1314</span>	
+ReplicaManager$$anonfun$updateFollowerLogReadResults$<span class="hljs-number">2</span>.apply(Object) line: <span class="hljs-number">1308</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(A) line: <span class="hljs-number">234</span>	
+TraversableLike$$anonfun$map$<span class="hljs-number">1</span>.apply(Object) line: <span class="hljs-number">234</span>	
+ResizableArray$class.foreach(ResizableArray, Function1) line: 59	
+ArrayBuffer&lt;A&gt;.foreach(Function1&lt;A,U&gt;) line: <span class="hljs-number">48</span>	
+TraversableLike$class.map(TraversableLike, Function1, CanBuildFrom) line: 234	
+ArrayBuffer&lt;A&gt;(AbstractTraversable&lt;A&gt;).map(Function1&lt;A,B&gt;, CanBuildFrom&lt;Traversable&lt;A&gt;,B,That&gt;) line: <span class="hljs-number">104</span>	
+ReplicaManager.updateFollowerLogReadResults(<span class="hljs-keyword">int</span>, Seq&lt;Tuple2&lt;TopicPartition,LogReadResult&gt;&gt;) line: <span class="hljs-number">1308</span>	
+ReplicaManager.readFromLog$<span class="hljs-number">1</span>(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq, ReplicaQuota, IsolationLevel, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">799</span>	
+ReplicaManager.fetchMessages(<span class="hljs-keyword">long</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">int</span>, <span class="hljs-keyword">boolean</span>, Seq&lt;Tuple2&lt;TopicPartition,PartitionData&gt;&gt;, ReplicaQuota, Function1&lt;Seq&lt;Tuple2&lt;TopicPartition,FetchPartitionData&gt;&gt;,BoxedUnit&gt;, IsolationLevel) line: <span class="hljs-number">803</span>	
+KafkaApis.handleFetchRequest(RequestChannel$Request) line: <span class="hljs-number">597</span></code></pre>
+
+<p>Follower节点  </p>
+<pre><code class="hljs java">[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">767</span>] INFO testEnter0005-Received response:apikey:FETCH correlationId <span class="hljs-number">8855</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">767</span>] INFO testEnter0002-<span class="hljs-number">001</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">35</span>]lso.messageOffset: [<span class="hljs-number">35</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">22</span>,<span class="hljs-number">768</span>] INFO testEnter0002-<span class="hljs-number">002</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">35</span>]lso.messageOffset: [<span class="hljs-number">35</span>] (com.code260.ss.KafkaTestUtils$)
+
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">316</span>] INFO testEnter0005-Received response:apikey:FETCH correlationId <span class="hljs-number">8856</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">369</span>] INFO Updated PartitionLeaderEpoch. New: &#123;epoch:<span class="hljs-number">27</span>, offset:<span class="hljs-number">35</span>&#125;, Current: &#123;epoch:<span class="hljs-number">25</span>, offset34&#125; <span class="hljs-keyword">for</span> Partition: test.vv19-<span class="hljs-number">0</span>. Cache now contains <span class="hljs-number">11</span> entries. (kafka.server.epoch.LeaderEpochFileCache)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">396</span>] INFO testEnter0002-<span class="hljs-number">001</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">35</span>]lso.messageOffset: [<span class="hljs-number">35</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">397</span>] INFO testEnter0002-<span class="hljs-number">002</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">35</span>]lso.messageOffset: [<span class="hljs-number">35</span>] (com.code260.ss.KafkaTestUtils$)
+********************************
+
+
+
+********************************
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">920</span>] INFO testEnter0005-Received response:apikey:FETCH correlationId <span class="hljs-number">8857</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">921</span>] INFO testEnter0002-<span class="hljs-number">001</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">35</span>]lso.messageOffset: [<span class="hljs-number">35</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">23</span>,<span class="hljs-number">922</span>] INFO testEnter0002-<span class="hljs-number">002</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">36</span>]lso.messageOffset: [<span class="hljs-number">36</span>] (com.code260.ss.KafkaTestUtils$)
+********************************
+
+
+
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">24</span>,<span class="hljs-number">426</span>] INFO testEnter0005-Received response:apikey:FETCH correlationId <span class="hljs-number">8858</span>; (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">24</span>,<span class="hljs-number">427</span>] INFO testEnter0002-<span class="hljs-number">001</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">36</span>]lso.messageOffset: [<span class="hljs-number">36</span>] (com.code260.ss.KafkaTestUtils$)
+[<span class="hljs-number">2019</span>-<span class="hljs-number">09</span>-<span class="hljs-number">25</span> <span class="hljs-number">19</span>:<span class="hljs-number">40</span>:<span class="hljs-number">24</span>,<span class="hljs-number">428</span>] INFO testEnter0002-<span class="hljs-number">002</span>topicPartition:test.vv19:<span class="hljs-number">0</span>hwm.messageOffset: [<span class="hljs-number">36</span>]lso.messageOffset: [<span class="hljs-number">36</span>] (com.code260.ss.KafkaTestUtils$)</code></pre>
+
+<h3 id="请求处理"><a href="#请求处理" class="headerlink" title="请求处理"></a>请求处理</h3><p><code>handleProduceRequest</code>  <code>ProduceRequest</code><br>ReplicaManager.appendRecords  </p>
+<ul>
+<li>timeout: Long  // 来自请求体   </li>
+<li>requiredAcks: Short  // 来自请求体   </li>
+<li>internalTopicsAllowed: Boolean  // request.header.clientId是否是__admin_client  </li>
+<li>isFromClient: Boolean  // 固定送true   </li>
+<li>entriesPerPartition: Map[TopicPartition, MemoryRecords]  </li>
+<li>responseCallback: Map[TopicPartition, ProduceResponse.PartitionResponse] =&gt; Unit  </li>
+<li>delayedProduceLock: Option[Lock]  // 未送  </li>
+<li>processingStatsCallback: Map[TopicPartition, RecordsProcessingStats] =&gt; Unit  </li>
+</ul>
+<p>主要写日志逻辑：<br>kafka.log.Log.append(records: MemoryRecords, isFromClient: Boolean, assignOffsets: Boolean, leaderEpoch: Int) 623行 要细读   </p>
+<p>消息写入时：Log LogSegment FileRecords MeomoryRecords File LogOffsetMetadata 之间的联系  </p>
+<p>一条新的消息的offset是怎么产生的？每次append消息后会更新下一次的offset：  </p>
+<pre><code class="hljs java"> <span class="hljs-comment">// increment the log end offset</span>
+updateLogEndOffset(appendInfo.lastOffset + <span class="hljs-number">1</span>)</code></pre>
+
+<h3 id="leader节点在处理生产消息请求时对相应的offset的处理"><a href="#leader节点在处理生产消息请求时对相应的offset的处理" class="headerlink" title="leader节点在处理生产消息请求时对相应的offset的处理"></a>leader节点在处理生产消息请求时对相应的offset的处理</h3><p> KafkaApis handleProduceRequest<br> ReplicaManager appendRecords<br>    ReplicaManager appendToLocalLog<br>    processingStatsCallback  // KafkaApis def processingStatsCallback(processingStats: Map[TopicPartition, RecordsProcessingStats]): Unit<br>    responseCallback  // KafkaApis def sendResponseCallback(responseStatus: Map[TopicPartition, PartitionResponse])<br> ProduceRequest clearPartitionRecords  </p>
+<p>ReplicaManager appendToLocalLog<br>生产消息的度量数据收集(为写入速度做准备)，全局的和topic粒度的。<br>check是否是向内部topic发送消息的<br>消息写入leader partition.appendRecordsToLeader<br>   val info = log.appendAsLeader<br>   replicaManager.tryCompleteDelayedFetch(TopicPartitionOperationKey(this.topic, this.partitionId))<br>   (info, maybeIncrementLeaderHW(leaderReplica))<br>更新firstOffset  lastOffset  numAppendedMessages<br>生产消息的度量数据收集(条数和消息大小)，全局的和topic粒度的。 </p>
+<p>Log.append<br>分配消息的val offset = new LongRef(nextOffsetMetadata.messageOffset)<br>更新 firstOffset  appendInfo.firstOffset = offset.value<br>更新 lastOffset appendInfo.lastOffset = offset.value - 1<br>如果有消息校验不同过 收集拒掉的消息的度量数据<br>更新leader epoch对应的offset(只有当epoch发生改变时才更新，而且更新是直接flush到磁盘且用FD的sync强制落盘，fileOutputStream.getFD().sync()) leaderEpochCache.assign(batch.partitionLeaderEpoch, batch.baseOffset) 并 LeaderEpochCheckpoint 进行flush<br>segment.append<br>producerAppendInfo.maybeCacheTxnFirstOffsetMetadata<br>producerStateManager.update(producerAppendInfo)<br>事务消息的一些idx的处理<br>producerStateManager.updateMapEndOffset<br>updateLogEndOffset<br>updateFirstUnstableOffset<br>按需flush()<br>返回appendInfo  </p>
+<p>processingStatsCallback<br>更新produceMessageConversionsRate度量数据conversionCount topic粒度和全局的，conversionCount是指高版本格式消息向低版本格式消息的转换，转换逻辑在org.apache.kafka.common.record.AbstractRecords.downConvert(Iterable&lt;? extends RecordBatch&gt;, byte, long, Time)，调用发起是在org.apache.kafka.clients.producer.internals.Sender.sendProduceRequest(long, int, short, int, List<ProducerBatch>)    </p>
+<p>responseCallback<br>是否有错误，有的话写日志；Throttle处理；</p>
+<p>Partition.maybeIncrementLeaderHW分析</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-offset-range-query/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">offset range 查询</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-metadata-update/">
+                        <span class="hidden-mobile">MetadataCache更新</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "消息写入&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

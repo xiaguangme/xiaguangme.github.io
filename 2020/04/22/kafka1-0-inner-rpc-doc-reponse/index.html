@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>kafka-clients 1.0 内部响应接口文档 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-22 08:04">
+                    星期三, 四月 22日 2020, 8:04 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    47
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="AddOffsetsToTxnResponse"><a href="#AddOffsetsToTxnResponse" class="headerlink" title="AddOffsetsToTxnResponse"></a>AddOffsetsToTxnResponse</h2><h3 id="version-0"><a href="#version-0" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="AddPartitionsToTxnResponse"><a href="#AddPartitionsToTxnResponse" class="headerlink" title="AddPartitionsToTxnResponse"></a>AddPartitionsToTxnResponse</h2><h3 id="version-0-1"><a href="#version-0-1" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>errors</td><td>ARRAY({topic:STRING,partition_errors:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="AlterConfigsResponse"><a href="#AlterConfigsResponse" class="headerlink" title="AlterConfigsResponse"></a>AlterConfigsResponse</h2><h3 id="version-0-2"><a href="#version-0-2" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>resources</td><td>ARRAY({error_code:INT16,error_message:NULLABLE_STRING,resource_type:INT8,resource_name:STRING})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="AlterReplicaLogDirsResponse"><a href="#AlterReplicaLogDirsResponse" class="headerlink" title="AlterReplicaLogDirsResponse"></a>AlterReplicaLogDirsResponse</h2><h3 id="version-0-3"><a href="#version-0-3" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="ApiVersionsResponse"><a href="#ApiVersionsResponse" class="headerlink" title="ApiVersionsResponse"></a>ApiVersionsResponse</h2><h3 id="version-0-4"><a href="#version-0-4" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>api_versions</td><td>ARRAY({api_key:INT16,min_version:INT16,max_version:INT16})</td><td>null</td><td>API versions supported by the broker.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1"><a href="#version-1" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>api_versions</td><td>ARRAY({api_key:INT16,min_version:INT16,max_version:INT16})</td><td>null</td><td>API versions supported by the broker.</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h2 id="ControlledShutdownResponse"><a href="#ControlledShutdownResponse" class="headerlink" title="ControlledShutdownResponse"></a>ControlledShutdownResponse</h2><h3 id="version-0-5"><a href="#version-0-5" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>partitions_remaining</td><td>ARRAY({topic:STRING,partition:INT32})</td><td>null</td><td>The partitions that the broker still leads.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-1"><a href="#version-1-1" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>partitions_remaining</td><td>ARRAY({topic:STRING,partition:INT32})</td><td>null</td><td>The partitions that the broker still leads.</td></tr>
+</table>  
+
+
+
+<h2 id="CreateAclsResponse"><a href="#CreateAclsResponse" class="headerlink" title="CreateAclsResponse"></a>CreateAclsResponse</h2><h3 id="version-0-6"><a href="#version-0-6" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>creation_responses</td><td>ARRAY({error_code:INT16,error_message:NULLABLE_STRING})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="CreatePartitionsResponse"><a href="#CreatePartitionsResponse" class="headerlink" title="CreatePartitionsResponse"></a>CreatePartitionsResponse</h2><h3 id="version-0-7"><a href="#version-0-7" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topic_errors</td><td>ARRAY({topic:STRING,error_code:INT16,error_message:NULLABLE_STRING})</td><td>null</td><td>Per topic results for the create partitions request</td></tr>
+</table>  
+
+
+
+<h2 id="CreateTopicsResponse"><a href="#CreateTopicsResponse" class="headerlink" title="CreateTopicsResponse"></a>CreateTopicsResponse</h2><h3 id="version-0-8"><a href="#version-0-8" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>topic_errors</td><td>ARRAY({topic:STRING,error_code:INT16})</td><td>null</td><td>An array of per topic error codes.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-2"><a href="#version-1-2" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>topic_errors</td><td>ARRAY({topic:STRING,error_code:INT16,error_message:NULLABLE_STRING})</td><td>null</td><td>An array of per topic errors.</td></tr>
+</table>  
+
+
+
+<h3 id="version-2"><a href="#version-2" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topic_errors</td><td>ARRAY({topic:STRING,error_code:INT16,error_message:NULLABLE_STRING})</td><td>null</td><td>An array of per topic errors.</td></tr>
+</table>  
+
+
+
+<h2 id="DeleteAclsResponse"><a href="#DeleteAclsResponse" class="headerlink" title="DeleteAclsResponse"></a>DeleteAclsResponse</h2><p>SLF4J: Failed to load class “org.slf4j.impl.StaticLoggerBinder”.<br>SLF4J: Defaulting to no-operation (NOP) logger implementation<br>SLF4J: See <a href="http://www.slf4j.org/codes.html#StaticLoggerBinder" target="_blank" rel="noopener">http://www.slf4j.org/codes.html#StaticLoggerBinder</a> for further details.</p>
+<h3 id="version-0-9"><a href="#version-0-9" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>filter_responses</td><td>ARRAY({error_code:INT16,error_message:NULLABLE_STRING,matching_acls:ARRAY({error_code:INT16,error_message:NULLABLE_STRING,resource_type:INT8,resource_name:STRING,principal:STRING,host:STRING,operation:INT8,permission_type:INT8})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="DeleteRecordsResponse"><a href="#DeleteRecordsResponse" class="headerlink" title="DeleteRecordsResponse"></a>DeleteRecordsResponse</h2><h3 id="version-0-10"><a href="#version-0-10" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,low_watermark:INT64,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="DeleteTopicsResponse"><a href="#DeleteTopicsResponse" class="headerlink" title="DeleteTopicsResponse"></a>DeleteTopicsResponse</h2><h3 id="version-0-11"><a href="#version-0-11" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>topic_error_codes</td><td>ARRAY({topic:STRING,error_code:INT16})</td><td>null</td><td>An array of per topic error codes.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-3"><a href="#version-1-3" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topic_error_codes</td><td>ARRAY({topic:STRING,error_code:INT16})</td><td>null</td><td>An array of per topic error codes.</td></tr>
+</table>  
+
+
+
+<h2 id="DescribeAclsResponse"><a href="#DescribeAclsResponse" class="headerlink" title="DescribeAclsResponse"></a>DescribeAclsResponse</h2><h3 id="version-0-12"><a href="#version-0-12" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>error_message</td><td>NULLABLE_STRING</td><td>null</td><td>Response error message</td></tr>
+<tr><td>resources</td><td>ARRAY({resource_type:INT8,resource_name:STRING,acls:ARRAY({principal:STRING,host:STRING,operation:INT8,permission_type:INT8})})</td><td>null</td><td>The resources and their associated ACLs.</td></tr>
+</table>  
+
+
+
+<h2 id="DescribeConfigsResponse"><a href="#DescribeConfigsResponse" class="headerlink" title="DescribeConfigsResponse"></a>DescribeConfigsResponse</h2><h3 id="version-0-13"><a href="#version-0-13" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>resources</td><td>ARRAY({error_code:INT16,error_message:NULLABLE_STRING,resource_type:INT8,resource_name:STRING,config_entries:ARRAY({config_name:STRING,config_value:NULLABLE_STRING,read_only:BOOLEAN,is_default:BOOLEAN,is_sensitive:BOOLEAN})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="DescribeGroupsResponse"><a href="#DescribeGroupsResponse" class="headerlink" title="DescribeGroupsResponse"></a>DescribeGroupsResponse</h2><h3 id="version-0-14"><a href="#version-0-14" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>groups</td><td>ARRAY({error_code:INT16,group_id:STRING,state:STRING,protocol_type:STRING,protocol:STRING,members:ARRAY({member_id:STRING,client_id:STRING,client_host:STRING,member_metadata:BYTES,member_assignment:BYTES})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-4"><a href="#version-1-4" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>groups</td><td>ARRAY({error_code:INT16,group_id:STRING,state:STRING,protocol_type:STRING,protocol:STRING,members:ARRAY({member_id:STRING,client_id:STRING,client_host:STRING,member_metadata:BYTES,member_assignment:BYTES})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="DescribeLogDirsResponse"><a href="#DescribeLogDirsResponse" class="headerlink" title="DescribeLogDirsResponse"></a>DescribeLogDirsResponse</h2><h3 id="version-0-15"><a href="#version-0-15" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>log_dirs</td><td>ARRAY({error_code:INT16,log_dir:STRING,topics:ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,size:INT64,offset_lag:INT64,is_future:BOOLEAN})})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="EndTxnResponse"><a href="#EndTxnResponse" class="headerlink" title="EndTxnResponse"></a>EndTxnResponse</h2><h3 id="version-0-16"><a href="#version-0-16" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="FetchResponse"><a href="#FetchResponse" class="headerlink" title="FetchResponse"></a>FetchResponse</h2><h3 id="version-0-17"><a href="#version-0-17" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-5"><a href="#version-1-5" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-1"><a href="#version-2-1" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-3"><a href="#version-3" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-4"><a href="#version-4" class="headerlink" title="version:4"></a>version:4</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64,last_stable_offset:INT64,aborted_transactions:ARRAY({producer_id:INT64,first_offset:INT64})},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-5"><a href="#version-5" class="headerlink" title="version:5"></a>version:5</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64,last_stable_offset:INT64,log_start_offset:INT64,aborted_transactions:ARRAY({producer_id:INT64,first_offset:INT64})},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-6"><a href="#version-6" class="headerlink" title="version:6"></a>version:6</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition_header:{partition:INT32,error_code:INT16,high_watermark:INT64,last_stable_offset:INT64,log_start_offset:INT64,aborted_transactions:ARRAY({producer_id:INT64,first_offset:INT64})},record_set:RECORDS})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="FindCoordinatorResponse"><a href="#FindCoordinatorResponse" class="headerlink" title="FindCoordinatorResponse"></a>FindCoordinatorResponse</h2><h3 id="version-0-18"><a href="#version-0-18" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>coordinator</td><td>{node_id:INT32,host:STRING,port:INT32}</td><td>null</td><td>Host and port information for the coordinator for a consumer group.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-6"><a href="#version-1-6" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>error_message</td><td>NULLABLE_STRING</td><td>null</td><td>Response error message</td></tr>
+<tr><td>coordinator</td><td>{node_id:INT32,host:STRING,port:INT32}</td><td>null</td><td>Host and port information for the coordinator</td></tr>
+</table>  
+
+
+
+<h2 id="HeartbeatResponse"><a href="#HeartbeatResponse" class="headerlink" title="HeartbeatResponse"></a>HeartbeatResponse</h2><h3 id="version-0-19"><a href="#version-0-19" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-7"><a href="#version-1-7" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="InitProducerIdResponse"><a href="#InitProducerIdResponse" class="headerlink" title="InitProducerIdResponse"></a>InitProducerIdResponse</h2><h3 id="version-0-20"><a href="#version-0-20" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>producer_id</td><td>INT64</td><td>null</td><td>Current producer id in use by the transactional id.</td></tr>
+<tr><td>producer_epoch</td><td>INT16</td><td>null</td><td>Current epoch associated with the producer id.</td></tr>
+</table>  
+
+
+
+<h2 id="JoinGroupResponse"><a href="#JoinGroupResponse" class="headerlink" title="JoinGroupResponse"></a>JoinGroupResponse</h2><h3 id="version-0-21"><a href="#version-0-21" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>The generation of the group.</td></tr>
+<tr><td>group_protocol</td><td>STRING</td><td>null</td><td>The group protocol selected by the coordinator</td></tr>
+<tr><td>leader_id</td><td>STRING</td><td>null</td><td>The leader of the group</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>The member id assigned by the group coordinator or null if joining for the first time.</td></tr>
+<tr><td>members</td><td>ARRAY({member_id:STRING,member_metadata:BYTES})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-8"><a href="#version-1-8" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>The generation of the group.</td></tr>
+<tr><td>group_protocol</td><td>STRING</td><td>null</td><td>The group protocol selected by the coordinator</td></tr>
+<tr><td>leader_id</td><td>STRING</td><td>null</td><td>The leader of the group</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>The member id assigned by the group coordinator or null if joining for the first time.</td></tr>
+<tr><td>members</td><td>ARRAY({member_id:STRING,member_metadata:BYTES})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-2"><a href="#version-2-2" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>generation_id</td><td>INT32</td><td>null</td><td>The generation of the group.</td></tr>
+<tr><td>group_protocol</td><td>STRING</td><td>null</td><td>The group protocol selected by the coordinator</td></tr>
+<tr><td>leader_id</td><td>STRING</td><td>null</td><td>The leader of the group</td></tr>
+<tr><td>member_id</td><td>STRING</td><td>null</td><td>The member id assigned by the group coordinator or null if joining for the first time.</td></tr>
+<tr><td>members</td><td>ARRAY({member_id:STRING,member_metadata:BYTES})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="LeaderAndIsrResponse"><a href="#LeaderAndIsrResponse" class="headerlink" title="LeaderAndIsrResponse"></a>LeaderAndIsrResponse</h2><h3 id="version-0-22"><a href="#version-0-22" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>partitions</td><td>ARRAY({topic:STRING,partition:INT32,error_code:INT16})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-9"><a href="#version-1-9" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>partitions</td><td>ARRAY({topic:STRING,partition:INT32,error_code:INT16})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="LeaveGroupResponse"><a href="#LeaveGroupResponse" class="headerlink" title="LeaveGroupResponse"></a>LeaveGroupResponse</h2><h3 id="version-0-23"><a href="#version-0-23" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-10"><a href="#version-1-10" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="ListGroupsResponse"><a href="#ListGroupsResponse" class="headerlink" title="ListGroupsResponse"></a>ListGroupsResponse</h2><h3 id="version-0-24"><a href="#version-0-24" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>groups</td><td>ARRAY({group_id:STRING,protocol_type:STRING})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-11"><a href="#version-1-11" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>groups</td><td>ARRAY({group_id:STRING,protocol_type:STRING})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="ListOffsetResponse"><a href="#ListOffsetResponse" class="headerlink" title="ListOffsetResponse"></a>ListOffsetResponse</h2><h3 id="version-0-25"><a href="#version-0-25" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,offsets:ARRAY(INT64)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-12"><a href="#version-1-12" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,timestamp:INT64,offset:INT64})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-3"><a href="#version-2-3" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,timestamp:INT64,offset:INT64})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="MetadataResponse"><a href="#MetadataResponse" class="headerlink" title="MetadataResponse"></a>MetadataResponse</h2><h3 id="version-0-26"><a href="#version-0-26" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-13"><a href="#version-1-13" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>The broker id of the controller broker.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-4"><a href="#version-2-4" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>cluster_id</td><td>NULLABLE_STRING</td><td>null</td><td>The cluster id that this broker belongs to.</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>The broker id of the controller broker.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-3-1"><a href="#version-3-1" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>cluster_id</td><td>NULLABLE_STRING</td><td>null</td><td>The cluster id that this broker belongs to.</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>The broker id of the controller broker.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-4-1"><a href="#version-4-1" class="headerlink" title="version:4"></a>version:4</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>cluster_id</td><td>NULLABLE_STRING</td><td>null</td><td>The cluster id that this broker belongs to.</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>The broker id of the controller broker.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-5-1"><a href="#version-5-1" class="headerlink" title="version:5"></a>version:5</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>brokers</td><td>ARRAY({node_id:INT32,host:STRING,port:INT32,rack:NULLABLE_STRING})</td><td>null</td><td>Host and port information for all brokers.</td></tr>
+<tr><td>cluster_id</td><td>NULLABLE_STRING</td><td>null</td><td>The cluster id that this broker belongs to.</td></tr>
+<tr><td>controller_id</td><td>INT32</td><td>null</td><td>The broker id of the controller broker.</td></tr>
+<tr><td>topic_metadata</td><td>ARRAY({error_code:INT16,topic:STRING,is_internal:BOOLEAN,partition_metadata:ARRAY({error_code:INT16,partition:INT32,leader:INT32,replicas:ARRAY(INT32),isr:ARRAY(INT32),offline_replicas:ARRAY(INT32)})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="OffsetCommitResponse"><a href="#OffsetCommitResponse" class="headerlink" title="OffsetCommitResponse"></a>OffsetCommitResponse</h2><h3 id="version-0-27"><a href="#version-0-27" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-14"><a href="#version-1-14" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-5"><a href="#version-2-5" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-3-2"><a href="#version-3-2" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="OffsetFetchResponse"><a href="#OffsetFetchResponse" class="headerlink" title="OffsetFetchResponse"></a>OffsetFetchResponse</h2><h3 id="version-0-28"><a href="#version-0-28" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,offset:INT64,metadata:NULLABLE_STRING,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-15"><a href="#version-1-15" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,offset:INT64,metadata:NULLABLE_STRING,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-6"><a href="#version-2-6" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,offset:INT64,metadata:NULLABLE_STRING,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-3-3"><a href="#version-3-3" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,offset:INT64,metadata:NULLABLE_STRING,error_code:INT16})})</td><td>null</td><td>null</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="OffsetsForLeaderEpochResponse"><a href="#OffsetsForLeaderEpochResponse" class="headerlink" title="OffsetsForLeaderEpochResponse"></a>OffsetsForLeaderEpochResponse</h2><h3 id="version-0-29"><a href="#version-0-29" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({error_code:INT16,partition:INT32,end_offset:INT64})})</td><td>null</td><td>An array of topics for which we have leader offsets for some requested Partition Leader Epoch</td></tr>
+</table>  
+
+
+
+<h2 id="ProduceResponse"><a href="#ProduceResponse" class="headerlink" title="ProduceResponse"></a>ProduceResponse</h2><h3 id="version-0-30"><a href="#version-0-30" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64})})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-16"><a href="#version-1-16" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64})})</td><td>null</td><td>null</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-7"><a href="#version-2-7" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64,log_append_time:INT64})})</td><td>null</td><td>null</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h3 id="version-3-4"><a href="#version-3-4" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64,log_append_time:INT64})})</td><td>null</td><td>null</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h3 id="version-4-2"><a href="#version-4-2" class="headerlink" title="version:4"></a>version:4</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64,log_append_time:INT64})})</td><td>null</td><td>null</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h3 id="version-5-2"><a href="#version-5-2" class="headerlink" title="version:5"></a>version:5</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>responses</td><td>ARRAY({topic:STRING,partition_responses:ARRAY({partition:INT32,error_code:INT16,base_offset:INT64,log_append_time:INT64,log_start_offset:INT64})})</td><td>null</td><td>null</td></tr>
+<tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+</table>  
+
+
+
+<h2 id="SaslAuthenticateResponse"><a href="#SaslAuthenticateResponse" class="headerlink" title="SaslAuthenticateResponse"></a>SaslAuthenticateResponse</h2><h3 id="version-0-31"><a href="#version-0-31" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>error_message</td><td>NULLABLE_STRING</td><td>null</td><td>Response error message</td></tr>
+<tr><td>sasl_auth_bytes</td><td>BYTES</td><td>null</td><td>SASL authentication bytes from server as defined by the SASL mechanism.</td></tr>
+</table>  
+
+
+
+<h2 id="SaslHandshakeResponse"><a href="#SaslHandshakeResponse" class="headerlink" title="SaslHandshakeResponse"></a>SaslHandshakeResponse</h2><h3 id="version-0-32"><a href="#version-0-32" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>enabled_mechanisms</td><td>ARRAY(STRING)</td><td>null</td><td>Array of mechanisms enabled in the server.</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-17"><a href="#version-1-17" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>enabled_mechanisms</td><td>ARRAY(STRING)</td><td>null</td><td>Array of mechanisms enabled in the server.</td></tr>
+</table>  
+
+
+
+<h2 id="StopReplicaResponse"><a href="#StopReplicaResponse" class="headerlink" title="StopReplicaResponse"></a>StopReplicaResponse</h2><h3 id="version-0-33"><a href="#version-0-33" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>partitions</td><td>ARRAY({topic:STRING,partition:INT32,error_code:INT16})</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="SyncGroupResponse"><a href="#SyncGroupResponse" class="headerlink" title="SyncGroupResponse"></a>SyncGroupResponse</h2><h3 id="version-0-34"><a href="#version-0-34" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>member_assignment</td><td>BYTES</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-18"><a href="#version-1-18" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+<tr><td>member_assignment</td><td>BYTES</td><td>null</td><td>null</td></tr>
+</table>  
+
+
+
+<h2 id="TxnOffsetCommitResponse"><a href="#TxnOffsetCommitResponse" class="headerlink" title="TxnOffsetCommitResponse"></a>TxnOffsetCommitResponse</h2><h3 id="version-0-35"><a href="#version-0-35" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>throttle_time_ms</td><td>INT32</td><td>0</td><td>Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not violate any quota)</td></tr>
+<tr><td>topics</td><td>ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,error_code:INT16})})</td><td>null</td><td>Errors per partition from writing markers.</td></tr>
+</table>  
+
+
+
+<h2 id="UpdateMetadataResponse"><a href="#UpdateMetadataResponse" class="headerlink" title="UpdateMetadataResponse"></a>UpdateMetadataResponse</h2><h3 id="version-0-36"><a href="#version-0-36" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-1-19"><a href="#version-1-19" class="headerlink" title="version:1"></a>version:1</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-2-8"><a href="#version-2-8" class="headerlink" title="version:2"></a>version:2</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-3-5"><a href="#version-3-5" class="headerlink" title="version:3"></a>version:3</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h3 id="version-4-3"><a href="#version-4-3" class="headerlink" title="version:4"></a>version:4</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>error_code</td><td>INT16</td><td>null</td><td>Response error code</td></tr>
+</table>  
+
+
+
+<h2 id="WriteTxnMarkersResponse"><a href="#WriteTxnMarkersResponse" class="headerlink" title="WriteTxnMarkersResponse"></a>WriteTxnMarkersResponse</h2><h3 id="version-0-37"><a href="#version-0-37" class="headerlink" title="version:0"></a>version:0</h3><table><tr><td style="width:160px">name</td><td>type</td><td  style="width:80px">defaultValue</td><td>docString</td></tr><tr><td>transaction_markers</td><td>ARRAY({producer_id:INT64,topics:ARRAY({topic:STRING,partitions:ARRAY({partition:INT32,error_code:INT16})})})</td><td>null</td><td>Errors per partition from writing markers.</td></tr>
+</table>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-request/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">kafka-clients 1.0 内部请求接口文档</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/22/kafka1-0-generate-rpc-doc/">
+                        <span class="hidden-mobile">生成kafka内部请求与响应的接口文档</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "kafka-clients 1.0 内部响应接口文档&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
