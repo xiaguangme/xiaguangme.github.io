@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>用virtualbox+模拟串口+CDT调试linux内核 TCP/IP协议栈-起步 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:33">
+                    星期五, 四月 24日 2020, 7:33 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    24
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>经常有人问一台机器如何将hello经网络发送给另一台机器，我确实是不知道，只能看代码了。<br>说明：本人对内核的研究学习也是刚刚起步，有很多不了解的，所以文中可能会有一些<strong>“一本正经的胡扯”</strong>。请大家辩证的阅读。注意这种方式不能调试 start_kernel等过程，我主要用来调试tcp/ip协议栈代码。如果想调试start_kernel，后面会介绍用qemu的方式。   </p>
+<p>S1. 开发机：我是将一个老的索尼的笔记本装了Ubuntu桌面版本作为开发环境，版本号是Ubuntu 16.04.4 LTS，后面在某些步骤中也会称之为host。<br>S2. JDK使用的是java version “1.7.0_80”。 官网也有下载。后面CDT开发工具要用。<br>S3. Eclipse版本 Mars.2 Release (4.5.2)，CDT(8.8.1)使用的插件的方式安装的。 相关软件在eclipse官网均可以获得。至于怎么装插件，请网上搜索。<br>S4. Virtualbox，版本 5.2.18 r124319 (Qt5.6.1)。 官网下载的linux版本。<br>S5. 开发机安装socat，模拟串口通信用。sudo apt-get install socat<br>S6. 开发机安装build工具链。  </p>
+<pre><code class="hljs shell">sudo apt-get install gcc
+sudo apt-get install build-essential</code></pre>
+
+<p>S7. Virtualbox新建ubuntu虚拟机作为调试目标机，安装的虚拟机的系统用的镜像是：ubuntu-16.04-server-amd64.iso。至于怎么用virtualbox装虚拟机，请网上搜索。<br>虚拟机的CPU请根据你实际机器CPU的数量选择，我选择的是2，后面会对编译速度的提升有帮助。<br>虚拟机的网卡设置： 选中你的virtualbox虚拟机–&gt;设置–&gt;网络–&gt;网卡1–&gt;勾上 启用网络连接/连接方式 选择 桥接网卡/界面名称 选择 你能联网的网卡。<br><img src="/img/opensource-code-study/127449-20180917144052326-473331775.png" srcset="/img/loading.gif" alt="可以参见图">。<br>虚拟机串口设置： 选中你的virtualbox虚拟机–&gt;设置–&gt;串口–&gt;端口1–&gt;勾上 启用串口/端口模式 选择 主机管道/路径地址填写 /tmp/s<br><img src="/img/opensource-code-study/127449-20180917144146459-1779317618.png" srcset="/img/loading.gif" alt=""></p>
+<p>安装时，有个注意事项，语言选择English，否则可能会出现安装出错。另，安装server工具步骤时建议选择上openssh server。选择需要安装grub作为磁盘引导器。后面我么会称这台装好的虚拟机为guest机器，或者调试目标机，或者调试机，或者target等等。  </p>
+<p>S8. 登录到调试目标机，准备内核代码。<br>到<a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/" target="_blank" rel="noopener">内核官网</a>下载你要用的内核，我的用的是[4.4.19]版本(<a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.4.19.tar.gz)。可以用wget" target="_blank" rel="noopener">https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.4.19.tar.gz)。可以用wget</a> xxx内核链接地址的办法下载，我的是：  </p>
+<pre><code class="hljs shell">cd ~
+mkdir 004.code
+cd 004.code
+wget https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.4.19.tar.gz
+tar -xzvf linux-4.4.19.tar.gz
+cd linux-4.4.19</code></pre>
+
+<p>S9. 在调试目标机准备编译安装内核。<br>修改Makefile文件（linux-4.4.19目录下），将其中的O2字样修改成O1，目前不支持O0编译。但是<a href="https://github.com/figozhang/runninglinuxkernel_4.0" target="_blank" rel="noopener">有个文章</a>说可以通过修改内核代码达到使用O0编译的目的。我试了试，没成功。如果谁成功了，可以告诉我，谢谢。<br>安装必要的依赖：  </p>
+<pre><code class="hljs shell">sudo apt-get install libncurses5-dev 
+sudo apt-get install libssl-dev
+sudo apt-get install bc</code></pre>
+<p>调试目标机安装build工具链。  </p>
+<pre><code class="hljs shell">sudo apt-get install gcc
+sudo apt-get install build-essential</code></pre>
+
+<p>配置内核选项，其实只需要执行这步生成config文件，配置项不用修改，我们要的都有。  </p>
+<pre><code class="hljs shell">make menuconfig</code></pre>
+<p>然后选择 exit 然后选择yes 生成config文件。  </p>
+<pre><code class="hljs shell">make CONFIG_DEBUG_SECTION_MISMATCH=y -j2</code></pre>
+<p>此步骤<strong>需要很长时间</strong>，2-5小时不等，正常可以在睡觉前执行，第二天早上起来看结果。  </p>
+<p>S10. 在调试目标机安装新编译的内核。<br>工作目录在linux-4.4.19  </p>
+<pre><code class="hljs shell">sudo make modules_install
+sudo make install</code></pre>
+
+<p>S11. 在调试目标机修改启动引导选项。<br>在第10步完成后重启机器时，在启动菜单中选择Advance…菜单中，可以看到新安装的4.4.19内核的引导项。<br>进入系统(用4.4.19 或者之前的默认内核都可以)，修改启动引导配置文件。</p>
+<pre><code class="hljs shell">cd /boot/grub
+sudo su - root
+cp grub.cfg grub.cfg.bk.180917
+chmod +w grub.cfg
+vi grub.cfg</code></pre>
+<p>找到menuentry ‘Ubuntu, with Linux 4.4.19……这个地方，为了便于识别，可以讲此处单引号内的4.4.19后面加上-debug-kernel字样(可选)。 从这行开始向下查看，找到最挨着的linux /vmlinuz-4.4.19 root=…ro 这一行，在 这一行后面加上kgdb=ttyS0 kgdboc=ttyS0,115200 kgdbwait<br><img src="/img/opensource-code-study/127449-20180917144239981-412807651.png" srcset="/img/loading.gif" alt=""></p>
+<p>S12. 在调试目标机将代码和编译产物拷贝给开发机。我用的scp，你可以选择ftp等方式。   </p>
+<pre><code class="hljs shell">scp -r linux-4.4.19 simon@192.168.2.7:/home/simon/004.code/linux-4.4.19</code></pre>
+<p>用户名 ip  路径 根据你自己实际情况确定。不明白的可以搜搜scp命令怎么用，再不行就用ftp的方式搞。 也有人通过虚拟机共享目录的方式搞，这个不重要，你能拿到开发机上面就行。  </p>
+<p>S13. 在开发机，配置CDT并准备工程。<br>打开装了CDT插件的eclipse。<br>window–&gt;preferences–&gt;General–&gt;Workspace 去掉勾选 Build Automatically。<br>window–&gt;preferences–&gt;C/C++–&gt;indexer 去掉勾选 Enable indexer。<br>file–&gt;new–&gt;c project–&gt;project name填写你自己合意的，比如linux-kernel-study / 去掉use default location，location输入框中选择你的linux-4.4.19路径。 / project type 选择 Makefile project-Empty project / Toolschains选择Linux GCC–&gt;next–&gt;Advanced Setting–&gt;C/C++ Build–&gt;去掉勾选use  default build command， build command输入框内写上 make CONFIG_DEBUG_SECTION_MISMATCH=y -j2，build directory选择你的linux-4.4.19路径。 / Behavior页签 Build(Increament build) 输入框中输入一个空格即可。然后完成工程创建即可。<br>点击工具栏中的绿色小虫子右边的箭头，选择Debug Configurations–&gt;C/C++ Remote Application(双击)–&gt;proiect选择你刚创建的project  / C/C++ Application选择你的linux-4.4.19路径下的vmlinux。 / 选中 Disable auto build  点击select other换一个启动器 选择 GDB(DSF)Manual Remote Debugging…<br><img src="/img/opensource-code-study/127449-20180917144304818-1171537832.png" srcset="/img/loading.gif" alt=""></p>
+<p> 点击debugger页签 点击connection子页签，type选择Serial， speed选择115200，dev后面再来填。此处标志为待填13.1。<br><img src="/img/opensource-code-study/127449-20180917144316611-1256067129.png" srcset="/img/loading.gif" alt=""></p>
+<p>点击apply close即可。  </p>
+<p>S14. 启动调试目标机，在启动菜单处，选择 advance…/Ubuntu, with Linux 4.4.19-debuge-kernel这个内核引导项目。<br><img src="/img/opensource-code-study/127449-20180917144328352-2105193083.png" srcset="/img/loading.gif" alt=""></p>
+<p>在开发机执行命令：socat -d -d /tmp/s pty<br>他会有个输出 /dev/pts/.. 把这个路径填到13步待填13.1处。<br><img src="/img/opensource-code-study/127449-20180917144339175-1760238115.png" srcset="/img/loading.gif" alt=""></p>
+<p>cd 你的linux-4.4.19路径<br>gdb vmlinux<br>target remote /dev/pts/..  （此处对应上面的输出，不是真的写一个..）<br>此时就应该连接上目标机器了。按gdb的c指令便可以使得调试目标机继续启动下去。<br>如果需要加设断点等，可以在调试目标机执行<br>sudo su - root<br>echo g &gt; /proc/sysrq-trigger<br>这样目标机就会暂停，可以在开发机中加设断点。<br><img src="/img/opensource-code-study/127449-20180917144351742-2141991379.png" srcset="/img/loading.gif" alt=""></p>
+<p>注意这种方式不能调试 start_kernel等过程，我主要用来调试tcp/ip协议栈代码。  </p>
+<p>S15. 在开发机用CDT调试。<br>退掉14步的gdb调试。<br>在调试目标机执行 sudo echo g &gt; /proc/sysrq-trigger<br>点击CDT工具栏中的绿色小虫子右边的箭头，选择1New_configuration，如果有什么错误提示不用理会，继续proceed。 连接成功后，控制台会有输出，比如我们可以在控制台输入 b af_inet.c:471  然后输入gdb 指令 c<br><img src="/img/opensource-code-study/127449-20180917144405504-837362968.png" srcset="/img/loading.gif" alt=""></p>
+<p>然后 在目标机执行  nc -l 8080<br><img src="/img/opensource-code-study/127449-20180917144415986-655480788.png" srcset="/img/loading.gif" alt=""></p>
+<p>然后你就可以发现断点停在了 snum = ntohs(addr-&gt;sin_port);， 这个时候你就可以调试server的bind动作了，其他诸如listen accept connect等类似方式调试。<br><img src="/img/opensource-code-study/127449-20180917144427151-84138735.png" srcset="/img/loading.gif" alt=""></p>
+<p>F5 F6这些快捷键都可以用，只是你每次增减断点，貌似都要现在目标机执行 echo g &gt; /proc/sysrq-trigger，使他先停下来，才好加断点等操作。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/fail-mp/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">【转】常见容错机制</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/qemu-debug-kernel/">
+                        <span class="hidden-mobile">用qemu+gdb tcp server+CDT调试linux内核启动-起步</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "用virtualbox+模拟串口+CDT调试linux内核 TCP/IP协议栈-起步&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

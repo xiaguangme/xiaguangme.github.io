@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>虚拟机解释器与bytecode对接 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:03">
+                    星期五, 四月 24日 2020, 7:03 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.2k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    36
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>心头一直有个疑问，jvm虚拟是如何对接class中的字节码的？或者说在未进入<br>JIT优化阶段时，解释器是如何对接的？</p>
+<h2 id="大概阐述"><a href="#大概阐述" class="headerlink" title="大概阐述"></a>大概阐述</h2><p>hotspot通过C++代码在堆上申请一块空间，向里面填充一组指令，然后把这块空间当成一个函数，通过函数指针去调用刚生成的代码。是不是666，是不是哇超酷毙了。  </p>
+<h2 id="关键代码"><a href="#关键代码" class="headerlink" title="关键代码"></a>关键代码</h2><h3 id="generate-call-stub"><a href="#generate-call-stub" class="headerlink" title="generate_call_stub"></a>generate_call_stub</h3><pre><code class="hljs cpp"> <span class="hljs-function">address <span class="hljs-title">generate_call_stub</span><span class="hljs-params">(address&amp; return_address)</span> </span>&#123; <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> 需要一路仔细调试  c++方法  返回无符号char</span>
+    assert((<span class="hljs-keyword">int</span>)frame::entry_frame_after_call_words == -(<span class="hljs-keyword">int</span>)rsp_after_call_off + <span class="hljs-number">1</span> &amp;&amp;
+           (<span class="hljs-keyword">int</span>)frame::entry_frame_call_wrapper_offset == (<span class="hljs-keyword">int</span>)call_wrapper_off,
+           <span class="hljs-string">"adjust this code"</span>);
+    <span class="hljs-function">StubCodeMark <span class="hljs-title">mark</span><span class="hljs-params">(<span class="hljs-keyword">this</span>, <span class="hljs-string">"StubRoutines"</span>, <span class="hljs-string">"call_stub"</span>)</span></span>;
+<span class="hljs-comment">//    address start = __ pc(); // SimonNote: 这个方法最终返回的就是这个start  宏展开 ： _masm-&gt;pc()</span>
+    address start = _masm-&gt; pc(); <span class="hljs-comment">// SimonNote: _code_section 的end 是pc() 也是此处的start</span>
+
+    <span class="hljs-comment">// same as in generate_catch_exception()!</span>
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">rsp_after_call</span><span class="hljs-params">(rbp, rsp_after_call_off * wordSize)</span></span>; <span class="hljs-comment">// 这些adress都是准备工作  真正在内存区域生成汇编指令的事情是在下面的做的</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">call_wrapper</span>  <span class="hljs-params">(rbp, call_wrapper_off   * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">result</span>        <span class="hljs-params">(rbp, result_off         * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">result_type</span>   <span class="hljs-params">(rbp, result_type_off    * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">method</span>        <span class="hljs-params">(rbp, method_off         * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">entry_point</span>   <span class="hljs-params">(rbp, entry_point_off    * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">parameters</span>    <span class="hljs-params">(rbp, parameters_off     * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">parameter_size</span><span class="hljs-params">(rbp, parameter_size_off * wordSize)</span></span>;
+
+    <span class="hljs-comment">// same as in generate_catch_exception()!</span>
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">thread</span>        <span class="hljs-params">(rbp, thread_off         * wordSize)</span></span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">r15_save</span><span class="hljs-params">(rbp, r15_off * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">r14_save</span><span class="hljs-params">(rbp, r14_off * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">r13_save</span><span class="hljs-params">(rbp, r13_off * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">r12_save</span><span class="hljs-params">(rbp, r12_off * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">rbx_save</span><span class="hljs-params">(rbp, rbx_off * wordSize)</span></span>;
+
+    <span class="hljs-comment">// stub code</span>
+    <span class="hljs-function">__ <span class="hljs-title">enter</span><span class="hljs-params">()</span></span>;  <span class="hljs-comment">//SimonNote: macroAssembler_x86.cpp MacroAssembler::enter()   push(rbp); mov(rbp, rsp); 真正在内存区域生成汇编指令！其实就是把指令等opcode写入内存区域</span>
+    <span class="hljs-function">__ <span class="hljs-title">subptr</span><span class="hljs-params">(rsp, -rsp_after_call_off * wordSize)</span></span>;
+
+    <span class="hljs-comment">// save register parameters</span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> _WIN64</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(parameters,   c_rarg5)</span></span>; <span class="hljs-comment">// parameters</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(entry_point,  c_rarg4)</span></span>; <span class="hljs-comment">// entry_point</span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(method,       c_rarg3)</span></span>; <span class="hljs-comment">// method</span>
+    <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(result_type,  c_rarg2)</span></span>;   <span class="hljs-comment">// result type</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(result,       c_rarg1)</span></span>; <span class="hljs-comment">// result</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(call_wrapper, c_rarg0)</span></span>; <span class="hljs-comment">// call wrapper</span>
+
+    <span class="hljs-comment">// save regs belonging to calling function</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rbx_save, rbx)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r12_save, r12)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r13_save, r13)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r14_save, r14)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r15_save, r15)</span></span>;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> _WIN64</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">6</span>; i &lt;= <span class="hljs-number">15</span>; i++) &#123;
+      <span class="hljs-function">__ <span class="hljs-title">movdqu</span><span class="hljs-params">(xmm_save(i), as_XMMRegister(i))</span></span>;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">rdi_save</span><span class="hljs-params">(rbp, rdi_off * wordSize)</span></span>;
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">rsi_save</span><span class="hljs-params">(rbp, rsi_off * wordSize)</span></span>;
+
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rsi_save, rsi)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rdi_save, rdi)</span></span>;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">else</span></span>
+    <span class="hljs-function"><span class="hljs-keyword">const</span> Address <span class="hljs-title">mxcsr_save</span><span class="hljs-params">(rbp, mxcsr_off * wordSize)</span></span>;
+    &#123;
+      Label skip_ldmx;
+      <span class="hljs-function">__ <span class="hljs-title">stmxcsr</span><span class="hljs-params">(mxcsr_save)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(rax, mxcsr_save)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">andl</span><span class="hljs-params">(rax, MXCSR_MASK)</span></span>;    <span class="hljs-comment">// Only check control and mask bits</span>
+      <span class="hljs-function">ExternalAddress <span class="hljs-title">mxcsr_std</span><span class="hljs-params">(StubRoutines::addr_mxcsr_std())</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">cmp32</span><span class="hljs-params">(rax, mxcsr_std)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, skip_ldmx)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">ldmxcsr</span><span class="hljs-params">(mxcsr_std)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">bind</span><span class="hljs-params">(skip_ldmx)</span></span>;
+    &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+
+    <span class="hljs-comment">// Load up thread register</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r15_thread, thread)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">reinit_heapbase</span><span class="hljs-params">()</span></span>;
+
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> ASSERT</span>
+    <span class="hljs-comment">// make sure we have no pending exceptions</span>
+    &#123;
+      Label L;
+      <span class="hljs-function">__ <span class="hljs-title">cmpptr</span><span class="hljs-params">(Address(r15_thread, Thread::pending_exception_offset()), (<span class="hljs-keyword">int32_t</span>)NULL_WORD)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, L)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">stop</span><span class="hljs-params">(<span class="hljs-string">"StubRoutines::call_stub: entered with pending exception"</span>)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">bind</span><span class="hljs-params">(L)</span></span>;
+    &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+
+    <span class="hljs-comment">// pass parameters if any</span>
+    BLOCK_COMMENT(<span class="hljs-string">"pass parameters if any"</span>);
+    Label parameters_done;
+    <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(c_rarg3, parameter_size)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">testl</span><span class="hljs-params">(c_rarg3, c_rarg3)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::zero, parameters_done)</span></span>;
+
+    Label loop;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(c_rarg2, parameters)</span></span>;       <span class="hljs-comment">// parameter pointer</span>
+    <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(c_rarg1, c_rarg3)</span></span>;            <span class="hljs-comment">// parameter counter is in c_rarg1</span>
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(loop)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rax, Address(c_rarg2, <span class="hljs-number">0</span>))</span></span>;<span class="hljs-comment">// get parameter</span>
+    <span class="hljs-function">__ <span class="hljs-title">addptr</span><span class="hljs-params">(c_rarg2, wordSize)</span></span>;       <span class="hljs-comment">// advance to next parameter</span>
+    <span class="hljs-function">__ <span class="hljs-title">decrementl</span><span class="hljs-params">(c_rarg1)</span></span>;             <span class="hljs-comment">// decrement counter</span>
+    <span class="hljs-function">__ <span class="hljs-title">push</span><span class="hljs-params">(rax)</span></span>;                       <span class="hljs-comment">// pass parameter</span>
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::notZero, loop)</span></span>;
+
+    <span class="hljs-comment">// call Java function</span>
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(parameters_done)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rbx, method)</span></span>;             <span class="hljs-comment">// get Method*</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(c_rarg1, entry_point)</span></span>;    <span class="hljs-comment">// get entry_point</span>
+    <span class="hljs-function">__ <span class="hljs-title">mov</span><span class="hljs-params">(r13, rsp)</span></span>;                   <span class="hljs-comment">// set sender sp</span>
+    BLOCK_COMMENT(<span class="hljs-string">"call Java function"</span>);
+    <span class="hljs-function">__ <span class="hljs-title">call</span><span class="hljs-params">(c_rarg1)</span></span>;
+
+    BLOCK_COMMENT(<span class="hljs-string">"call_stub_return_address:"</span>);
+    return_address = __ pc();
+
+    <span class="hljs-comment">// store result depending on type (everything that is not</span>
+    <span class="hljs-comment">// T_OBJECT, T_LONG, T_FLOAT or T_DOUBLE is treated as T_INT)</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(c_rarg0, result)</span></span>;
+    Label is_long, is_float, is_double, <span class="hljs-built_in">exit</span>;
+    <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(c_rarg1, result_type)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">cmpl</span><span class="hljs-params">(c_rarg1, T_OBJECT)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, is_long)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">cmpl</span><span class="hljs-params">(c_rarg1, T_LONG)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, is_long)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">cmpl</span><span class="hljs-params">(c_rarg1, T_FLOAT)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, is_float)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">cmpl</span><span class="hljs-params">(c_rarg1, T_DOUBLE)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, is_double)</span></span>;
+
+    <span class="hljs-comment">// handle T_INT case</span>
+    <span class="hljs-function">__ <span class="hljs-title">movl</span><span class="hljs-params">(Address(c_rarg0, <span class="hljs-number">0</span>), rax)</span></span>;
+
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(<span class="hljs-built_in">exit</span>)</span></span>;
+
+    <span class="hljs-comment">// pop parameters</span>
+    <span class="hljs-function">__ <span class="hljs-title">lea</span><span class="hljs-params">(rsp, rsp_after_call)</span></span>;
+
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> ASSERT</span>
+    <span class="hljs-comment">// verify that threads correspond</span>
+    &#123;
+      Label L, S;
+      <span class="hljs-function">__ <span class="hljs-title">cmpptr</span><span class="hljs-params">(r15_thread, thread)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::notEqual, S)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">get_thread</span><span class="hljs-params">(rbx)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">cmpptr</span><span class="hljs-params">(r15_thread, rbx)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, L)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">bind</span><span class="hljs-params">(S)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">jcc</span><span class="hljs-params">(Assembler::equal, L)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">stop</span><span class="hljs-params">(<span class="hljs-string">"StubRoutines::call_stub: threads must correspond"</span>)</span></span>;
+      <span class="hljs-function">__ <span class="hljs-title">bind</span><span class="hljs-params">(L)</span></span>;
+    &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+
+    <span class="hljs-comment">// restore regs belonging to calling function</span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> _WIN64</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">15</span>; i &gt;= <span class="hljs-number">6</span>; i--) &#123;
+      <span class="hljs-function">__ <span class="hljs-title">movdqu</span><span class="hljs-params">(as_XMMRegister(i), xmm_save(i))</span></span>;
+    &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r15, r15_save)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r14, r14_save)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r13, r13_save)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(r12, r12_save)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rbx, rbx_save)</span></span>;
+
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> _WIN64</span>
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rdi, rdi_save)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movptr</span><span class="hljs-params">(rsi, rsi_save)</span></span>;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">else</span></span>
+    <span class="hljs-function">__ <span class="hljs-title">ldmxcsr</span><span class="hljs-params">(mxcsr_save)</span></span>;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span>
+
+    <span class="hljs-comment">// restore rsp</span>
+    <span class="hljs-function">__ <span class="hljs-title">addptr</span><span class="hljs-params">(rsp, -rsp_after_call_off * wordSize)</span></span>;
+
+    <span class="hljs-comment">// return</span>
+    <span class="hljs-function">__ <span class="hljs-title">pop</span><span class="hljs-params">(rbp)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">ret</span><span class="hljs-params">(<span class="hljs-number">0</span>)</span></span>;
+
+    <span class="hljs-comment">// handle return types different from T_INT</span>
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(is_long)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movq</span><span class="hljs-params">(Address(c_rarg0, <span class="hljs-number">0</span>), rax)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jmp</span><span class="hljs-params">(<span class="hljs-built_in">exit</span>)</span></span>;
+
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(is_float)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movflt</span><span class="hljs-params">(Address(c_rarg0, <span class="hljs-number">0</span>), xmm0)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jmp</span><span class="hljs-params">(<span class="hljs-built_in">exit</span>)</span></span>;
+
+    <span class="hljs-function">__ <span class="hljs-title">BIND</span><span class="hljs-params">(is_double)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">movdbl</span><span class="hljs-params">(Address(c_rarg0, <span class="hljs-number">0</span>), xmm0)</span></span>;
+    <span class="hljs-function">__ <span class="hljs-title">jmp</span><span class="hljs-params">(<span class="hljs-built_in">exit</span>)</span></span>;
+
+    <span class="hljs-keyword">return</span> start;
+  &#125;</code></pre>
+
+<p>上述函数是在JVM启动初始化会调用这个。函数返回的是adress，其类型定义如下：  </p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span> u_char;
+<span class="hljs-keyword">typedef</span> u_char*       address;</code></pre>
+
+<h3 id="关于adress"><a href="#关于adress" class="headerlink" title="关于adress"></a>关于adress</h3><p>C++中是可以将对象this转换成unsigned char指针的。adress的值就是对象this的地址。示例程序参见《C++中将对象this转换成unsigned char指针》  </p>
+<p>address start = _masm-&gt; pc(); // SimonNote: _code_section 的end 是pc() 也是此处的start<br>_masm  </p>
+<h3 id="关于-masm"><a href="#关于-masm" class="headerlink" title="关于_masm"></a>关于_masm</h3><p>__是一个宏，展开后是 _masm-&gt;<br>_masm变量的初始化在stubCodeGenerator.cpp中的StubCodeGenerator::StubCodeGenerator函数里  </p>
+<pre><code class="hljs cpp">StubCodeGenerator::StubCodeGenerator(CodeBuffer* code, <span class="hljs-keyword">bool</span> print_code) &#123;
+  _masm = <span class="hljs-keyword">new</span> MacroAssembler(code);
+  _first_stub = _last_stub = <span class="hljs-literal">NULL</span>;
+  _print_code = print_code;
+&#125;</code></pre>
+<p>贴一下到初始化_masm的调用栈  </p>
+<pre><code class="hljs cpp">StubCodeGenerator::StubCodeGenerator() at stubCodeGenerator.cpp:<span class="hljs-number">72</span> <span class="hljs-number">0x7ffff69d60d8</span>	
+ICacheStubGenerator::ICacheStubGenerator() at icache.hpp:<span class="hljs-number">91</span> <span class="hljs-number">0x7ffff65da534</span>	
+AbstractICache::initialize() at icache.cpp:<span class="hljs-number">39</span> <span class="hljs-number">0x7ffff65da324</span>	
+icache_init() at icache.cpp:<span class="hljs-number">105</span> <span class="hljs-number">0x7ffff65da4f0</span>	
+CodeCache::initialize() at codeCache.cpp:<span class="hljs-number">572</span> <span class="hljs-number">0x7ffff63d09f8</span>	
+codeCache_init() at codeCache.cpp:<span class="hljs-number">582</span> <span class="hljs-number">0x7ffff63d0a34</span>	
+init_globals() at init.cpp:<span class="hljs-number">98</span> <span class="hljs-number">0x7ffff65e93c5</span>	
+Threads::create_vm() at thread.cpp:<span class="hljs-number">3</span>,<span class="hljs-number">424</span> <span class="hljs-number">0x7ffff6a471c8</span>	
+JNI_CreateJavaVM() at jni.cpp:<span class="hljs-number">5</span>,<span class="hljs-number">166</span> <span class="hljs-number">0x7ffff66a156d</span>	
+InitializeJVM() at java.c:<span class="hljs-number">1</span>,<span class="hljs-number">145</span> <span class="hljs-number">0x7ffff7bc1b1f</span>	
+JavaMain() at java.c:<span class="hljs-number">371</span> <span class="hljs-number">0x7ffff7bbf9e8</span>	
+start_thread() at pthread_create.c:<span class="hljs-number">463</span> <span class="hljs-number">0x7ffff73ab6db</span>	
+clone() at clone.S:<span class="hljs-number">95</span> <span class="hljs-number">0x7ffff78e888f</span></code></pre>
+<p>往上翻几个栈不难看出：<br>_masm(MacroAssembler需要的code是CodeBuffer，<br>CodeBuffer又需要BufferBlob<br>这段逻辑在icache.cpp的 void AbstractICache::initialize()中  </p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">AbstractICache::initialize</span><span class="hljs-params">()</span> </span>&#123;
+  <span class="hljs-comment">// Making this stub must be FIRST use of assembler</span>
+  ResourceMark rm;
+
+  BufferBlob* b = BufferBlob::create(<span class="hljs-string">"flush_icache_stub"</span>, ICache::stub_size);
+  <span class="hljs-function">CodeBuffer <span class="hljs-title">c</span><span class="hljs-params">(b)</span></span>;
+
+  <span class="hljs-function">ICacheStubGenerator <span class="hljs-title">g</span><span class="hljs-params">(&amp;c)</span></span>;
+  g.generate_icache_flush(&amp;_flush_icache_stub);
+
+  <span class="hljs-comment">// The first use of flush_icache_stub must apply it to itself.</span>
+  <span class="hljs-comment">// The StubCodeMark destructor in generate_icache_flush will</span>
+  <span class="hljs-comment">// call Assembler::flush, which in turn will call invalidate_range,</span>
+  <span class="hljs-comment">// which will in turn call the flush stub.  Thus we don't need an</span>
+  <span class="hljs-comment">// explicit call to invalidate_range here.  This assumption is</span>
+  <span class="hljs-comment">// checked in invalidate_range.</span>
+&#125;</code></pre>
+<p>BufferBlob* b = BufferBlob::create(“flush_icache_stub”, ICache::stub_size);做了空间分配，下面讲；  </p>
+<h3 id="空间分配"><a href="#空间分配" class="headerlink" title="空间分配"></a>空间分配</h3><p>分配的栈  </p>
+<pre><code class="hljs cpp">HeapBlock::allocated_space() at heap.hpp:<span class="hljs-number">54</span> <span class="hljs-number">0x7ffff65c26e4</span>	
+CodeHeap::allocate() at heap.cpp:<span class="hljs-number">219</span> <span class="hljs-number">0x7ffff65c1a25</span>	
+CodeCache::allocate() at codeCache.cpp:<span class="hljs-number">186</span> <span class="hljs-number">0x7ffff63cf5d8</span>	
+BufferBlob::operator new() at codeBlob.cpp:249 0x7ffff63c8a0b	
+BufferBlob::create() at codeBlob.cpp:<span class="hljs-number">218</span> <span class="hljs-number">0x7ffff63c884e</span>	
+AbstractICache::initialize() at icache.cpp:<span class="hljs-number">36</span> <span class="hljs-number">0x7ffff65da2eb</span>	
+icache_init() at icache.cpp:<span class="hljs-number">105</span> <span class="hljs-number">0x7ffff65da4f0</span>	
+CodeCache::initialize() at codeCache.cpp:<span class="hljs-number">572</span> <span class="hljs-number">0x7ffff63d09f8</span>	
+codeCache_init() at codeCache.cpp:<span class="hljs-number">582</span> <span class="hljs-number">0x7ffff63d0a34</span>	
+init_globals() at init.cpp:<span class="hljs-number">98</span> <span class="hljs-number">0x7ffff65e93c5</span>	
+Threads::create_vm() at thread.cpp:<span class="hljs-number">3</span>,<span class="hljs-number">424</span> <span class="hljs-number">0x7ffff6a471c8</span>	
+JNI_CreateJavaVM() at jni.cpp:<span class="hljs-number">5</span>,<span class="hljs-number">166</span> <span class="hljs-number">0x7ffff66a156d</span>	
+InitializeJVM() at java.c:<span class="hljs-number">1</span>,<span class="hljs-number">145</span> <span class="hljs-number">0x7ffff7bc1b1f</span>	
+JavaMain() at java.c:<span class="hljs-number">371</span> <span class="hljs-number">0x7ffff7bbf9e8</span>	
+start_thread() at pthread_create.c:<span class="hljs-number">463</span> <span class="hljs-number">0x7ffff73ab6db</span>	
+clone() at clone.S:<span class="hljs-number">95</span> <span class="hljs-number">0x7ffff78e888f</span></code></pre>
+
+<p>有一段代码一开始没读懂，在同事帮助下才看明白：  </p>
+<pre><code class="hljs cpp"><span class="hljs-function">BufferBlob* <span class="hljs-title">BufferBlob::create</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>* name, <span class="hljs-keyword">int</span> buffer_size)</span> </span>&#123;
+  ThreadInVMfromUnknown __tiv;  <span class="hljs-comment">// get to VM state in case we block on CodeCache_lock</span>
+
+  BufferBlob* blob = <span class="hljs-literal">NULL</span>;
+  <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">int</span> size = <span class="hljs-keyword">sizeof</span>(BufferBlob);
+  <span class="hljs-comment">// align the size to CodeEntryAlignment</span>
+  size = align_code_offset(size);
+  size += round_to(buffer_size, oopSize);
+  assert(name != <span class="hljs-literal">NULL</span>, <span class="hljs-string">"must provide a name"</span>);
+  &#123;
+    <span class="hljs-function">MutexLockerEx <span class="hljs-title">mu</span><span class="hljs-params">(CodeCache_lock, Mutex::_no_safepoint_check_flag)</span></span>;
+    blob = <span class="hljs-keyword">new</span> (size) BufferBlob(name, size); <span class="hljs-comment">// 这行是什么意思？怎么有这种写法？</span>
+  &#125;
+  <span class="hljs-comment">// Track memory usage statistic after releasing CodeCache_lock</span>
+  MemoryService::track_code_cache_memory_usage();
+
+  <span class="hljs-keyword">return</span> blob;
+&#125;</code></pre>
+<p> BufferBlob* blob = new (size) BufferBlob(name, size); 这种写法是placement new的写法，在《The C++ Programming Language, 4th Edition》中11.2.4 Overloading new有讲解。按我粗浅的不严谨的写法理解成：<br> 在创建对象时，给对象指定分配在哪个内存地址上，place object of size sz at p。<br> 不过这里的写法，跟最简单的placement new写法还是有点差异，它做了重载，最原始的写法是：</p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">void</span>∗ buf = <span class="hljs-keyword">reinterpret_cast</span>&lt;<span class="hljs-keyword">void</span>∗&gt;(<span class="hljs-number">0xF00F</span>); <span class="hljs-comment">// significant address </span>
+X∗ p2 = <span class="hljs-keyword">new</span>(buf) X; <span class="hljs-comment">// construct an X at buf;</span>
+                    <span class="hljs-comment">// invokes: operator new(sizeof(X),buf)</span>
+
+<span class="hljs-comment">// The ‘‘placement’’ operator new() is the simplest such allocator. It is defined in the standard header &lt;new&gt;:</span>
+<span class="hljs-keyword">void</span>∗ <span class="hljs-function"><span class="hljs-keyword">operator</span> <span class="hljs-title">new</span> <span class="hljs-params">(<span class="hljs-keyword">size_t</span> sz, <span class="hljs-keyword">void</span>∗ p)</span> <span class="hljs-keyword">noexcept</span></span>;   <span class="hljs-comment">// place object of size sz at p</span></code></pre>
+<p>对于operator new的第一个参数size_t sz在调用时不用传送，由编译器在编译时决定并送进来，使用者只要送void* p就可以了<br>上面BufferBlob的代码对operator new还做了重载，(这也是通常的做法，自定义内存分配逻辑，并返回分配的指针)：  </p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">void</span>* BufferBlob::<span class="hljs-keyword">operator</span> <span class="hljs-title">new</span><span class="hljs-params">(<span class="hljs-keyword">size_t</span> s, <span class="hljs-keyword">unsigned</span> size, <span class="hljs-keyword">bool</span> is_critical)</span> <span class="hljs-title">throw</span><span class="hljs-params">()</span> </span>&#123;
+  <span class="hljs-keyword">void</span>* p = CodeCache::allocate(size, is_critical);
+  <span class="hljs-keyword">return</span> p;
+&#125;</code></pre>
+<h2 id="字节码翻译成汇编指令"><a href="#字节码翻译成汇编指令" class="headerlink" title="字节码翻译成汇编指令"></a>字节码翻译成汇编指令</h2><p>将字节码翻译成汇编指令的调用栈：<br>以new为例：  </p>
+<pre><code class="hljs cpp">TemplateTable::_new() at templateTable_x86_64.cpp:<span class="hljs-number">3</span>,<span class="hljs-number">250</span> <span class="hljs-number">0x7ffff6a39ed6</span>	
+Template::generate() at templateTable.cpp:<span class="hljs-number">63</span> <span class="hljs-number">0x7ffff6a267c7</span>	
+TemplateInterpreterGenerator::generate_and_dispatch() at templateInterpreter.cpp:<span class="hljs-number">530</span> <span class="hljs-number">0x7ffff6a1c392</span>	
+TemplateInterpreterGenerator::set_vtos_entry_points() at templateInterpreter_x86_64.cpp:<span class="hljs-number">2</span>,<span class="hljs-number">039</span> <span class="hljs-number">0x7ffff6a25dfc</span>	
+TemplateInterpreterGenerator::set_short_entry_points() at templateInterpreter.cpp:<span class="hljs-number">498</span> <span class="hljs-number">0x7ffff6a1c179</span>	
+TemplateInterpreterGenerator::set_entry_points() at templateInterpreter.cpp:<span class="hljs-number">464</span> <span class="hljs-number">0x7ffff6a1bcb3</span>	
+TemplateInterpreterGenerator::set_entry_points_for_all_bytes() at templateInterpreter.cpp:<span class="hljs-number">421</span> <span class="hljs-number">0x7ffff6a1b974</span>	
+TemplateInterpreterGenerator::generate_all() at templateInterpreter.cpp:<span class="hljs-number">402</span> <span class="hljs-number">0x7ffff6a1b8d6</span>	
+InterpreterGenerator::InterpreterGenerator() at templateInterpreter_x86_64.cpp:<span class="hljs-number">2</span>,<span class="hljs-number">051</span> <span class="hljs-number">0x7ffff6a25e3b</span>	
+TemplateInterpreter::initialize() at templateInterpreter.cpp:<span class="hljs-number">52</span> <span class="hljs-number">0x7ffff6a19aab</span>	
+interpreter_init() at interpreter.cpp:<span class="hljs-number">118</span> <span class="hljs-number">0x7ffff664c2fe</span>	
+init_globals() at init.cpp:<span class="hljs-number">107</span> <span class="hljs-number">0x7ffff65e93ef</span>	
+Threads::create_vm() at thread.cpp:<span class="hljs-number">3</span>,<span class="hljs-number">424</span> <span class="hljs-number">0x7ffff6a471c8</span>	
+JNI_CreateJavaVM() at jni.cpp:<span class="hljs-number">5</span>,<span class="hljs-number">166</span> <span class="hljs-number">0x7ffff66a156d</span>	
+InitializeJVM() at java.c:<span class="hljs-number">1</span>,<span class="hljs-number">145</span> <span class="hljs-number">0x7ffff7bc1b1f</span>	
+JavaMain() at java.c:<span class="hljs-number">371</span> <span class="hljs-number">0x7ffff7bbf9e8</span>	
+start_thread() at pthread_create.c:<span class="hljs-number">463</span> <span class="hljs-number">0x7ffff73ab6db</span>	
+clone() at clone.S:<span class="hljs-number">95</span> <span class="hljs-number">0x7ffff78e888f</span></code></pre>
+<p><span style="color:red;font-weight:bold;font-size:16px;">这个栈很重要！</span> 子节码都会按这个套路生成汇编指令模板。<br>在解释汇编指令时再用跳转指令跳转到指令模板入口处的地址。<br>可以通过在调试<code>TemplateTable::_new()</code>代码时，按如下路线查下<code>_masm</code>对应的<code>_code_section</code>对应的<code>_start</code>内存地址，然后通过CDT的Disassembly视图定位到相应的内存地址，并查看生成的指令，一目了然。此办法同样适用于<code>generate_call_stub</code>生成模板指令的地方的调试：    </p>
+<pre><code class="hljs plain">MacroAssembler	MacroAssembler	&#123;...&#125;	
+	Assembler	Assembler	&#123;...&#125;	
+		AbstractAssembler	AbstractAssembler	&#123;...&#125;	
+			ResourceObj	ResourceObj	&#123;...&#125;	
+			_code_section	CodeSection *	0x7ffff7fdd5e0	
+				_start	address	0x7fffe10449e0 &quot;Pé*&quot;</code></pre>
+<p> <img src="/img/opensource-code-study/127449-20190716120127152-488496549.png" srcset="/img/loading.gif" alt=""></p>
+<p><a href="https://www.cnblogs.com/racaljk/p/10335703.html" target="_blank" rel="noopener">[inside hotspot] 汇编模板解释器(Template Interpreter)和字节码执行</a>  </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://hllvm-group.iteye.com/group/topic/40491" target="_blank" rel="noopener">[讨论] HotSpot 解释器是怎样执行bytecode 的</a><br><a href="https://hllvm-group.iteye.com/group/topic/39985" target="_blank" rel="noopener">[讨论] 请教：Java 字节码如何执行的</a><br><a href="https://hllvm-group.iteye.com/group/topic/37707" target="_blank" rel="noopener">[讨论] java_main的汇编入口在哪里</a><br><a href="https://rednaxelafx.iteye.com/blog/428721" target="_blank" rel="noopener">运行时对代码操纵的一个小demo</a><br><a href="http://www.codeceo.com/article/jvm-template-1.html" target="_blank" rel="noopener">JVM 模板解释器之如何根据字节码生成汇编码？</a></p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/cpp-this-unsigned-pointer/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++中将对象this转换成unsigned char指针</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/new-object/">
+                        <span class="hidden-mobile">对象创建</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "虚拟机解释器与bytecode对接&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>dubbo与zk注册中心如何对接，如何做到服务自动发现 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:43">
+                    星期五, 四月 24日 2020, 7:43 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.1k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    15
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>先看下consumer端发起调用时的链路流程：  </p>
+<pre><code class="hljs html"> +---------------------------+            +---------------------------+            +---------------------------+              
+ |      helloService         |            |      proxy                |            |  InvokerInvocationHandler |              
+ |      sayHello             +----------&gt; |      sayHello             +----------&gt; |  invoke                   |              
+ |                           |            |                           |            |  proxy method args        |              
+ +---------------------------+            +---------------------------+            +-------------+-------------+              
+                                                                                                 |                            
+                                                                                                 |                            
+                                                                                  +---------------------------------+         
+                                                                                  |              |                  |         
+                                                                                  | +------------v--------------+   |         
+                                                                                  | |  MockClusterInvoker       |   |         
+                                                                                  | |  invoke                   |   |         
+                                                                                  | |                           |   |         
+                                                                                  | +------------+--------------+   |         
+                                                                                  |              |                  |         
+                                                                                  |              |                  |         
+                                                                                  |              |                  |         
+ +---------------------------+            +---------------------------+           | +------------v--------------+   |         
+ | Router                    |            | RegistryDirectory         |           | |  FailoverClusterInvoker   |   |         
+ | route                     | &lt;----------+ list                      | &lt;-----------+  invoke                   |   |         
+ | MockInVokersSelector      |            | INVOCATION--&gt;List INVOKER |           | |                           |   |         
+ +------------+--------------+            +---------------------------+           | +---------------------------+   |         
+              |                                                                   |                                 |         
+              |                                                                   +---------------------------------+         
+              |                                                                 cluster invoke，分布式调用容错机制也是在这做                      
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
++-------------v-------------+             +---------------------------+             +---------------------------+             
+|  RandomLoadBalance        |             |InvokerDelegate            |             | ListenerInvokerWrap       |             
+|  select                   +-----------&gt; |invoke                     +-----------&gt; | invoke                    |             
+|  List INVOKER--&gt;INVOKER   |             |                           |             |                           |             
++---------------------------+             +---------------------------+             +---------------------------+</code></pre>
+<p>#1. 引入zookeeper作为注册中心后，服务查找过程<br>从建立spring到netty client建立连接的调用栈：<br>NettyClient.doOpen() line: 66<br>NettyClient(AbstractClient).<init>(URL, ChannelHandler) line: 94<br>NettyClient.<init>(URL, ChannelHandler) line: 61<br>NettyTransporter.connect(URL, ChannelHandler) line: 37<br>Transporter$Adpative.connect(URL, ChannelHandler) line: not available<br>Transporters.connect(URL, ChannelHandler…) line: 67<br>HeaderExchanger.connect(URL, ExchangeHandler) line: 37<br>Exchangers.connect(URL, ExchangeHandler) line: 102<br>DubboProtocol.initClient(URL) line: 378<br>DubboProtocol.getSharedClient(URL) line: 344<br>DubboProtocol.getClients(URL) line: 321<br>DubboProtocol.refer(Class<T>, URL) line: 303<br>ProtocolListenerWrapper.refer(Class<T>, URL) line: 65<br>ProtocolFilterWrapper.refer(Class<T>, URL) line: 62<br>Protocol$Adpative.refer(Class, URL) line: not available<br>RegistryDirectory<T>.toInvokers(List<URL>) line: 405<br>RegistryDirectory<T>.refreshInvoker(List<URL>) line: 228<br>RegistryDirectory<T>.notify(List<URL>) line: 196<br>ZookeeperRegistry(AbstractRegistry).notify(URL, NotifyListener, List<URL>) line: 449<br>ZookeeperRegistry(FailbackRegistry).doNotify(URL, NotifyListener, List<URL>) line: 273<br>ZookeeperRegistry(FailbackRegistry).notify(URL, NotifyListener, List<URL>) line: 259<br>ZookeeperRegistry.doSubscribe(URL, NotifyListener) line: 170<br>ZookeeperRegistry(FailbackRegistry).subscribe(URL, NotifyListener) line: 189<br>RegistryDirectory<T>.subscribe(URL) line: 134<br>RegistryProtocol.doRefer(Cluster, Registry, Class<T>, URL) line: 271<br>RegistryProtocol.refer(Class<T>, URL) line: 254<br>ProtocolListenerWrapper.refer(Class<T>, URL) line: 63<br>ProtocolFilterWrapper.refer(Class<T>, URL) line: 60<br>Protocol$Adpative.refer(Class, URL) line: not available<br>ReferenceBean<T>(ReferenceConfig<T>).createProxy() line: 394<br>ReferenceBean<T>(ReferenceConfig<T>).init() line: 303<br>ReferenceBean<T>(ReferenceConfig<T>).get() line: 138<br>ReferenceBean<T>.getObject() line: 65<br>DefaultListableBeanFactory(FactoryBeanRegistrySupport).doGetObjectFromFactoryBean(FactoryBean, String, boolean) line: 142    </p>
+<p>整体来说： 先由注册中心的协议处理器处理注册中心的地址，找到所有provider的地址，创建所有invoker，然后再由invoker在真正调用时发起调用。<br>注册中心的这个也抽象一种协议，由注册中心结合提供者的协议推导出提供者的协议地址，也就是目标端的地址与端口得知了。<br>每一个接口在zookeeper上都有节点，节点下面是provider，再下面是所有provider的具体地址。</p>
+<p>#2. netty client的基本步骤<br>创建channelPipelineFactory，并在这个factory中返回加工好的ChannelPipeline，加工过程包括加入编解码器，连接事件处理组成的netty handler实现<br>（包括连接建立，断开，请求写出去，）</p>
+<p>writeRequested(netty的)–&gt;调用编码器（编码的这个对象中包括了 需要调用的目标接口名  方法名等信息）<br>（继承SimpleChannelHandler重写逻辑，可以定制channel的读取与写出逻辑）</p>
+<p>#3. 在使用zookeeper作为注册中心时，如果有provider服务停掉， consumer端如何感知？再次启动刚停掉的provider呢？<br>provider停掉会触发zk客户端的监听，监听对客户端的invoker列表进行刷新。<br>再次启动会触发 zk的监听，代码在<code>ZkclientZookeeperClient</code></p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> IZkChildListener <span class="hljs-title">createTargetChildListener</span><span class="hljs-params">(String path, <span class="hljs-keyword">final</span> ChildListener listener)</span> </span>&#123;
+	<span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> IZkChildListener() &#123;
+		<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">handleChildChange</span><span class="hljs-params">(String parentPath, List&lt;String&gt; currentChilds)</span></span>
+<span class="hljs-function">				<span class="hljs-keyword">throws</span> Exception </span>&#123;
+			listener.childChanged(parentPath, currentChilds);
+		&#125;
+	&#125;;
+&#125;</code></pre>
+<p>然后再触发 com.alibaba.dubbo.registry.support.FailbackRegistry.doNotify(URL, NotifyListener, List<URL>)。<br>com.alibaba.dubbo.registry.integration.RegistryDirectory.refreshInvoker(List<URL>)， 这是在zk的event线程完成的。<br>如果有provider停掉了 走一样的监听逻辑</p>
+<p>同时，dubbo支持 定时检查provider的状态并进行重连，具体参见<br>com.alibaba.dubbo.remoting.transport.AbstractClient.initConnectStatusCheckCommand()<br>reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, reconnect, reconnect, TimeUnit.MILLISECONDS);</p>
+<p>#4. 如果正在发服务的时候，provider停掉了，dubbo是如何处理的？<br>如果在发服务时，provider停掉了，那么此时会抛出异常，并在FailoverClusterInvoker doInvoke中捕获，<br>FailoverClusterInvoker支持调用失败时重试(可配置)，此时达到再次重试的目的。</p>
+<p>#5. client在多次调用时，与provider端的连接是建立几次，在prodvider端服务状态有变化时呢？<br>NettyClient 的doOpen doConnect均在初始化的时候调用，有几个provider就调用几次，真正rpc调用服务的时候是不会再调用open与connect的。<br>上面这个说法不严格，因为看他发送消息的代码就知道了，每次发消息时还会检查下：</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">send</span><span class="hljs-params">(Object message, <span class="hljs-keyword">boolean</span> sent)</span> <span class="hljs-keyword">throws</span> RemotingException </span>&#123;
+    <span class="hljs-keyword">if</span> (send_reconnect &amp;&amp; !isConnected())&#123;
+        connect();
+    &#125;
+    Channel channel = getChannel();
+    <span class="hljs-comment">//TODO getChannel返回的状态是否包含null需要改进</span>
+    <span class="hljs-keyword">if</span> (channel == <span class="hljs-keyword">null</span> || ! channel.isConnected()) &#123;
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RemotingException(<span class="hljs-keyword">this</span>, <span class="hljs-string">"message can not send, because channel is closed . url:"</span> + getUrl());
+    &#125;
+    channel.send(message, sent);
+&#125;</code></pre>
+
+<p>#6. 对于多个provider，dubbo默认在哪里选择了一个invoker进行调用的<br>com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker.select(LoadBalance, Invocation, List&lt;Invoker<T>&gt;, List&lt;Invoker<T>&gt;)。</p>
+<p>com.alibaba.dubbo.rpc.filter.EchoFilter@1fd14d74<br>com.alibaba.dubbo.rpc.filter.ClassLoaderFilter@563e4951<br>com.alibaba.dubbo.rpc.filter.GenericFilter@4066c471<br>com.alibaba.dubbo.rpc.filter.ContextFilter@2b175c00<br>com.alibaba.dubbo.rpc.protocol.dubbo.filter.TraceFilter@3eb81efb<br>com.alibaba.dubbo.rpc.filter.TimeoutFilter@1ae8bcbc<br>com.alibaba.dubbo.monitor.support.MonitorFilter@6cdba6dc<br>com.alibaba.dubbo.rpc.filter.ExceptionFilter@2609b277</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/spring-cloud2-features/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Spring Cloud(2.0)能力大致列表</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/dubbo-rpc-filter-1/">
+                        <span class="hidden-mobile">dubbo rpc filter实现剖析(一)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "dubbo与zk注册中心如何对接，如何做到服务自动发现&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

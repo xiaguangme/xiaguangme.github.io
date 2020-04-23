@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>再写一篇tps限流 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:26">
+                    星期五, 四月 24日 2020, 7:26 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.6k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    20
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="再写一篇tps限流"><a href="#再写一篇tps限流" class="headerlink" title="再写一篇tps限流"></a>再写一篇tps限流</h2><h3 id="各种限流算法的称呼"><a href="#各种限流算法的称呼" class="headerlink" title="各种限流算法的称呼"></a>各种限流算法的称呼</h3><p>网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。<br>主要维度是：是<em>正向计数</em>还是<em>反向计数</em>。是<em>定点(时间点)重置当前计数器</em>还是<em>每次接口调用时按量调整当前还剩的可用请求数</em>。  </p>
+<h4 id="通俗理解"><a href="#通俗理解" class="headerlink" title="通俗理解"></a>通俗理解</h4><h5 id="正向计数且定点-时间点-重置的流程"><a href="#正向计数且定点-时间点-重置的流程" class="headerlink" title="正向计数且定点(时间点)重置的流程"></a>正向计数且定点(时间点)重置的流程</h5><pre><code class="hljs html">                       +-------------------------+
+                       |     init value = 0      |
+                       +-----------+-------------+
+                                   |
+                                   |
+                                   |
+             +---------------------v----------------------+
+             |          when request arrived              |
+      +------+ detect lastReqTime+interval &gt; currentTime  +------+
+      |      |                                            |      |
+      Y      +--------------------------------------------+      |
+      |                                                          N
+      |                                                          |
++-----v-----------------------+                  +---------------v----------+
+|      reset value = 0        |                  |                          |
++-----------------------------+                  |  detect value &gt; thresold |
+             |                             +-----+                          +----+
+             |                             |     +--------------------------+    |
+             |                             N                                     |
+             |                             |                                     |
+             |                             v                                     |
+             |                   +---------+---------+                           |
+             |                   |                   |                           Y
+             |                   | value = value + 1 |                           |
+             |                   |                   |                           |
+             |                   +--------+----------+                           |
+             |                            |                                      |
+             |                    +-------v---------+                +-----------v-----+
+             +-------------------&gt;+  return true    |                |  return false   |
+                                  +-----------------+                +-----------------+</code></pre>
+<p>几个参数解释下：  </p>
+<ol>
+<li>value：当前时间段有多少请求进来了，即计数器的值  </li>
+<li>interval： 每次刷新计数器的时间间隔  </li>
+<li>lastReqTime: 上次请求进来的时间点  </li>
+<li>currentTime：当前时间点  </li>
+<li>thresold：时间间隔(interval)内请求数的最大阈值<br>这样设计，如果你的interval设置成1秒钟，thresold设置成1000，那么意思就是每秒限制1000请求数的流控。  相当于tps=1000限流。  </li>
+</ol>
+<h5 id="反向计数"><a href="#反向计数" class="headerlink" title="反向计数"></a>反向计数</h5><p>反向计数计数初始化value时不是初始化成0，而是初始化成thresold(你的限制请求数量的阈值)。<br>然后每次请求进来的时候 value不是+1而是-1，reset value的时候也是重置成thresold。</p>
+<h5 id="定点重置的lua脚本"><a href="#定点重置的lua脚本" class="headerlink" title="定点重置的lua脚本"></a>定点重置的lua脚本</h5><pre><code class="hljs lua"><span class="hljs-comment">-- 资源唯一标识</span>
+<span class="hljs-keyword">local</span> key = KEYS[<span class="hljs-number">1</span>]
+<span class="hljs-comment">-- 时间窗口内最大并发数</span>
+<span class="hljs-keyword">local</span> max_permits = <span class="hljs-built_in">tonumber</span>(KEYS[<span class="hljs-number">2</span>])
+<span class="hljs-comment">-- 窗口的间隔时间</span>
+<span class="hljs-keyword">local</span> interval_milliseconds = <span class="hljs-built_in">tonumber</span>(KEYS[<span class="hljs-number">3</span>])
+<span class="hljs-comment">-- 获取的并发数</span>
+<span class="hljs-keyword">local</span> permits = <span class="hljs-built_in">tonumber</span>(ARGV[<span class="hljs-number">1</span>])
+
+<span class="hljs-keyword">local</span> current_permits = <span class="hljs-built_in">tonumber</span>(redis.call(<span class="hljs-string">"get"</span>, key) <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>)
+
+<span class="hljs-comment">-- 如果超过了最大并发数，返回false</span>
+<span class="hljs-keyword">if</span> (current_permits + permits &gt; max_permits) <span class="hljs-keyword">then</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+<span class="hljs-keyword">else</span>
+    <span class="hljs-comment">-- 增加并发计数</span>
+    redis.call(<span class="hljs-string">"incrby"</span>, key, permits)
+    <span class="hljs-comment">-- 如果key中保存的并发计数为0，说明当前是一个新的时间窗口，它的过期时间设置为窗口的过期时间</span>
+    <span class="hljs-keyword">if</span> (current_permits == <span class="hljs-number">0</span>) <span class="hljs-keyword">then</span>
+        redis.call(<span class="hljs-string">"pexpire"</span>, key, interval_milliseconds)
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+<span class="hljs-keyword">end</span></code></pre>
+
+<h4 id="定点重置存在的问题"><a href="#定点重置存在的问题" class="headerlink" title="定点重置存在的问题"></a>定点重置存在的问题</h4><p>不论是正向计数还是反向计数，定点重置都存在一个问题：  </p>
+<pre><code class="hljs html">        0r        1000r  1000r        0r
+0s               0.8s  1.0s  1.2              2.0s
+ +----------------+-----+-----+----------------+-------&gt;timeline
+ ^                ^     ^     ^                ^
+ |                |     |     |                |
+ |                |     |     |                |
+ |                |     |     |                |
+ |                |     |     |                |
+ +                +     +     +                +</code></pre>
+<p>假设按上图时间线描述，0-0.8s系统没有收到请求，0.8-1.0s系统收到了1000个请求，1.0-1.2s系统又收到了1000个请求，1.2-2.0s系统收到了0个请求。这种场景其实是能通过上面的定点重置的流控的，但是实际在0.8s-1.2s这0.4s时间内tps达到了2000/(1.2-0.8)=5000的量，没能达到真正意义上的tps限流的述求。    </p>
+<h4 id="每次接口调用时按量调整当前还剩的可用请求数且反向计数"><a href="#每次接口调用时按量调整当前还剩的可用请求数且反向计数" class="headerlink" title="每次接口调用时按量调整当前还剩的可用请求数且反向计数"></a>每次接口调用时按量调整当前还剩的可用请求数且反向计数</h4><p>这里先解释一下<em>按量</em>，按量就是：<br>假设上一次接口调用到这次接口调用间隔是2s，然后我们是1000tps限流，那么此时按量调整就是2sx1000r/s= +2000r。 也就是此时可用请求数按量加2000个。<br>整体逻辑比较复杂，先用java代码描述下：  </p>
+<pre><code class="hljs java">-- key
+String key = <span class="hljs-string">"流控实例id串"</span>; <span class="hljs-comment">// 通用代码，可以支持多个流控实例，控制不同的服务</span>
+-- 最大存储的令牌数
+<span class="hljs-keyword">int</span> max_permits = <span class="hljs-number">10000</span>;
+-- 每秒钟产生的令牌数
+<span class="hljs-keyword">int</span> permits_per_second = <span class="hljs-number">1000</span>; <span class="hljs-comment">// tps阈值</span>
+-- 请求的令牌数
+<span class="hljs-keyword">int</span> required_permits = <span class="hljs-number">1</span>; <span class="hljs-comment">// 请求数流控每次1个请求，如果是流量流控，可以从外面把这个传进来</span>
+
+<span class="hljs-comment">// 存储流控逻辑中的数据用， 在redis中用hset代替。 [流控实例id串--&gt; [流程过程中需要的参数--&gt;参数值]]</span>
+Map&lt;String, Map&lt;String, Object&gt;&gt; storeMap = <span class="hljs-keyword">new</span> ConcurrentHashMap&lt;String, Map&lt;String, Object&gt;&gt;();
+
+-- 下次请求可以获取令牌的起始时间，初始值为<span class="hljs-number">0</span>
+<span class="hljs-keyword">long</span> next_free_ticket_micros = storeMap.get(key).get(<span class="hljs-string">"next_free_ticket_micros"</span>) , <span class="hljs-keyword">default</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// 取不到就用默认0</span>
+
+-- 当前时间
+<span class="hljs-keyword">long</span> now_micros = System.currentTimeMillis();
+
+-- 查询获取令牌是否超时
+<span class="hljs-keyword">if</span> (ARGV[<span class="hljs-number">1</span>] != <span class="hljs-keyword">null</span>) &#123;
+    -- 获取令牌的超时时间
+    <span class="hljs-keyword">long</span> timeout_micros = ARGV[<span class="hljs-number">1</span>];
+    <span class="hljs-keyword">long</span> micros_to_wait = next_free_ticket_micros - now_micros;
+    <span class="hljs-keyword">if</span> (micros_to_wait &gt; timeout_micros) &#123;
+        <span class="hljs-keyword">return</span> micros_to_wait
+    &#125;
+&#125;
+
+-- 当前存储的令牌数
+<span class="hljs-keyword">long</span> stored_permits = storeMap.get(key).get(<span class="hljs-string">"stored_permits"</span>) , <span class="hljs-keyword">default</span>: <span class="hljs-number">0</span> <span class="hljs-comment">// 取不到就用默认0</span>
+
+-- 添加令牌的时间间隔
+<span class="hljs-keyword">float</span> stable_interval_micros = <span class="hljs-number">1000</span> / permits_per_second;
+
+-- 补充令牌
+<span class="hljs-keyword">if</span> (now_micros &gt; next_free_ticket_micros) &#123;
+	<span class="hljs-comment">/**</span>
+<span class="hljs-comment">	 * 当前时间 到 下次请求可以获取令牌的起始时间 之间差多少毫秒  就补 多少毫秒/产生单个可用令牌的毫秒数</span>
+<span class="hljs-comment">	 * 比如 1000tps 则产生1个令牌要1毫秒，假设 上面差50毫秒，那么就可以有50个新令牌可以用</span>
+<span class="hljs-comment">	 *</span>
+<span class="hljs-comment">	 **/</span>
+    <span class="hljs-keyword">long</span> new_permits = (now_micros - next_free_ticket_micros) / stable_interval_micros;
+    stored_permits = math.min(max_permits, stored_permits + new_permits);  <span class="hljs-comment">// 取最大令牌数  与 存储令牌数+新可用令牌数 小的一个</span>
+    next_free_ticket_micros = now_micros; <span class="hljs-comment">// 将当前时间更新为next_free_ticket_micros ，因为有新令牌能用了嘛</span>
+&#125;
+
+-- 消耗令牌
+<span class="hljs-keyword">long</span> moment_available = next_free_ticket_micros;
+<span class="hljs-keyword">long</span> stored_permits_to_spend = math.min(required_permits, stored_permits); <span class="hljs-comment">// 将要花掉多少令牌， 请求数控制的是1  取小的是因为不能超过可用令牌数</span>
+<span class="hljs-keyword">long</span> fresh_permits = required_permits - stored_permits_to_spend; <span class="hljs-comment">// 这次用掉的，要减掉</span>
+<span class="hljs-keyword">long</span> wait_micros = fresh_permits * stable_interval_micros; <span class="hljs-comment">// fresh_permits &gt; 0 表示申请的令牌不够，则需要等，乘以每个令牌需要的产生时间，就是要等多久</span>
+
+<span class="hljs-comment">// redis.replicate_commands() // 在redis脚本中调用time会有问题的规避</span>
+storeMap.get(key).put(<span class="hljs-string">"stored_permits"</span>, stored_permits - stored_permits_to_spend);
+storeMap.get(key).put(<span class="hljs-string">"next_free_ticket_micros"</span>, next_free_ticket_micros + wait_micros);
+<span class="hljs-comment">// redis.call('expire', key, 10) // 每隔10s刷新一下这个流控实例</span>
+
+-- 返回需要等待的时间长度
+<span class="hljs-keyword">return</span> moment_available - now_micros;</code></pre>
+
+<p>最后贴一下redis的lua脚本:  </p>
+<pre><code class="hljs lua"><span class="hljs-comment">-- key</span>
+<span class="hljs-keyword">local</span> key = KEYS[<span class="hljs-number">1</span>]
+<span class="hljs-comment">-- 最大存储的令牌数</span>
+<span class="hljs-keyword">local</span> max_permits = <span class="hljs-built_in">tonumber</span>(KEYS[<span class="hljs-number">2</span>])
+<span class="hljs-comment">-- 每秒钟产生的令牌数</span>
+<span class="hljs-keyword">local</span> permits_per_second = <span class="hljs-built_in">tonumber</span>(KEYS[<span class="hljs-number">3</span>])
+<span class="hljs-comment">-- 请求的令牌数</span>
+<span class="hljs-keyword">local</span> required_permits = <span class="hljs-built_in">tonumber</span>(ARGV[<span class="hljs-number">1</span>])
+
+<span class="hljs-comment">-- 下次请求可以获取令牌的起始时间</span>
+<span class="hljs-keyword">local</span> next_free_ticket_micros = <span class="hljs-built_in">tonumber</span>(redis.call(<span class="hljs-string">'hget'</span>, key, <span class="hljs-string">'next_free_ticket_micros'</span>) <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>)
+
+<span class="hljs-comment">-- 当前时间</span>
+<span class="hljs-keyword">local</span> <span class="hljs-built_in">time</span> = redis.call(<span class="hljs-string">'time'</span>)
+<span class="hljs-keyword">local</span> now_micros = <span class="hljs-built_in">tonumber</span>(<span class="hljs-built_in">time</span>[<span class="hljs-number">1</span>]) * <span class="hljs-number">1000000</span> + <span class="hljs-built_in">tonumber</span>(<span class="hljs-built_in">time</span>[<span class="hljs-number">2</span>])
+
+<span class="hljs-comment">-- 查询获取令牌是否超时</span>
+<span class="hljs-keyword">if</span> (ARGV[<span class="hljs-number">2</span>] ~= <span class="hljs-literal">nil</span>) <span class="hljs-keyword">then</span>
+    <span class="hljs-comment">-- 获取令牌的超时时间</span>
+    <span class="hljs-keyword">local</span> timeout_micros = <span class="hljs-built_in">tonumber</span>(ARGV[<span class="hljs-number">2</span>])
+    <span class="hljs-keyword">local</span> micros_to_wait = next_free_ticket_micros - now_micros
+    <span class="hljs-keyword">if</span> (micros_to_wait &gt; timeout_micros) <span class="hljs-keyword">then</span>
+        <span class="hljs-keyword">return</span> micros_to_wait
+    <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment">-- 当前存储的令牌数</span>
+<span class="hljs-keyword">local</span> stored_permits = <span class="hljs-built_in">tonumber</span>(redis.call(<span class="hljs-string">'hget'</span>, key, <span class="hljs-string">'stored_permits'</span>) <span class="hljs-keyword">or</span> <span class="hljs-number">0</span>)
+<span class="hljs-comment">-- 添加令牌的时间间隔</span>
+<span class="hljs-keyword">local</span> stable_interval_micros = <span class="hljs-number">1000000</span> / permits_per_second
+
+<span class="hljs-comment">-- 补充令牌</span>
+<span class="hljs-keyword">if</span> (now_micros &gt; next_free_ticket_micros) <span class="hljs-keyword">then</span>
+    <span class="hljs-keyword">local</span> new_permits = (now_micros - next_free_ticket_micros) / stable_interval_micros
+    stored_permits = <span class="hljs-built_in">math</span>.<span class="hljs-built_in">min</span>(max_permits, stored_permits + new_permits)
+    next_free_ticket_micros = now_micros
+<span class="hljs-keyword">end</span>
+
+<span class="hljs-comment">-- 消耗令牌</span>
+<span class="hljs-keyword">local</span> moment_available = next_free_ticket_micros
+<span class="hljs-keyword">local</span> stored_permits_to_spend = <span class="hljs-built_in">math</span>.<span class="hljs-built_in">min</span>(required_permits, stored_permits)
+<span class="hljs-keyword">local</span> fresh_permits = required_permits - stored_permits_to_spend;
+<span class="hljs-keyword">local</span> wait_micros = fresh_permits * stable_interval_micros
+
+redis.replicate_commands()
+redis.call(<span class="hljs-string">'hset'</span>, key, <span class="hljs-string">'stored_permits'</span>, stored_permits - stored_permits_to_spend)
+redis.call(<span class="hljs-string">'hset'</span>, key, <span class="hljs-string">'next_free_ticket_micros'</span>, next_free_ticket_micros + wait_micros)
+redis.call(<span class="hljs-string">'expire'</span>, key, <span class="hljs-number">10</span>)
+
+<span class="hljs-comment">-- 返回需要等待的时间长度</span>
+<span class="hljs-keyword">return</span> moment_available - now_micros</code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/app-encode-not-right/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">应用默认编码不对的问题定位</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/fastjson-low-version-lost-field/">
+                        <span class="hidden-mobile">fastjosn在低版本丢字段问题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "再写一篇tps限流&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

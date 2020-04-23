@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>对象创建 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:02">
+                    星期五, 四月 24日 2020, 7:02 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.8k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    50
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="对象创建"><a href="#对象创建" class="headerlink" title="对象创建"></a>对象创建</h2><p>interpreterRuntime.cpp 解释器中new指令的入口：  </p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// 宏展开</span>
+ <span class="hljs-comment">// IRT_ENTRY(void, InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, int index))</span>
+<span class="hljs-keyword">void</span>  InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, <span class="hljs-keyword">int</span> index) &#123;                                               \
+    ThreadInVMfromJava __tiv(thread);                                \
+                                        \
+  HandleMarkCleaner __hm(thread);                                    \
+  Thread* __the_thread__ = thread;                                           \
+  os::verify_stack_alignment();                       \
+  
+  <span class="hljs-comment">// 宏展开</span>
+  <span class="hljs-comment">// Klass* k_oop = pool-&gt;klass_at(index, CHECK);</span>
+   Klass* k_oop = pool-&gt;klass_at(index, __the_thread__); <span class="hljs-keyword">if</span> ((((ThreadShadow*)__the_thread__)-&gt;has_pending_exception())) <span class="hljs-keyword">return</span>       ; (<span class="hljs-keyword">void</span>)(<span class="hljs-number">0</span>);
+  
+  <span class="hljs-function">instanceKlassHandle <span class="hljs-title">klass</span> <span class="hljs-params">(THREAD, k_oop)</span></span>;
+
+  <span class="hljs-comment">// Make sure we are not instantiating an abstract klass</span>
+  klass-&gt;check_valid_for_instantiation(<span class="hljs-literal">true</span>, CHECK);
+
+  <span class="hljs-comment">// Make sure klass is initialized</span>
+  klass-&gt;initialize(CHECK);
+
+  <span class="hljs-comment">// At this point the class may not be fully initialized</span>
+  <span class="hljs-comment">// because of recursive initialization. If it is fully</span>
+  <span class="hljs-comment">// initialized &amp; has_finalized is not set, we rewrite</span>
+  <span class="hljs-comment">// it into its fast version (Note: no locking is needed</span>
+  <span class="hljs-comment">// here since this is an atomic byte write and can be</span>
+  <span class="hljs-comment">// done more than once).</span>
+  <span class="hljs-comment">//</span>
+  <span class="hljs-comment">// Note: In case of classes with has_finalized we don't</span>
+  <span class="hljs-comment">//       rewrite since that saves us an extra check in</span>
+  <span class="hljs-comment">//       the fast version which then would call the</span>
+  <span class="hljs-comment">//       slow version anyway (and do a call back into</span>
+  <span class="hljs-comment">//       Java).</span>
+  <span class="hljs-comment">//       If we have a breakpoint, then we don't rewrite</span>
+  <span class="hljs-comment">//       because the _breakpoint bytecode would be lost.</span>
+  oop obj = klass-&gt;allocate_instance(CHECK); <span class="hljs-comment">// SimonNote: 解释器创建对象实力入口</span>
+  thread-&gt;set_vm_result(obj);
+  
+  <span class="hljs-comment">//======再往上找谁调进来的，调用栈已经不好观察了，直接贴代码。这个好像不对，再分析</span>
+  <span class="hljs-comment">// bytecodeInterpreter.cpp </span>
+  CASE(_new): &#123;
+  <span class="hljs-comment">// ......</span>
+  CALL_VM(InterpreterRuntime::_new(THREAD, METHOD-&gt;constants(), index),
+                handle_exception);
+  
+  &#125;</code></pre>
+
+
+
+<p>关于对象直接转unsigned char指针的写法，在codeBlob.hpp中有很多这种写法，最简单的示例如下：  </p>
+<pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span> u_char;
+<span class="hljs-keyword">typedef</span> u_char*       address;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">CodeBlob::printSize</span><span class="hljs-params">()</span></span>&#123;
+  <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; _size &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+  address aa = (address)<span class="hljs-keyword">this</span>; <span class="hljs-comment">// 这样写是没语法错误的,转换后aa的内存地址和this一样的。</span>
+  <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; aa &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+&#125;</code></pre>
+
+<p>至于怎么调到InterpreterRuntime::_new这个方法的，是从汇编指令直接跳过来的，具体的可以看《虚拟机解释器与bytecode对接》一文。  </p>
+<h2 id="怎么调试new指令new你自己的类"><a href="#怎么调试new指令new你自己的类" class="headerlink" title="怎么调试new指令new你自己的类"></a>怎么调试new指令new你自己的类</h2><p>要调试这个new指令怎么new你自己的类(你做实验的类)，怎么做？<br>因为JVM在执行一个main方法时，前面会new200+个类，要调到你自己的类，得有个办法才行，不然F8一路按下去要按好久。<br>我的办法是：<br>在 InterpreterRuntime::_new加上 k_oop-&gt;name()-&gt;print();</p>
+<pre><code class="hljs cpp">IRT_ENTRY(<span class="hljs-keyword">void</span>, InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, <span class="hljs-keyword">int</span> index))
+  Klass* k_oop = pool-&gt;klass_at(index, CHECK); 
+k_oop-&gt;name()-&gt;print();<span class="hljs-function">instanceKlassHandle <span class="hljs-title">klass</span> <span class="hljs-params">(THREAD, k_oop)</span></span>;
+<span class="hljs-comment">// 这样能把每次new的class名给打出来</span></code></pre>
+<p>这样就能发现我自己的类大概是在new指令被调用了261次后才被new，于是对此处断点加上ignore count为261，这样便能调试到new我自己的测试类了。  </p>
+<h2 id="new指令为对象分配空间"><a href="#new指令为对象分配空间" class="headerlink" title="new指令为对象分配空间"></a>new指令为对象分配空间</h2><p>此处我的测试类是Group  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Group</span> </span>&#123;
+
+	
+	<span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> id;
+	
+	<span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> t1;
+	
+	<span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> t2;
+	
+	<span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span> t3;
+	
+	<span class="hljs-keyword">private</span> String name;
+	
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">Group</span><span class="hljs-params">(<span class="hljs-keyword">int</span> id, String name)</span> </span>&#123;
+		<span class="hljs-keyword">this</span>.id = id;
+		<span class="hljs-keyword">this</span>.name = name;
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> <span class="hljs-title">getId</span><span class="hljs-params">()</span> </span>&#123;
+		<span class="hljs-keyword">return</span> id;
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setId</span><span class="hljs-params">(<span class="hljs-keyword">int</span> id)</span> </span>&#123;
+		<span class="hljs-keyword">this</span>.id = id;
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">getName</span><span class="hljs-params">()</span> </span>&#123;
+		<span class="hljs-keyword">return</span> name;
+	&#125;
+
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setName</span><span class="hljs-params">(String name)</span> </span>&#123;
+		<span class="hljs-keyword">this</span>.name = name;
+	&#125;
+
+	<span class="hljs-meta">@Override</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">toString</span><span class="hljs-params">()</span> </span>&#123;
+		<span class="hljs-keyword">return</span> <span class="hljs-string">"Group [id="</span> + id + <span class="hljs-string">", name="</span> + name + <span class="hljs-string">"]"</span>;
+	&#125;
+&#125;</code></pre>
+<p>计算对象大小：  </p>
+<pre><code class="hljs cpp"><span class="hljs-function">instanceOop <span class="hljs-title">InstanceKlass::allocate_instance</span><span class="hljs-params">(TRAPS)</span> </span>&#123;
+  <span class="hljs-keyword">bool</span> has_finalizer_flag = has_finalizer(); <span class="hljs-comment">// Query before possible GC</span>
+  <span class="hljs-keyword">int</span> size = size_helper();  <span class="hljs-comment">// Query before forming handle.</span>
+
+  <span class="hljs-function">KlassHandle <span class="hljs-title">h_k</span><span class="hljs-params">(THREAD, <span class="hljs-keyword">this</span>)</span></span>;
+
+  instanceOop i;
+
+  i = (instanceOop)CollectedHeap::obj_allocate(h_k, size, CHECK_NULL);
+  <span class="hljs-keyword">if</span> (has_finalizer_flag &amp;&amp; !RegisterFinalizersAtInit) &#123;
+    i = register_finalizer(i, CHECK_NULL);
+  &#125;
+  <span class="hljs-keyword">return</span> i;
+&#125;</code></pre>
+<p>此处size为6，我理解此处的单位是heapword即byte。<br>分配空间的栈：  </p>
+<pre><code class="hljs cpp">Copy::pd_fill_to_words() at copy_x86.hpp:<span class="hljs-number">49</span> <span class="hljs-number">0x7ffff61faf7c</span>	
+Copy::fill_to_words() at copy.hpp:<span class="hljs-number">236</span> <span class="hljs-number">0x7ffff61fae72</span>	
+ThreadLocalAllocBuffer::allocate() at threadLocalAllocBuffer.<span class="hljs-keyword">inline</span>.hpp:<span class="hljs-number">44</span> <span class="hljs-number">0x7ffff61fb04e</span>	
+CollectedHeap::allocate_from_tlab() at collectedHeap.<span class="hljs-keyword">inline</span>.hpp:<span class="hljs-number">181</span> <span class="hljs-number">0x7ffff61fb97a</span>	
+CollectedHeap::common_mem_allocate_noinit() at collectedHeap.<span class="hljs-keyword">inline</span>.hpp:<span class="hljs-number">124</span> <span class="hljs-number">0x7ffff61fb6d9</span>	
+CollectedHeap::common_mem_allocate_init() at collectedHeap.<span class="hljs-keyword">inline</span>.hpp:<span class="hljs-number">173</span> <span class="hljs-number">0x7ffff61fb8e2</span>	
+CollectedHeap::obj_allocate() at collectedHeap.<span class="hljs-keyword">inline</span>.hpp:<span class="hljs-number">201</span> <span class="hljs-number">0x7ffff660a876</span>	
+InstanceKlass::allocate_instance() at instanceKlass.cpp:<span class="hljs-number">1</span>,<span class="hljs-number">104</span> <span class="hljs-number">0x7ffff65f36fd</span>	
+InterpreterRuntime::_new() at interpreterRuntime.cpp:<span class="hljs-number">172</span> <span class="hljs-number">0x7ffff6652fb8</span></code></pre>
+<p>分配空间的代码：  </p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// threadLocalAllocBuffer.inline.hpp</span>
+<span class="hljs-function"><span class="hljs-keyword">inline</span> HeapWord* <span class="hljs-title">ThreadLocalAllocBuffer::allocate</span><span class="hljs-params">(<span class="hljs-keyword">size_t</span> size)</span> </span>&#123;
+  invariants();
+  HeapWord* obj = top();
+  <span class="hljs-keyword">if</span> (pointer_delta(end(), obj) &gt;= size) &#123;
+    <span class="hljs-comment">// successful thread-local allocation</span>
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> ASSERT</span>
+    <span class="hljs-comment">// Skip mangling the space corresponding to the object header to</span>
+    <span class="hljs-comment">// ensure that the returned space is not considered parsable by</span>
+    <span class="hljs-comment">// any concurrent GC thread.</span>
+    <span class="hljs-keyword">size_t</span> hdr_size = oopDesc::header_size();
+    Copy::fill_to_words(obj + hdr_size, size - hdr_size, badHeapWordVal);
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span> <span class="hljs-comment">// ASSERT</span></span>
+    <span class="hljs-comment">// This addition is safe because we know that top is</span>
+    <span class="hljs-comment">// at least size below end, so the add can't wrap.</span>
+    set_top(obj + size);
+
+    invariants();
+    <span class="hljs-keyword">return</span> obj;
+  &#125;
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;
+&#125;
+
+
+<span class="hljs-comment">// copy_x86.hpp</span>
+<span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">pd_fill_to_words</span><span class="hljs-params">(HeapWord* tohw, <span class="hljs-keyword">size_t</span> count, juint value)</span> </span>&#123;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> AMD64</span>
+  julong* to = (julong*) tohw;
+  julong  v  = ((julong) value &lt;&lt; <span class="hljs-number">32</span>) | value;
+  <span class="hljs-keyword">while</span> (count-- &gt; <span class="hljs-number">0</span>) &#123;
+    *to++ = v;
+  &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">else</span></span>
+  juint* to = (juint*)tohw;
+  count *= HeapWordSize / BytesPerInt;
+  <span class="hljs-keyword">while</span> (count-- &gt; <span class="hljs-number">0</span>) &#123;
+    *to++ = value;
+  &#125;
+<span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span> <span class="hljs-comment">// AMD64</span></span>
+&#125;</code></pre>
+
+
+<h2 id="编译hsdis"><a href="#编译hsdis" class="headerlink" title="编译hsdis"></a>编译hsdis</h2><pre><code class="hljs shell">cd /home/appweb/600.self/03.code/01.cpp/01.jdk8-b120/hotspot-jdk8-b120/hotspot/src/share/tools/hsdis
+wget ftp://sourceware.org/pub/binutils/snapshots/binutils-2.20.51.tar.bz2
+tar -xjvf binutils-2.20.51.tar.bz2
+export BINUTILS=binutils-2.20.51
+gedit binutils-2.20.51/binutils/configure  # 修改一下  注释掉下面的代码
+<span class="hljs-meta">#</span><span class="bash"><span class="hljs-keyword">if</span> <span class="hljs-built_in">test</span> <span class="hljs-string">"<span class="hljs-variable">$&#123;ERROR_ON_WARNING&#125;</span>"</span> = yes ; <span class="hljs-keyword">then</span></span>
+<span class="hljs-meta">#</span><span class="bash">    GCC_WARN_CFLAGS=<span class="hljs-string">"<span class="hljs-variable">$GCC_WARN_CFLAGS</span> -Werror"</span></span>
+<span class="hljs-meta">#</span><span class="bash">    NO_WERROR=<span class="hljs-string">"-Wno-error"</span></span>
+<span class="hljs-meta">#</span><span class="bash"><span class="hljs-keyword">fi</span></span>
+
+gedit binutils-2.20.51/bfd//configure  # 修改一下  注释掉上面的代码
+make all64
+<span class="hljs-meta">#</span><span class="bash"> 编译成功后 copy so文件到对应目录</span>
+ cp build/linux-amd64/hsdis-amd64.so ~/600.self/03.code/01.cpp/01.jdk8-b120/hotspot-jdk8-b120/build/linux-x86_64-normal-server-slowdebug/jdk/lib/amd64/server/</code></pre>
+<p>编译好后，放到正确的路径下，就可以用-XX:+PrintInterpreter打印出汇编代码了。  </p>
+<h2 id="解释器"><a href="#解释器" class="headerlink" title="解释器"></a>解释器</h2><p><a href="https://rednaxelafx.iteye.com/blog/428721" target="_blank" rel="noopener">运行时对代码操纵的一个小demo</a>  </p>
+<h2 id="new一个对象的汇编代码翻译"><a href="#new一个对象的汇编代码翻译" class="headerlink" title="new一个对象的汇编代码翻译"></a>new一个对象的汇编代码翻译</h2><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ObjectCreateTest1</span> </span>&#123;
+									
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(String[] args)</span> </span>&#123;
+		Group g = <span class="hljs-keyword">new</span>  Group(<span class="hljs-number">1</span>, <span class="hljs-string">"g-1"</span>);
+	&#125;
+
+&#125;</code></pre>
+
+
+<h2 id="字节码翻译时，内存地址查看"><a href="#字节码翻译时，内存地址查看" class="headerlink" title="字节码翻译时，内存地址查看"></a>字节码翻译时，内存地址查看</h2><pre><code class="hljs hrml">MacroAssembler	MacroAssembler	&#123;...&#125;	
+	Assembler	Assembler	&#123;...&#125;	
+		AbstractAssembler	AbstractAssembler	&#123;...&#125;	
+			ResourceObj	ResourceObj	&#123;...&#125;	
+			_code_section	CodeSection *	0x7ffff7fdd5e0	
+				_start	address	0x7fffe10449e0 &quot;Pé*&quot;</code></pre>
+
+<h2 id="附：new指令的翻译："><a href="#附：new指令的翻译：" class="headerlink" title="附：new指令的翻译："></a>附：new指令的翻译：</h2><pre><code class="hljs x86asm"><span class="hljs-comment">;_new</span>
+<span class="hljs-comment">;start:0x7fffe10449e0</span>
+<span class="hljs-comment">;end:0x7fffe1044e00</span>
+
+00007fffe10449e0:   <span class="hljs-keyword">push</span>    %rax
+00007fffe10449e1:   jmpq    <span class="hljs-number">0x7fffe1044a10</span>
+00007fffe10449e6:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x8,%rsp
+00007fffe10449ea:   <span class="hljs-keyword">vmovss</span>  %xmm0,(%rsp)
+00007fffe10449ef:   jmpq    <span class="hljs-number">0x7fffe1044a10</span>
+00007fffe10449f4:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x10,%rsp
+00007fffe10449f8:   <span class="hljs-keyword">vmovsd</span>  %xmm0,(%rsp)
+00007fffe10449fd:   jmpq    <span class="hljs-number">0x7fffe1044a10</span>
+00007fffe1044a02:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x10,%rsp
+00007fffe1044a06:   <span class="hljs-keyword">mov</span>     %rax,(%rsp)
+00007fffe1044a0a:   jmpq    <span class="hljs-number">0x7fffe1044a10</span>
+00007fffe1044a0f:   <span class="hljs-keyword">push</span>    %rax   
+<span class="hljs-comment">; 下面开始进入TemplateTable::_new</span>
+00007fffe1044a10:   movzwl  <span class="hljs-number">0x1</span>(%r13),%edx
+00007fffe1044a15:   <span class="hljs-keyword">bswap</span>   %edx
+00007fffe1044a17:   <span class="hljs-keyword">shr</span>     <span class="hljs-number">$0</span>x10,%edx
+<span class="hljs-comment">; _masm-&gt;get_unsigned_2_byte_index_at_bcp(rdx, 1); 翻译出来的指令到上一行结束</span>
+00007fffe1044a1a:   <span class="hljs-keyword">mov</span>     -<span class="hljs-number">0x18</span>(%rbp),%rsi
+00007fffe1044a1e:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x10</span>(%rsi),%rsi
+00007fffe1044a22:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x8</span>(%rsi),%rsi
+00007fffe1044a26:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x10</span>(%rsi),%rax
+<span class="hljs-comment">; _masm-&gt;get_cpool_and_tags(rsi, rax); 翻译出来的指令到上一行结束</span>
+00007fffe1044a2a:   cmpb    <span class="hljs-number">$0</span>x7,<span class="hljs-number">0x4</span>(%rax,%rdx,<span class="hljs-number">1</span>)
+<span class="hljs-comment">; const int tags_offset = Array&lt;u1&gt;::base_offset_in_bytes(); </span>
+<span class="hljs-comment">; _masm-&gt;cmpb(Address(rax, rdx, Address::times_1, tags_offset), JVM_CONSTANT_Class);</span>
+<span class="hljs-comment">; 翻译出来的指令到上一行结束</span>
+00007fffe1044a2f:   <span class="hljs-keyword">jne</span>     <span class="hljs-number">0x7fffe1044b92</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::notEqual, slow_case); </span>
+00007fffe1044a35:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x58</span>(%rsi,%rdx,<span class="hljs-number">8</span>),%rsi
+<span class="hljs-comment">;// get InstanceKlass</span>
+<span class="hljs-comment">;	  _masm-&gt;movptr(rsi, Address(rsi, rdx, Address::times_8, sizeof(ConstantPool)));</span>
+00007fffe1044a3a:   cmpb    <span class="hljs-number">$0</span>x4,<span class="hljs-number">0x16a</span>(%rsi)
+<span class="hljs-comment">;// make sure klass is initialized &amp; doesn't have finalizer</span>
+<span class="hljs-comment">;	  // make sure klass is fully initialized</span>
+<span class="hljs-comment">;	  _masm-&gt;cmpb(Address(rsi, InstanceKlass::init_state_offset()), InstanceKlass::fully_initialized);</span>
+00007fffe1044a41:   <span class="hljs-keyword">jne</span>     <span class="hljs-number">0x7fffe1044b92</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::notEqual, slow_case)</span>
+00007fffe1044a47:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0xc</span>(%rsi),%edx
+<span class="hljs-comment">; // get instance_size in InstanceKlass (scaled to a count of bytes)</span>
+<span class="hljs-comment">;	  _masm-&gt;movl(rdx, Address(rsi, Klass::layout_helper_offset()));</span>
+00007fffe1044a4a:   <span class="hljs-keyword">test</span>    <span class="hljs-number">$0</span>x1,%edx
+<span class="hljs-comment">; // test to see if it has a finalizer or is malformed in some way</span>
+<span class="hljs-comment">;	  _masm-&gt;testl(rdx, Klass::_lh_instance_slow_path_bit);</span>
+00007fffe1044a50:   <span class="hljs-keyword">jne</span>     <span class="hljs-number">0x7fffe1044b92</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::notZero, slow_case);</span>
+00007fffe1044a56:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x70</span>(%r15),%rax
+<span class="hljs-comment">; _masm-&gt;movptr(rax, Address(r15_thread, in_bytes(JavaThread::tlab_top_offset())));</span>
+	    
+	    
+00007fffe1044a5a:   <span class="hljs-keyword">lea</span>     (%rax,%rdx,<span class="hljs-number">1</span>),%rbx
+<span class="hljs-comment">;_masm-&gt;lea(rbx, Address(rax, rdx, Address::times_1));</span>
+	    
+00007fffe1044a5e:   <span class="hljs-keyword">cmp</span>     <span class="hljs-number">0x80</span>(%r15),%rbx
+<span class="hljs-comment">;_masm-&gt;cmpptr(rbx, Address(r15_thread, in_bytes(JavaThread::tlab_end_offset())));</span>
+	    
+00007fffe1044a65:   <span class="hljs-keyword">ja</span>      <span class="hljs-number">0x7fffe1044a74</span>
+<span class="hljs-comment">;_masm-&gt;jcc(Assembler::above, allow_shared_alloc ? allocate_shared : slow_case);</span>
+	    
+00007fffe1044a6b:   <span class="hljs-keyword">mov</span>     %rbx,<span class="hljs-number">0x70</span>(%r15)
+<span class="hljs-comment">;_masm-&gt;movptr(Address(r15_thread, in_bytes(JavaThread::tlab_top_offset())), rbx);</span>
+
+00007fffe1044a6f:   jmpq    <span class="hljs-number">0x7fffe1044aa6</span>
+<span class="hljs-comment">; _masm-&gt;jmp(initialize_object);</span>
+00007fffe1044a74:   movabs  <span class="hljs-number">$0</span>x7ffff0025338,%r10
+<span class="hljs-comment">; _masm-&gt;bind(allocate_shared);</span>
+
+<span class="hljs-comment">;	    ExternalAddress top((address)Universe::heap()-&gt;top_addr());</span>
+<span class="hljs-comment">;	    ExternalAddress end((address)Universe::heap()-&gt;end_addr());</span>
+
+<span class="hljs-comment">;	    const Register RtopAddr = rscratch1;</span>
+<span class="hljs-comment">;	    const Register RendAddr = rscratch2;</span>
+
+<span class="hljs-comment">;	    _masm-&gt;lea(RtopAddr, top);</span>
+00007fffe1044a7e:   movabs  <span class="hljs-number">$0</span>x7ffff00252e8,%r11
+<span class="hljs-comment">;  _masm-&gt;lea(RendAddr, end);</span>
+00007fffe1044a88:   <span class="hljs-keyword">mov</span>     (%r10),%rax
+<span class="hljs-comment">; _masm-&gt;movptr(rax, Address(RtopAddr, 0));</span>
+00007fffe1044a8b:   <span class="hljs-keyword">lea</span>     (%rax,%rdx,<span class="hljs-number">1</span>),%rbx
+<span class="hljs-comment">;// For retries rax gets set by cmpxchgq</span>
+<span class="hljs-comment">;	    Label retry;</span>
+<span class="hljs-comment">;	    _masm-&gt;bind(retry);</span>
+<span class="hljs-comment">;	    _masm-&gt;lea(rbx, Address(rax, rdx, Address::times_1));</span>
+00007fffe1044a8f:   <span class="hljs-keyword">cmp</span>     (%r11),%rbx
+<span class="hljs-comment">; _masm-&gt;cmpptr(rbx, Address(RendAddr, 0));</span>
+00007fffe1044a92:   <span class="hljs-keyword">ja</span>      <span class="hljs-number">0x7fffe1044b92</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::above, slow_case);</span>
+00007fffe1044a98:   <span class="hljs-keyword">lock</span>    <span class="hljs-keyword">cmpxchg</span> %rbx,(%r10)
+<span class="hljs-comment">; _masm-&gt;lock();</span>
+<span class="hljs-comment">; _masm-&gt;cmpxchgptr(rbx, Address(RtopAddr, 0));</span>
+00007fffe1044a9d:   <span class="hljs-keyword">jne</span>     <span class="hljs-number">0x7fffe1044a8b</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::notEqual, retry);</span>
+00007fffe1044a9f:   <span class="hljs-keyword">add</span>     %rdx,<span class="hljs-number">0xd0</span>(%r15)
+<span class="hljs-comment">; _masm-&gt;incr_allocated_bytes(r15_thread, rdx, 0);</span>
+00007fffe1044aa6:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x10,%edx
+<span class="hljs-comment">; // The object is initialized before the header.  If the object size is</span>
+<span class="hljs-comment">;	    // zero, go directly to the header initialization.</span>
+<span class="hljs-comment">;	    _masm-&gt;bind(initialize_object);</span>
+<span class="hljs-comment">;	    _masm-&gt;decrementl(rdx, sizeof(oopDesc));</span>
+00007fffe1044aa9:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044abd</span>
+<span class="hljs-comment">; _masm-&gt;jcc(Assembler::zero, initialize_header);</span>
+00007fffe1044aaf:   <span class="hljs-keyword">xor</span>     %ecx,%ecx
+00007fffe1044ab1:   <span class="hljs-keyword">shr</span>     <span class="hljs-number">$0</span>x3,%edx
+00007fffe1044ab4:   <span class="hljs-keyword">mov</span>     %rcx,<span class="hljs-number">0x8</span>(%rax,%rdx,<span class="hljs-number">8</span>)
+00007fffe1044ab9:   <span class="hljs-keyword">dec</span>     %edx// Initialize object fields
+00007fffe1044abb:   <span class="hljs-keyword">jne</span>     <span class="hljs-number">0x7fffe1044ab4</span>
+<span class="hljs-comment">;	    _masm-&gt;xorl(rcx, rcx); // use zero reg to clear memory (shorter code)</span>
+<span class="hljs-comment">;	    _masm-&gt;shrl(rdx, LogBytesPerLong);  // divide by oopSize to simplify the loop</span>
+<span class="hljs-comment">;	    &#123;</span>
+<span class="hljs-comment">; _masm-&gt;bind(loop);</span>
+<span class="hljs-comment">;	      _masm-&gt;movq(Address(rax, rdx, Address::times_8, sizeof(oopDesc) - oopSize), rcx);</span>
+<span class="hljs-comment">;	      _masm-&gt;decrementl(rdx);</span>
+00007fffe1044abd:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0xb0</span>(%rsi),%r10
+00007fffe1044ac4:   <span class="hljs-keyword">mov</span>     %r10,(%rax)
+<span class="hljs-comment">; _masm-&gt;movptr(rscratch1, Address(rsi, Klass::prototype_header_offset()));</span>
+<span class="hljs-comment">;	      _masm-&gt;movptr(Address(rax, oopDesc::mark_offset_in_bytes()), rscratch1);</span>
+00007fffe1044ac7:   <span class="hljs-keyword">xor</span>     %ecx,%ecx
+00007fffe1044ac9:   <span class="hljs-keyword">mov</span>     %ecx,<span class="hljs-number">0xc</span>(%rax)
+00007fffe1044acc:   <span class="hljs-keyword">shr</span>     <span class="hljs-number">$0</span>x3,%rsi
+00007fffe1044ad0:   <span class="hljs-keyword">mov</span>     %esi,<span class="hljs-number">0x8</span>(%rax)
+<span class="hljs-comment">; _masm-&gt;xorl(rcx, rcx); // use zero reg to clear memory (shorter code)</span>
+<span class="hljs-comment">;	    _masm-&gt;store_klass_gap(rax, rcx);  // zero klass gap for compressed oops</span>
+<span class="hljs-comment">;	    _masm-&gt;store_klass(rax, rsi);      // store klass last</span>
+00007fffe1044ad3:   cmpb    <span class="hljs-number">$0</span>x0,<span class="hljs-number">0x16317681</span>(%rip)        # <span class="hljs-number">0x7ffff735c15b</span> &lt;DTraceAllocProbes&gt;
+00007fffe1044ada:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044b8d</span>
+<span class="hljs-comment">; SkipIfEqual skip(_masm, &amp;DTraceAllocProbes, false);</span>
+00007fffe1044ae0:   <span class="hljs-keyword">push</span>    %rax
+<span class="hljs-comment">; _masm-&gt;push(atos); // save the return value</span>
+00007fffe1044ae1:   <span class="hljs-keyword">mov</span>     %rax,%rdi
+00007fffe1044ae4:   cmpq    <span class="hljs-number">$0</span>x0,-<span class="hljs-number">0x10</span>(%rbp)
+00007fffe1044aec:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044b69</span>
+00007fffe1044af2:   <span class="hljs-keyword">mov</span>     %rsp,-<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044af7:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x80,%rsp
+00007fffe1044afe:   <span class="hljs-keyword">mov</span>     %rax,<span class="hljs-number">0x78</span>(%rsp)
+00007fffe1044b03:   <span class="hljs-keyword">mov</span>     %rcx,<span class="hljs-number">0x70</span>(%rsp)
+00007fffe1044b08:   <span class="hljs-keyword">mov</span>     %rdx,<span class="hljs-number">0x68</span>(%rsp)
+00007fffe1044b0d:   <span class="hljs-keyword">mov</span>     %rbx,<span class="hljs-number">0x60</span>(%rsp)
+00007fffe1044b12:   <span class="hljs-keyword">mov</span>     %rbp,<span class="hljs-number">0x50</span>(%rsp)
+00007fffe1044b17:   <span class="hljs-keyword">mov</span>     %rsi,<span class="hljs-number">0x48</span>(%rsp)
+00007fffe1044b1c:   <span class="hljs-keyword">mov</span>     %rdi,<span class="hljs-number">0x40</span>(%rsp)
+00007fffe1044b21:   <span class="hljs-keyword">mov</span>     %r8,<span class="hljs-number">0x38</span>(%rsp)
+00007fffe1044b26:   <span class="hljs-keyword">mov</span>     %r9,<span class="hljs-number">0x30</span>(%rsp)
+00007fffe1044b2b:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044b30:   <span class="hljs-keyword">mov</span>     %r11,<span class="hljs-number">0x20</span>(%rsp)
+00007fffe1044b35:   <span class="hljs-keyword">mov</span>     %r12,<span class="hljs-number">0x18</span>(%rsp)
+00007fffe1044b3a:   <span class="hljs-keyword">mov</span>     %r13,<span class="hljs-number">0x10</span>(%rsp)
+00007fffe1044b3f:   <span class="hljs-keyword">mov</span>     %r14,<span class="hljs-number">0x8</span>(%rsp)
+00007fffe1044b44:   <span class="hljs-keyword">mov</span>     %r15,(%rsp)
+00007fffe1044b48:   movabs  <span class="hljs-number">$0</span>x7ffff6c8ceb8,%rdi
+00007fffe1044b52:   movabs  <span class="hljs-number">$0</span>x7fffe1044af2,%rsi
+00007fffe1044b5c:   <span class="hljs-keyword">mov</span>     %rsp,%rdx
+00007fffe1044b5f:   <span class="hljs-keyword">and</span>     <span class="hljs-number">$0</span>xfffffffffffffff0,%rsp
+00007fffe1044b63:   callq   <span class="hljs-number">0x7ffff68024fa</span> &lt;MacroAssembler::debug64(char*, long, long*)&gt;
+00007fffe1044b68:   <span class="hljs-keyword">hlt</span>     
+00007fffe1044b69:   <span class="hljs-keyword">test</span>    <span class="hljs-number">$0</span>xf,%esp
+00007fffe1044b6f:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044b87</span>
+00007fffe1044b75:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x8,%rsp
+00007fffe1044b79:   callq   <span class="hljs-number">0x7ffff699de5c</span> &lt;SharedRuntime::dtrace_object_alloc(oopDesc*)&gt;
+00007fffe1044b7e:   <span class="hljs-keyword">add</span>     <span class="hljs-number">$0</span>x8,%rsp
+00007fffe1044b82:   jmpq    <span class="hljs-number">0x7fffe1044b8c</span>
+00007fffe1044b87:   callq   <span class="hljs-number">0x7ffff699de5c</span> &lt;SharedRuntime::dtrace_object_alloc(oopDesc*)&gt;
+<span class="hljs-comment">; _masm-&gt;call_VM_leaf(CAST_FROM_FN_PTR(address, SharedRuntime::dtrace_object_alloc), rax); // 这一句翻译出了很多句指令</span>
+00007fffe1044b8c:   <span class="hljs-keyword">pop</span>     %rax
+<span class="hljs-comment">; _masm-&gt;pop(atos); // restore the return value</span>
+00007fffe1044b8d:   jmpq    <span class="hljs-number">0x7fffe1044e00</span>
+<span class="hljs-comment">; _masm-&gt;jmp(done);</span>
+00007fffe1044b92:   <span class="hljs-keyword">mov</span>     -<span class="hljs-number">0x18</span>(%rbp),%rsi
+00007fffe1044b96:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x10</span>(%rsi),%rsi
+00007fffe1044b9a:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x8</span>(%rsi),%rsi
+<span class="hljs-comment">; _masm-&gt;get_constant_pool(c_rarg1);</span>
+00007fffe1044b9e:   movzwl  <span class="hljs-number">0x1</span>(%r13),%edx
+00007fffe1044ba3:   <span class="hljs-keyword">bswap</span>   %edx
+00007fffe1044ba5:   <span class="hljs-keyword">shr</span>     <span class="hljs-number">$0</span>x10,%edx
+<span class="hljs-comment">; _masm-&gt;get_unsigned_2_byte_index_at_bcp(c_rarg2, 1);</span>
+00007fffe1044ba8:   callq   <span class="hljs-number">0x7fffe1044bb2</span>
+00007fffe1044bad:   jmpq    <span class="hljs-number">0x7fffe1044e00</span>
+00007fffe1044bb2:   <span class="hljs-keyword">lea</span>     <span class="hljs-number">0x8</span>(%rsp),%rax
+00007fffe1044bb7:   <span class="hljs-keyword">mov</span>     %r13,-<span class="hljs-number">0x38</span>(%rbp)
+00007fffe1044bbb:   cmpq    <span class="hljs-number">$0</span>x0,-<span class="hljs-number">0x10</span>(%rbp)
+00007fffe1044bc3:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044c40</span>
+00007fffe1044bc9:   <span class="hljs-keyword">mov</span>     %rsp,-<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044bce:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x80,%rsp
+00007fffe1044bd5:   <span class="hljs-keyword">mov</span>     %rax,<span class="hljs-number">0x78</span>(%rsp)
+00007fffe1044bda:   <span class="hljs-keyword">mov</span>     %rcx,<span class="hljs-number">0x70</span>(%rsp)
+00007fffe1044bdf:   <span class="hljs-keyword">mov</span>     %rdx,<span class="hljs-number">0x68</span>(%rsp)
+00007fffe1044be4:   <span class="hljs-keyword">mov</span>     %rbx,<span class="hljs-number">0x60</span>(%rsp)
+00007fffe1044be9:   <span class="hljs-keyword">mov</span>     %rbp,<span class="hljs-number">0x50</span>(%rsp)
+00007fffe1044bee:   <span class="hljs-keyword">mov</span>     %rsi,<span class="hljs-number">0x48</span>(%rsp)
+00007fffe1044bf3:   <span class="hljs-keyword">mov</span>     %rdi,<span class="hljs-number">0x40</span>(%rsp)
+00007fffe1044bf8:   <span class="hljs-keyword">mov</span>     %r8,<span class="hljs-number">0x38</span>(%rsp)
+00007fffe1044bfd:   <span class="hljs-keyword">mov</span>     %r9,<span class="hljs-number">0x30</span>(%rsp)
+00007fffe1044c02:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044c07:   <span class="hljs-keyword">mov</span>     %r11,<span class="hljs-number">0x20</span>(%rsp)
+00007fffe1044c0c:   <span class="hljs-keyword">mov</span>     %r12,<span class="hljs-number">0x18</span>(%rsp)
+00007fffe1044c11:   <span class="hljs-keyword">mov</span>     %r13,<span class="hljs-number">0x10</span>(%rsp)
+00007fffe1044c16:   <span class="hljs-keyword">mov</span>     %r14,<span class="hljs-number">0x8</span>(%rsp)
+00007fffe1044c1b:   <span class="hljs-keyword">mov</span>     %r15,(%rsp)
+00007fffe1044c1f:   movabs  <span class="hljs-number">$0</span>x7ffff6c8ceb8,%rdi
+00007fffe1044c29:   movabs  <span class="hljs-number">$0</span>x7fffe1044bc9,%rsi
+00007fffe1044c33:   <span class="hljs-keyword">mov</span>     %rsp,%rdx
+00007fffe1044c36:   <span class="hljs-keyword">and</span>     <span class="hljs-number">$0</span>xfffffffffffffff0,%rsp
+00007fffe1044c3a:   callq   <span class="hljs-number">0x7ffff68024fa</span> &lt;MacroAssembler::debug64(char*, long, long*)&gt;
+00007fffe1044c3f:   <span class="hljs-keyword">hlt</span>     
+00007fffe1044c40:   <span class="hljs-keyword">push</span>    %r10
+00007fffe1044c42:   <span class="hljs-keyword">cmp</span>     <span class="hljs-number">0x16346f27</span>(%rip),%r12        # <span class="hljs-number">0x7ffff738bb70</span> &lt;_ZN8Universe17_narrow_ptrs_baseE&gt;
+00007fffe1044c49:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044cc6</span>
+00007fffe1044c4f:   <span class="hljs-keyword">mov</span>     %rsp,-<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044c54:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x80,%rsp
+00007fffe1044c5b:   <span class="hljs-keyword">mov</span>     %rax,<span class="hljs-number">0x78</span>(%rsp)
+00007fffe1044c60:   <span class="hljs-keyword">mov</span>     %rcx,<span class="hljs-number">0x70</span>(%rsp)
+00007fffe1044c65:   <span class="hljs-keyword">mov</span>     %rdx,<span class="hljs-number">0x68</span>(%rsp)
+00007fffe1044c6a:   <span class="hljs-keyword">mov</span>     %rbx,<span class="hljs-number">0x60</span>(%rsp)
+00007fffe1044c6f:   <span class="hljs-keyword">mov</span>     %rbp,<span class="hljs-number">0x50</span>(%rsp)
+00007fffe1044c74:   <span class="hljs-keyword">mov</span>     %rsi,<span class="hljs-number">0x48</span>(%rsp)
+00007fffe1044c79:   <span class="hljs-keyword">mov</span>     %rdi,<span class="hljs-number">0x40</span>(%rsp)
+00007fffe1044c7e:   <span class="hljs-keyword">mov</span>     %r8,<span class="hljs-number">0x38</span>(%rsp)
+00007fffe1044c83:   <span class="hljs-keyword">mov</span>     %r9,<span class="hljs-number">0x30</span>(%rsp)
+00007fffe1044c88:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044c8d:   <span class="hljs-keyword">mov</span>     %r11,<span class="hljs-number">0x20</span>(%rsp)
+00007fffe1044c92:   <span class="hljs-keyword">mov</span>     %r12,<span class="hljs-number">0x18</span>(%rsp)
+00007fffe1044c97:   <span class="hljs-keyword">mov</span>     %r13,<span class="hljs-number">0x10</span>(%rsp)
+00007fffe1044c9c:   <span class="hljs-keyword">mov</span>     %r14,<span class="hljs-number">0x8</span>(%rsp)
+00007fffe1044ca1:   <span class="hljs-keyword">mov</span>     %r15,(%rsp)
+00007fffe1044ca5:   movabs  <span class="hljs-number">$0</span>x7ffff6cf9a40,%rdi
+00007fffe1044caf:   movabs  <span class="hljs-number">$0</span>x7fffe1044c4f,%rsi
+00007fffe1044cb9:   <span class="hljs-keyword">mov</span>     %rsp,%rdx
+00007fffe1044cbc:   <span class="hljs-keyword">and</span>     <span class="hljs-number">$0</span>xfffffffffffffff0,%rsp
+00007fffe1044cc0:   callq   <span class="hljs-number">0x7ffff68024fa</span> &lt;MacroAssembler::debug64(char*, long, long*)&gt;
+00007fffe1044cc5:   <span class="hljs-keyword">hlt</span>     
+00007fffe1044cc6:   <span class="hljs-keyword">pop</span>     %r10
+00007fffe1044cc8:   <span class="hljs-keyword">mov</span>     %r15,%rdi
+00007fffe1044ccb:   <span class="hljs-keyword">mov</span>     %rbp,<span class="hljs-number">0x200</span>(%r15)
+00007fffe1044cd2:   <span class="hljs-keyword">mov</span>     %rax,<span class="hljs-number">0x1f0</span>(%r15)
+00007fffe1044cd9:   <span class="hljs-keyword">test</span>    <span class="hljs-number">$0</span>xf,%esp
+00007fffe1044cdf:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044cf7</span>
+00007fffe1044ce5:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x8,%rsp
+00007fffe1044ce9:   callq   <span class="hljs-number">0x7ffff6652d9a</span> &lt;InterpreterRuntime::_new(JavaThread*, ConstantPool*, <span class="hljs-keyword">int</span>)&gt;
+00007fffe1044cee:   <span class="hljs-keyword">add</span>     <span class="hljs-number">$0</span>x8,%rsp
+00007fffe1044cf2:   jmpq    <span class="hljs-number">0x7fffe1044cfc</span>
+00007fffe1044cf7:   callq   <span class="hljs-number">0x7ffff6652d9a</span> &lt;InterpreterRuntime::_new(JavaThread*, ConstantPool*, <span class="hljs-keyword">int</span>)&gt;
+00007fffe1044cfc:   <span class="hljs-keyword">push</span>    %rax
+00007fffe1044cfd:   <span class="hljs-keyword">push</span>    %rdi
+00007fffe1044cfe:   <span class="hljs-keyword">push</span>    %rsi
+00007fffe1044cff:   <span class="hljs-keyword">push</span>    %rdx
+00007fffe1044d00:   <span class="hljs-keyword">push</span>    %rcx
+00007fffe1044d01:   <span class="hljs-keyword">push</span>    %r8
+00007fffe1044d03:   <span class="hljs-keyword">push</span>    %r9
+00007fffe1044d05:   <span class="hljs-keyword">push</span>    %r10
+00007fffe1044d07:   <span class="hljs-keyword">mov</span>     %rsp,%r10
+00007fffe1044d0a:   <span class="hljs-keyword">and</span>     <span class="hljs-number">$0</span>xfffffffffffffff0,%rsp
+00007fffe1044d0e:   <span class="hljs-keyword">push</span>    %r10
+00007fffe1044d10:   <span class="hljs-keyword">push</span>    %r11
+00007fffe1044d12:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">$0</span>x1,%edi
+00007fffe1044d17:   callq   <span class="hljs-number">0x7ffff73b3030</span> &lt;__GI___pthread_getspecific&gt;
+00007fffe1044d1c:   <span class="hljs-keyword">pop</span>     %r11
+00007fffe1044d1e:   <span class="hljs-keyword">pop</span>     %rsp
+00007fffe1044d1f:   <span class="hljs-keyword">pop</span>     %r10
+00007fffe1044d21:   <span class="hljs-keyword">pop</span>     %r9
+00007fffe1044d23:   <span class="hljs-keyword">pop</span>     %r8
+00007fffe1044d25:   <span class="hljs-keyword">pop</span>     %rcx
+00007fffe1044d26:   <span class="hljs-keyword">pop</span>     %rdx
+00007fffe1044d27:   <span class="hljs-keyword">pop</span>     %rsi
+00007fffe1044d28:   <span class="hljs-keyword">pop</span>     %rdi
+00007fffe1044d29:   <span class="hljs-keyword">cmp</span>     %rax,%r15
+00007fffe1044d2c:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044da9</span>
+00007fffe1044d32:   <span class="hljs-keyword">mov</span>     %rsp,-<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044d37:   <span class="hljs-keyword">sub</span>     <span class="hljs-number">$0</span>x80,%rsp
+00007fffe1044d3e:   <span class="hljs-keyword">mov</span>     %rax,<span class="hljs-number">0x78</span>(%rsp)
+00007fffe1044d43:   <span class="hljs-keyword">mov</span>     %rcx,<span class="hljs-number">0x70</span>(%rsp)
+00007fffe1044d48:   <span class="hljs-keyword">mov</span>     %rdx,<span class="hljs-number">0x68</span>(%rsp)
+00007fffe1044d4d:   <span class="hljs-keyword">mov</span>     %rbx,<span class="hljs-number">0x60</span>(%rsp)
+00007fffe1044d52:   <span class="hljs-keyword">mov</span>     %rbp,<span class="hljs-number">0x50</span>(%rsp)
+00007fffe1044d57:   <span class="hljs-keyword">mov</span>     %rsi,<span class="hljs-number">0x48</span>(%rsp)
+00007fffe1044d5c:   <span class="hljs-keyword">mov</span>     %rdi,<span class="hljs-number">0x40</span>(%rsp)
+00007fffe1044d61:   <span class="hljs-keyword">mov</span>     %r8,<span class="hljs-number">0x38</span>(%rsp)
+00007fffe1044d66:   <span class="hljs-keyword">mov</span>     %r9,<span class="hljs-number">0x30</span>(%rsp)
+00007fffe1044d6b:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x28</span>(%rsp)
+00007fffe1044d70:   <span class="hljs-keyword">mov</span>     %r11,<span class="hljs-number">0x20</span>(%rsp)
+00007fffe1044d75:   <span class="hljs-keyword">mov</span>     %r12,<span class="hljs-number">0x18</span>(%rsp)
+00007fffe1044d7a:   <span class="hljs-keyword">mov</span>     %r13,<span class="hljs-number">0x10</span>(%rsp)
+00007fffe1044d7f:   <span class="hljs-keyword">mov</span>     %r14,<span class="hljs-number">0x8</span>(%rsp)
+00007fffe1044d84:   <span class="hljs-keyword">mov</span>     %r15,(%rsp)
+00007fffe1044d88:   movabs  <span class="hljs-number">$0</span>x7ffff6cf9bb8,%rdi
+00007fffe1044d92:   movabs  <span class="hljs-number">$0</span>x7fffe1044d32,%rsi
+00007fffe1044d9c:   <span class="hljs-keyword">mov</span>     %rsp,%rdx
+00007fffe1044d9f:   <span class="hljs-keyword">and</span>     <span class="hljs-number">$0</span>xfffffffffffffff0,%rsp
+00007fffe1044da3:   callq   <span class="hljs-number">0x7ffff68024fa</span> &lt;MacroAssembler::debug64(char*, long, long*)&gt;
+00007fffe1044da8:   <span class="hljs-keyword">hlt</span>     
+00007fffe1044da9:   <span class="hljs-keyword">pop</span>     %rax
+00007fffe1044daa:   movabs  <span class="hljs-number">$0</span>x0,%r10
+00007fffe1044db4:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x1f0</span>(%r15)
+00007fffe1044dbb:   movabs  <span class="hljs-number">$0</span>x0,%r10
+00007fffe1044dc5:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x200</span>(%r15)
+00007fffe1044dcc:   cmpq    <span class="hljs-number">$0</span>x0,<span class="hljs-number">0x8</span>(%r15)
+00007fffe1044dd4:   <span class="hljs-keyword">je</span>      <span class="hljs-number">0x7fffe1044ddf</span>
+00007fffe1044dda:   jmpq    <span class="hljs-number">0x7fffe1000420</span>
+00007fffe1044ddf:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0x250</span>(%r15),%rax
+00007fffe1044de6:   movabs  <span class="hljs-number">$0</span>x0,%r10
+00007fffe1044df0:   <span class="hljs-keyword">mov</span>     %r10,<span class="hljs-number">0x250</span>(%r15)
+00007fffe1044df7:   <span class="hljs-keyword">mov</span>     -<span class="hljs-number">0x38</span>(%rbp),%r13
+00007fffe1044dfb:   <span class="hljs-keyword">mov</span>     -<span class="hljs-number">0x30</span>(%rbp),%r14
+<span class="hljs-comment">;  call_VM(rax, CAST_FROM_FN_PTR(address, InterpreterRuntime::_new), c_rarg1, c_rarg2);</span>
+00007fffe1044dff:   retq    
+00007fffe1044e00:   <span class="hljs-keyword">int3</span></code></pre>
+<p>arraylength字节码翻译成汇编指令：  </p>
+<pre><code class="hljs x86asm"><span class="hljs-comment">;start:0x7fffe10453a0</span>
+<span class="hljs-comment">;end:0x7fffe10453a4</span>
+
+00007fffe10453a0:   <span class="hljs-keyword">pop</span>     %rax
+00007fffe10453a1:   <span class="hljs-keyword">mov</span>     <span class="hljs-number">0xc</span>(%rax),%eax
+00007fffe10453a4:   <span class="hljs-keyword">int3</span></code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/vm-interpret-bytecode/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">虚拟机解释器与bytecode对接</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/compile-hotspot8/">
+                        <span class="hidden-mobile">step by step 编译hotspot8</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "对象创建&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>dubbo Protocol实现剖析 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:41">
+                    星期五, 四月 24日 2020, 7:41 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.5k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    34
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <hr>
+<p>2.6.3版本，之前读的是2.4.9版本<br>本篇主要阐述dubbo rpc的com.alibaba.dubbo.rpc.Protocol的实现，包括作用，用法，原理等等。</p>
+<h1 id="类与接口关系以及其装配"><a href="#类与接口关系以及其装配" class="headerlink" title="类与接口关系以及其装配"></a>类与接口关系以及其装配</h1><p>根据类与接口关系文档可以看到Protocol实现关系如下：<br>264 Protocol<br>–264.1 QosProtocolWrapper<br>–264.2 RegistryProtocol<br>–264.3 AbstractProtocol<br>—-264.3.1 AbstractProxyProtocol<br>——264.3.1.1 HessianProtocol<br>——264.3.1.2 HttpProtocol<br>——264.3.1.3 RestProtocol<br>——264.3.1.4 RmiProtocol<br>——264.3.1.5 WebServiceProtocol<br>—-264.3.2 DubboProtocol<br>—-264.3.3 InjvmProtocol<br>—-264.3.4 MemcachedProtocol<br>—-264.3.5 RedisProtocol<br>—-264.3.6 ThriftProtocol<br>—-264.3.7 MockProtocol<br>–264.4 InjvmProtocol<br>–264.5 ProtocolFilterWrapper<br>–264.6 ProtocolListenerWrapper<br>默认会用到 QosProtocolWrapper RegistryProtocol(如果有注册中心) DubboProtocol InjvmProtocol  ProtocolFilterWrapper ProtocolListenerWrapper。  </p>
+<a id="more"></a>
+
+<p>在META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Protocol中做了装配<br>filter=com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper<br>listener=com.alibaba.dubbo.rpc.protocol.ProtocolListenerWrapper<br>mock=com.alibaba.dubbo.rpc.support.MockProtocol<br>dubbo=com.alibaba.dubbo.rpc.protocol.dubbo.DubboProtocol<br>injvm=com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol<br>rmi=com.alibaba.dubbo.rpc.protocol.rmi.RmiProtocol<br>hessian=com.alibaba.dubbo.rpc.protocol.hessian.HessianProtocol<br>com.alibaba.dubbo.rpc.protocol.http.HttpProtocol<br>com.alibaba.dubbo.rpc.protocol.webservice.WebServiceProtocol<br>thrift=com.alibaba.dubbo.rpc.protocol.thrift.ThriftProtocol<br>memcached=com.alibaba.dubbo.rpc.protocol.memcached.MemcachedProtocol<br>redis=com.alibaba.dubbo.rpc.protocol.redis.RedisProtocol<br>rest=com.alibaba.dubbo.rpc.protocol.rest.RestProtocol<br>registry=com.alibaba.dubbo.registry.integration.RegistryProtocol<br>qos=com.alibaba.dubbo.qos.protocol.QosProtocolWrapper </p>
+<h1 id="扩展点机制createAdaptiveExtensionClass"><a href="#扩展点机制createAdaptiveExtensionClass" class="headerlink" title="扩展点机制createAdaptiveExtensionClass"></a>扩展点机制createAdaptiveExtensionClass</h1><p>要看懂protocol的实例化与export过程最好先了解下扩展点机制，前面有文章写过。 此处要需要注意ExtensionLoader类的下面代码：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">private</span> Class&lt;?&gt; createAdaptiveExtensionClass() &#123;
+    String code = createAdaptiveExtensionClassCode();
+    ClassLoader classLoader = findClassLoader();
+    com.alibaba.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.common.compiler.Compiler<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getAdaptiveExtension</span>()</span>;
+    <span class="hljs-keyword">return</span> compiler.compile(code, classLoader);
+&#125;</code></pre>
+<p>再协议初始化与export时会动态生成的两个类的代码：  Protocol$Adaptive，ProxyFactory$Adaptive，看上面code变量就是生成的具体代码了。 </p>
+<h1 id="protocol及其wrap之间的关系"><a href="#protocol及其wrap之间的关系" class="headerlink" title="protocol及其wrap之间的关系"></a>protocol及其wrap之间的关系</h1><p>在扩展点机制com.alibaba.dubbo.common.extension.ExtensionLoader.createExtension(String)中：<br>在创建扩展实例时，会同时对他的wrap类的实例进行创建，代码细节如下：</p>
+<pre><code class="hljs java">T instance = (T) EXTENSION_INSTANCES.get(clazz);
+<span class="hljs-keyword">if</span> (instance == <span class="hljs-keyword">null</span>) &#123;
+    EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+    instance = (T) EXTENSION_INSTANCES.get(clazz);
+&#125;
+injectExtension(instance);<span class="hljs-comment">// 此时是DubboProtocol示例</span>
+Set&lt;Class&lt;?&gt;&gt; wrapperClasses = cachedWrapperClasses;
+<span class="hljs-keyword">if</span> (wrapperClasses != <span class="hljs-keyword">null</span> &amp;&amp; !wrapperClasses.isEmpty()) &#123;
+    <span class="hljs-keyword">for</span> (Class&lt;?&gt; wrapperClass : wrapperClasses) &#123;
+        instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));<span class="hljs-comment">// 此处创建wrap实例</span>
+    &#125;
+&#125;</code></pre>
+<p>实际应用中，以dubbo协议这个扩展为例，当创上述代码建了DubboProtocol协议的instance，此时是DubboProtocol实例，接下来对cachedWrapperClasses进行for循环，创建对应的wrap类，这些wrap类都有一个以Protocol类型的参数，那么创建wrap实例的时候，会把之前产生的Protocol实例传递给他。<br>此例，cachedWrapperClasses里的数据来自于META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Protocol文件中配置的是wrap的扩展，<br>此处是：<br> class com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper<br> class com.alibaba.dubbo.rpc.protocol.ProtocolListenerWrapper,<br>  class com.alibaba.dubbo.qos.protocol.QosProtocolWrapper,<br>(怎么从配置文件中识别是否是wrap类？答案是 只要这个QosProtocolWrapper类有类型为Protocol的构造函数存在，就当QosProtocolWrapper是wrap类。)<br>那么此处便会依次构造这三个类。  这个三个类的构造顺序不固定，因为用的上面createExtension代码中cachedWrapperClasses是ConcurrentHashSet维护的。   </p>
+<h1 id="export机制"><a href="#export机制" class="headerlink" title="export机制"></a>export机制</h1><h2 id="整体构造与export顺序即触发时机的解释"><a href="#整体构造与export顺序即触发时机的解释" class="headerlink" title="整体构造与export顺序即触发时机的解释"></a>整体构造与export顺序即触发时机的解释</h2><p>此处是以provider端为例<br>DubboProtocol.<init>() line: 162    // final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();  ServiceConfig取默认端口值 ，用在没有对dubbo:protocol标签配置端口时  </p>
+<p>ProtocolListenerWrapper.<init>(Protocol) line: 41    // 上面实例化DubboProtocol实例时，会级联实例化其关联的wrap类，级联的wrap类是怎么获取的 参见<code>级联的wrap类是怎么获取</code>部分<br>QosProtocolWrapper.<init>(Protocol) line: 39    // 上面实例化DubboProtocol实例时，会级联实例化其关联的wrap类<br>ProtocolFilterWrapper.<init>(Protocol) line: 40    // 上面实例化DubboProtocol实例时，会级联实例化其关联的wrap类  </p>
+<p>ProtocolListenerWrapper.<init>(Protocol) line: 41  // ServiceConfig 对本端需要暴露的服务 做exportLocal(url)    时，会export injvm协议，那么这时又会级联实例化 其关联的wrap类，同样是3个 ：<br>QosProtocolWrapper.<init>(Protocol) line: 39    // ServiceConfig  做exportLocal(url)    时，会export injvm协议，级联实例化，同上<br>ProtocolFilterWrapper.<init>(Protocol) line: 40     // ServiceConfig  做exportLocal(url)    时，会export injvm协议，级联实例化，同上  </p>
+<p>ProtocolFilterWrapper.export(Invoker<T>) line: 97    //  对上面做exportLocal时级联创建出来的wrap类调用export方法 ，而这三个wrap类又会对他内部的protocol做export调用 就是下面这几个<br>QosProtocolWrapper.export(Invoker<T>) line: 52    // 被上行这个级联export的<br>ProtocolListenerWrapper.export(Invoker<T>) line: 54    // 被上行这个级联export的<br>InjvmProtocol.export(Invoker<T>) line: 86    // 被上行这个级联export的  结果是创建一个InjvmExporter实例， 也即是说export可能是调自己级联的protocol，也可能是创建一个exporter  </p>
+<p>RegistryProtocol.<init>() line: 73<br>//</p>
+<pre><code class="hljs java">Invoker&lt;?&gt; invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+DelegateProviderMetaDataInvoker wrapperInvoker = <span class="hljs-keyword">new</span> DelegateProviderMetaDataInvoker(invoker, <span class="hljs-keyword">this</span>);
+
+Exporter&lt;?&gt; exporter = protocol.export(wrapperInvoker);</code></pre>
+<p>针对 registryURL 先创建invoker，再用这个invoker创建wrapperInvoker，再用wrapperInvoker做exporter。    </p>
+<p>ProtocolListenerWrapper.<init>(Protocol) line: 41    // 被RegistryProtocol级联创建<br>QosProtocolWrapper.<init>(Protocol) line: 39      // 被RegistryProtocol级联创建<br>ProtocolFilterWrapper.<init>(Protocol) line: 40     // 被RegistryProtocol级联创建   </p>
+<hr>
+<p>ProtocolFilterWrapper.export(Invoker<T>) line: 97    // RegistryProtocol做export时先级联的wrap实例进行export 这三个wrap中 对REGISTRY_PROTOCOL做了特殊逻辑处理。  详细请参见代码<br>QosProtocolWrapper.export(Invoker<T>) line: 52     // 同上<br>ProtocolListenerWrapper.export(Invoker<T>) line: 54    // 同上<br>RegistryProtocol.export(Invoker<T>) line: 132    // 同上 最终export出了DestroyableExporter 就是对应Registry协议的exporter<br>ProtocolFilterWrapper.export(Invoker<T>) line: 97    // 上行RegistryProtocol export时先做doLocalExport，doLocalExport时把provider的url与其对应的exporter做一个缓存(如果缓存中没有，此时要export,并把对provider export出来的结果做ExporterChangeableWrapper的包装，最后返回ExporterChangeableWrapper实例。这行的这个export就是被这个触发的，详细的可以参见他代码)</p>
+<pre><code class="hljs java">String key = getCacheKey(originInvoker);
+ExporterChangeableWrapper&lt;T&gt; exporter = (ExporterChangeableWrapper&lt;T&gt;) bounds.get(key);
+<span class="hljs-keyword">if</span> (exporter == <span class="hljs-keyword">null</span>) &#123;
+    <span class="hljs-keyword">synchronized</span> (bounds) &#123;
+        exporter = (ExporterChangeableWrapper&lt;T&gt;) bounds.get(key);
+        <span class="hljs-keyword">if</span> (exporter == <span class="hljs-keyword">null</span>) &#123;
+            <span class="hljs-keyword">final</span> Invoker&lt;?&gt; invokerDelegete = <span class="hljs-keyword">new</span> InvokerDelegete&lt;T&gt;(originInvoker, getProviderUrl(originInvoker));
+            exporter = <span class="hljs-keyword">new</span> ExporterChangeableWrapper&lt;T&gt;((Exporter&lt;T&gt;) protocol.export(invokerDelegete), originInvoker);
+            bounds.put(key, exporter);
+        &#125;
+    &#125;
+&#125;</code></pre>
+<p>QosProtocolWrapper.export(Invoker<T>) line: 52    // 上一行级联触发<br>ProtocolListenerWrapper.export(Invoker<T>) line: 54    // 上上一行级联触发<br>DubboProtocol.export(Invoker<T>) line: 229    // 上上上一行级联触发  </p>
+<h2 id="ProtocolFilterWrapper"><a href="#ProtocolFilterWrapper" class="headerlink" title="ProtocolFilterWrapper"></a>ProtocolFilterWrapper</h2><p>rpc过滤器链的组织创建者。      </p>
+<p>如果是注册中心 级联export的，直接级联wrap的protocol进行export，不做其他处理。<br>如果是非注册中心 级联export的，比如injvm dubbo这种协议级联的，做buildInvokerChain 构建调用中过滤器链的处理。 就是前面博客介绍的rpc过滤器com.alibaba.dubbo.rpc.Filter的实现实例串起来。通过<strong>循环加内部类访问外围变量的方式</strong>组成的链。贴下关键代码：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = filters.size() - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i--) &#123;
+    <span class="hljs-keyword">final</span> Filter filter = filters.get(i);
+    <span class="hljs-keyword">final</span> Invoker&lt;T&gt; next = last;
+    last = <span class="hljs-keyword">new</span> Invoker&lt;T&gt;() &#123;
+<span class="hljs-comment">// ......</span>
+        <span class="hljs-function"><span class="hljs-keyword">public</span> Result <span class="hljs-title">invoke</span><span class="hljs-params">(Invocation invocation)</span> <span class="hljs-keyword">throws</span> RpcException </span>&#123;
+            <span class="hljs-keyword">return</span> filter.invoke(next, invocation);
+        &#125;
+<span class="hljs-comment">// ......</span>
+    &#125;;
+&#125;</code></pre>
+<p>next与last配合使用形成了链。  </p>
+<h2 id="QosProtocolWrapper"><a href="#QosProtocolWrapper" class="headerlink" title="QosProtocolWrapper"></a>QosProtocolWrapper</h2><p>如果是非注册中心 级联export的，直接级联wrap的protocol进行export，不做其他处理<br>如果是注册中心 级联export的，启动QoS server。参见com.alibaba.dubbo.qos.server.Server。  </p>
+<h2 id="ProtocolListenerWrapper"><a href="#ProtocolListenerWrapper" class="headerlink" title="ProtocolListenerWrapper"></a>ProtocolListenerWrapper</h2><p>用于服务export时候监听机制的插入。  </p>
+<p>如果是注册中心 级联export的，直接级联wrap的protocol进行export，不做其他处理。<br>如果是非注册中心 级联export的，比如injvm dubbo这种协议级联的，先级联wrap的protocol进行export，再创建ListenerExporterWrapper实例。 主要是为了让ExporterListener监听器插入进来。   </p>
+<h2 id="RegistryProtocol"><a href="#RegistryProtocol" class="headerlink" title="RegistryProtocol"></a>RegistryProtocol</h2><p>对应注册中心协议  </p>
+<p>先做本地的export<br>然后根据配置将 registry://127.0.0.1:2174/com.alibaba.dubbo.registry.RegistryService?application=hello-…置换成具体的注册中心协议地址，如： zookeeper://127.0.0.1:2174/com.alibaba.dubbo.registry.RegistryService?application=hello-world-…<br>根据注册中心协议地址 或者Registry–&gt;ZookeeperRegistry的实例。<br>判断是否是非延迟暴露的，就开始注册，比较简单：  </p>
+<pre><code class="hljs java">zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, <span class="hljs-keyword">true</span>));</code></pre>
+<p>可以通过其父类<code>FailbackRegistry</code>看到，支持失败重试，由一个定时调度线程重试。    </p>
+<pre><code class="hljs java"><span class="hljs-keyword">this</span>.retryFuture = retryExecutor.scheduleWithFixedDelay(<span class="hljs-keyword">new</span> Runnable() &#123;
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">run</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-comment">// Check and connect to the registry</span>
+        <span class="hljs-keyword">try</span> &#123;
+            retry();
+        &#125; <span class="hljs-keyword">catch</span> (Throwable t) &#123; <span class="hljs-comment">// Defensive fault tolerance</span>
+            logger.error(<span class="hljs-string">"Unexpected error occur at failed retry, cause: "</span> + t.getMessage(), t);
+        &#125;
+    &#125;
+&#125;, retryPeriod, retryPeriod, TimeUnit.MILLISECONDS);</code></pre>
+<p>Failback是一种容错，详细的可以参见 常见容错机制。<br>注册之后是对OverrideListener 的处理。<br>该export返回的是DestroyableExporter实例，顾名思义是可以销毁的exoprter，在其unexport里做了文章,移除注册，移除export。  </p>
+<h1 id="ref机制"><a href="#ref机制" class="headerlink" title="ref机制"></a>ref机制</h1><p>先看下consumer端发起调用时的链路流程：  </p>
+<pre><code class="hljs html"> +---------------------------+            +---------------------------+            +---------------------------+              
+ |      helloService         |            |      proxy                |            |  InvokerInvocationHandler |              
+ |      sayHello             +----------&gt; |      sayHello             +----------&gt; |  invoke                   |              
+ |                           |            |                           |            |  proxy method args        |              
+ +---------------------------+            +---------------------------+            +-------------+-------------+              
+                                                                                                 |                            
+                                                                                                 |                            
+                                                                                  +---------------------------------+         
+                                                                                  |              |                  |         
+                                                                                  | +------------v--------------+   |         
+                                                                                  | |  MockClusterInvoker       |   |         
+                                                                                  | |  invoke                   |   |         
+                                                                                  | |                           |   |         
+                                                                                  | +------------+--------------+   |         
+                                                                                  |              |                  |         
+                                                                                  |              |                  |         
+                                                                                  |              |                  |         
+ +---------------------------+            +---------------------------+           | +------------v--------------+   |         
+ | Router                    |            | RegistryDirectory         |           | |  FailoverClusterInvoker   |   |         
+ | route                     | &lt;----------+ list                      | &lt;-----------+  invoke                   |   |         
+ | MockInVokersSelector      |            | INVOCATION--&gt;List INVOKER |           | |                           |   |         
+ +------------+--------------+            +---------------------------+           | +---------------------------+   |         
+              |                                                                   |                                 |         
+              |                                                                   +---------------------------------+         
+              |                                                                 cluster invoke，分布式调用容错机制也是在这做                      
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
+              |                                                                                                               
++-------------v-------------+             +---------------------------+             +---------------------------+             
+|  RandomLoadBalance        |             |InvokerDelegate            |             | ListenerInvokerWrap       |             
+|  select                   +-----------&gt; |invoke                     +-----------&gt; | invoke                    |             
+|  List INVOKER--&gt;INVOKER   |             |                           |             |                           |             
++---------------------------+             +---------------------------+             +---------------------------+</code></pre>
+<p>RegistryProtocol  注册中心协议  对接口协议接口约束，不论何种注册中心都走这个实现。<br>RegistryDirectory 提供由服务目录查找出真正能提供服务的所有提供方<br>Registry   各个注册中心的实现的接口约束，具体实现有 RedisRegistry  ZookeeperRegistry  MulticastRegistry  DubboRegistry。 主要完成注册这个逻辑。 就是把自己的信息写入注册中心。<br>Cluster  多服务提供方的一个封装 。他们负责创建多服务调用者实例。 比如FailoverCluster负责创建FailoverClusterInvoker实例。Cluster的实现是以分布式容错机制Failover,Failfast,Failback等这些维度进行。 对应invoker也是按照这个维度划分，比如FailbackClusterInvoker，FailfastClusterInvoker，BroadcastClusterInvoker等等。<br>Router  路由机制<br>LoadBalance   负载均衡机制<br>Invoker  调用者。 按分布式容错机制的维度进行划分了多个实现，与 Cluster实现一一对应。<br>基本上描述了 由consumer的ref类–&gt;proxy–&gt;InvokerInvocationHandler–&gt;clusterinvoker–&gt;服务目录查找–&gt;路由机制–&gt;负载均衡机制–&gt;调用委托–&gt;调用监听器。  </p>
+<p>Invoker的实现结构：<br>–61.1 Invoker<br>—-61.1.1 DelegateProviderMetaDataInvoker<br>—-61.1.2 ConsumerInvokerWrapper<br>—-61.1.3 ProviderInvokerWrapper<br>—-61.1.4 AbstractClusterInvoker<br>——61.1.4.1 AvailableClusterInvoker<br>——61.1.4.2 BroadcastClusterInvoker<br>——61.1.4.3 FailbackClusterInvoker<br>——61.1.4.4 FailfastClusterInvoker<br>——61.1.4.5 FailoverClusterInvoker<br>——61.1.4.6 FailsafeClusterInvoker<br>——61.1.4.7 ForkingClusterInvoker<br>—-61.1.5 MergeableClusterInvoker<br>—-61.1.6 MockClusterInvoker<br>—-61.1.7 ListenerInvokerWrapper<br>—-61.1.8 AbstractInvoker<br>——61.1.8.1 ChannelWrappedInvoker<br>——61.1.8.2 DubboInvoker<br>——61.1.8.3 InjvmInvoker<br>——61.1.8.4 ThriftInvoker<br>—-61.1.9 InvokerWrapper<br>—-61.1.10 AbstractProxyInvoker<br>—-61.1.11 DelegateInvoker<br>—-61.1.12 MockInvoker  </p>
+<h2 id="RegistryProtocol-1"><a href="#RegistryProtocol-1" class="headerlink" title="RegistryProtocol"></a>RegistryProtocol</h2><p>ref完成的逻辑是：<br>创建服务目录实例 RegistryDirectory<br>创建ClusterInvoker，默认是FailoverClusterInvoker.. </p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>ProtocolFilterWrapper， QosProtocolWrapper， ProtocolListenerWrapper的ref逻辑与export基本相同，不再赘述。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/dubbo-rpc-filter-2/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">dubbo-rpc-filter-2</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/fail-mp/">
+                        <span class="hidden-mobile">【转】常见容错机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "dubbo Protocol实现剖析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

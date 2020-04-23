@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>log4j2用asyncRoot配置异步日志是如何使用disruptor - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:04">
+                    星期五, 四月 24日 2020, 7:04 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    983 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    14
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>用<code>asyncRoot</code>配置对应的对接disruptor类是<code>AsyncLoggerConfigDisruptor</code>,用<code>Log4jContextSelector</code>启动参数配置全局异步的对应的对接disruptor类是<code>AsyncLoggerDisruptor</code>。下面分析的是<code>AsyncLoggerConfigDisruptor</code>  </p>
+<h2 id="disruptor的创建与启动需要的部件实现"><a href="#disruptor的创建与启动需要的部件实现" class="headerlink" title="disruptor的创建与启动需要的部件实现"></a>disruptor的创建与启动需要的部件实现</h2><p><code>AsyncLoggerConfigDisruptor.start</code>方法用来创建并启动<code>disruptor</code>实例<br>创建disruptor需要<code>EventFactory</code>，<code>ringBuffer的大小</code>，<code>ThreadFactory</code>，<code>ProducerType</code>，<code>等待策略waitStrategy</code><br>创建后需要设置<code>ExceptionHandler</code>，设置<code>EventHandler</code>。<br>发布(生产)事件的translator。  </p>
+<h3 id="EventFactory"><a href="#EventFactory" class="headerlink" title="EventFactory"></a>EventFactory</h3><p>分是否可变(<code>mutable</code>字段)场景对应两个不同的EventFactory。<br>不可变的factory的逻辑是：</p>
+<pre><code class="hljs java"><span class="hljs-meta">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> Log4jEventWrapper <span class="hljs-title">newInstance</span><span class="hljs-params">()</span> </span>&#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Log4jEventWrapper();
+&#125;</code></pre>
+<p>可变的factory逻辑是：</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> Log4jEventWrapper <span class="hljs-title">newInstance</span><span class="hljs-params">()</span> </span>&#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Log4jEventWrapper(<span class="hljs-keyword">new</span> MutableLogEvent());
+&#125;</code></pre>
+<p>会在 <code>Log4jEventWrapper</code>的构造函数中传入<code>MutableLogEvent</code>实例。</p>
+<h3 id="ringBuffer的大小"><a href="#ringBuffer的大小" class="headerlink" title="ringBuffer的大小"></a>ringBuffer的大小</h3><p>是根据<code>AsyncLoggerConfig.RingBufferSize</code>配置值算出来的。<br>这个配置项的值最小不能小于<strong>128</strong>，默认值分两种情况进行设定：如果启用了ENABLE_THREADLOCALS(优化GC的一个配置项)，那么默认值是<code>4 * 1024</code>，否则是<code>256 * 1024</code>。<br>这个配置是通过System properties指定，同样存在不同版本，配置项名称不一致的情况，log4j2.asyncLoggerRingBufferSize (AsyncLogger.RingBufferSize)。详细可以参见<a href="http://logging.apache.org/log4j/2.x/manual/configuration.html#SystemProperties" target="_blank" rel="noopener">这里</a>  </p>
+<h3 id="ThreadFactory"><a href="#ThreadFactory" class="headerlink" title="ThreadFactory"></a>ThreadFactory</h3><p>主要是定制线程名：<br>线程名格式是：”AsyncLoggerConfig-“ + FACTORY_NUMBER(自增) + “-“ + threadFactoryName + “-“ + THREAD_NUMBER(自增)<br>默认的实际示例是： Log4j2-TF-1-AsyncLoggerConfig–1，跟上面的有些差异，上面的分析错了吗？？    </p>
+<h3 id="ProducerType"><a href="#ProducerType" class="headerlink" title="ProducerType"></a>ProducerType</h3><p>多生产者  </p>
+<h3 id="等待策略waitStrategy"><a href="#等待策略waitStrategy" class="headerlink" title="等待策略waitStrategy"></a>等待策略waitStrategy</h3><p>默认是10ms的TimeoutBlockingWaitStrategy。 支持可配置<code>SleepingWaitStrategy</code>、<code>YieldingWaitStrategy</code>、<code>BlockingWaitStrategy</code>、<code>BusySpinWaitStrategy</code>、<code>TimeoutBlockingWaitStrategy</code>。<br>这个配置是通过System properties指定，同样存在不同版本，配置项名称不一致的情况，log4j2.asyncLoggerWaitStrategy (AsyncLogger.WaitStrategy)。  </p>
+<h3 id="ExceptionHandler"><a href="#ExceptionHandler" class="headerlink" title="ExceptionHandler"></a>ExceptionHandler</h3><p>可以配置，配置项名称是AsyncLoggerConfig.ExceptionHandler，默认是用AsyncLoggerConfigDefaultExceptionHandler，打印: AsyncLogger error handling event seq=…, value=…,并打出异常栈。  </p>
+<h3 id="EventHandler"><a href="#EventHandler" class="headerlink" title="EventHandler"></a>EventHandler</h3><p>此处使用了 Log4jEventWrapperHandler RingBufferLogEventHandler，是disruptor的SequenceReportingEventHandler实现。  </p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * EventHandler performs the work in a separate thread.</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Log4jEventWrapperHandler</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">SequenceReportingEventHandler</span>&lt;<span class="hljs-title">Log4jEventWrapper</span>&gt; </span>&#123;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> NOTIFY_PROGRESS_THRESHOLD = <span class="hljs-number">50</span>;
+    <span class="hljs-keyword">private</span> Sequence sequenceCallback;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> counter;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setSequenceCallback</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Sequence sequenceCallback)</span> </span>&#123;
+        <span class="hljs-keyword">this</span>.sequenceCallback = sequenceCallback;
+    &#125;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onEvent</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Log4jEventWrapper event, <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> sequence, <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> endOfBatch)</span></span>
+<span class="hljs-function">            <span class="hljs-keyword">throws</span> Exception </span>&#123;
+        event.event.setEndOfBatch(endOfBatch);
+        event.loggerConfig.asyncCallAppenders(event.event);
+        event.clear();
+
+        notifyIntermediateProgress(sequence);
+    &#125;
+
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * Notify the BatchEventProcessor that the sequence has progressed. Without this callback the sequence would not</span>
+<span class="hljs-comment">     * be progressed until the batch has completely finished.</span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">notifyIntermediateProgress</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> sequence)</span> </span>&#123;
+        <span class="hljs-keyword">if</span> (++counter &gt; NOTIFY_PROGRESS_THRESHOLD) &#123;
+            sequenceCallback.set(sequence);
+            counter = <span class="hljs-number">0</span>;
+        &#125;
+    &#125;
+&#125;</code></pre>
+<p>event.loggerConfig.asyncCallAppenders(event.event);  这个会触发日志的输出  </p>
+<h3 id="translator"><a href="#translator" class="headerlink" title="translator"></a>translator</h3><p>跟<code>EventFactory</code>一样分<code>mutable</code>是否可变的两种情况。<br>不可变：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> EventTranslatorTwoArg&lt;Log4jEventWrapper, LogEvent, AsyncLoggerConfig&gt; TRANSLATOR =
+        <span class="hljs-keyword">new</span> EventTranslatorTwoArg&lt;Log4jEventWrapper, LogEvent, AsyncLoggerConfig&gt;() &#123;
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">translateTo</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Log4jEventWrapper ringBufferElement, <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> sequence,</span></span>
+<span class="hljs-function"><span class="hljs-params">            <span class="hljs-keyword">final</span> LogEvent logEvent, <span class="hljs-keyword">final</span> AsyncLoggerConfig loggerConfig)</span> </span>&#123;
+        ringBufferElement.event = logEvent;
+        ringBufferElement.loggerConfig = loggerConfig;
+    &#125;
+&#125;;</code></pre>
+
+<p>可变：</p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * Object responsible for passing on data to a RingBuffer event with a MutableLogEvent.</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> EventTranslatorTwoArg&lt;Log4jEventWrapper, LogEvent, AsyncLoggerConfig&gt; MUTABLE_TRANSLATOR =
+        <span class="hljs-keyword">new</span> EventTranslatorTwoArg&lt;Log4jEventWrapper, LogEvent, AsyncLoggerConfig&gt;() &#123;
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">translateTo</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Log4jEventWrapper ringBufferElement, <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> sequence,</span></span>
+<span class="hljs-function"><span class="hljs-params">            <span class="hljs-keyword">final</span> LogEvent logEvent, <span class="hljs-keyword">final</span> AsyncLoggerConfig loggerConfig)</span> </span>&#123;
+        ((MutableLogEvent) ringBufferElement.event).initFrom(logEvent);
+        ringBufferElement.loggerConfig = loggerConfig;
+    &#125;
+&#125;;</code></pre>
+<p>都是完成一个事情给ringBufferElement元素的event赋值或者初始化。  </p>
+<h2 id="事件进队列的tryEnqueue方法逻辑分析"><a href="#事件进队列的tryEnqueue方法逻辑分析" class="headerlink" title="事件进队列的tryEnqueue方法逻辑分析"></a>事件进队列的tryEnqueue方法逻辑分析</h2><ul>
+<li>prepareEvent </li>
+</ul>
+<ol>
+<li>ensureImmutable：创建LogEvent的快照，传递进来的原LogEvent在应用线程还会被继续修改，所以此处要创建快照</li>
+<li>Log4jLogEvent.makeMessageImmutable：格式化消息。因为是异步日志，针对需要format的消息在此处进行格式化，否则会因为引用对象值的改变导致日志不准确</li>
+</ol>
+<ul>
+<li>tryPublishEvent</li>
+</ul>
+<ol>
+<li>发布事件对象到disruptor队列</li>
+</ol>
+<h2 id="事件出队列的处理"><a href="#事件出队列的处理" class="headerlink" title="事件出队列的处理"></a>事件出队列的处理</h2><p>先看按下调用栈:  </p>
+<pre><code class="hljs java">Daemon Thread [Log4j2-TF-<span class="hljs-number">1</span>-AsyncLoggerConfig--<span class="hljs-number">1</span>] (Suspended (breakpoint at line <span class="hljs-number">37</span> in PatternFormatter))	
+	PatternFormatter.format(LogEvent, StringBuilder) line: <span class="hljs-number">37</span>	
+	PatternLayout$PatternSerializer.toSerializable(LogEvent, StringBuilder) line: <span class="hljs-number">334</span>	
+	PatternLayout.toText(AbstractStringLayout$Serializer2, LogEvent, StringBuilder) line: <span class="hljs-number">233</span>	
+	PatternLayout.encode(LogEvent, ByteBufferDestination) line: <span class="hljs-number">218</span>	
+	PatternLayout.encode(Object, ByteBufferDestination) line: <span class="hljs-number">58</span>	
+	ConsoleAppender(AbstractOutputStreamAppender&lt;M&gt;).directEncodeEvent(LogEvent) line: <span class="hljs-number">177</span>	
+	ConsoleAppender(AbstractOutputStreamAppender&lt;M&gt;).tryAppend(LogEvent) line: <span class="hljs-number">170</span>	
+	ConsoleAppender(AbstractOutputStreamAppender&lt;M&gt;).append(LogEvent) line: <span class="hljs-number">161</span>	
+	AppenderControl.tryCallAppender(LogEvent) line: <span class="hljs-number">156</span>	
+	AppenderControl.callAppender0(LogEvent) line: <span class="hljs-number">129</span>	
+	AppenderControl.callAppenderPreventRecursion(LogEvent) line: <span class="hljs-number">120</span>	
+	AppenderControl.callAppender(LogEvent) line: <span class="hljs-number">84</span>	
+	AsyncLoggerConfig(LoggerConfig).callAppenders(LogEvent) line: <span class="hljs-number">448</span>	
+	AsyncLoggerConfig.asyncCallAppenders(LogEvent) line: <span class="hljs-number">129</span>	
+	AsyncLoggerConfigDisruptor$Log4jEventWrapperHandler.onEvent(AsyncLoggerConfigDisruptor$Log4jEventWrapper, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">111</span>	
+	AsyncLoggerConfigDisruptor$Log4jEventWrapperHandler.onEvent(Object, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">97</span>	
+	BatchEventProcessor&lt;T&gt;.run() line: <span class="hljs-number">129</span>	
+	Log4jThread(Thread).run() line: <span class="hljs-number">748</span></code></pre>
+<p>Log4jEventWrapperHandler.onEvent 111行是event.loggerConfig.asyncCallAppenders(event.event)，参见上面EventHandler，此处完成日志真正写出。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/log4j2/">log4j2</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/log4j2-async-config/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">log4j2异步日志配置及官方文档的问题澄清</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/log4j2-how-to-use-disruptor/">
+                        <span class="hidden-mobile">log4j2如何使用disruptor</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "log4j2用asyncRoot配置异步日志是如何使用disruptor&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

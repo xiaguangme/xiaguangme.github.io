@@ -175,23 +175,62 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-metadata-update/">MetadataCache更新</a>
+      <a class="index-header" href="/2020/04/24/fail-mp/">【转】常见容错机制</a>
 
-      <a href="/2020/04/22/kafka1-0-metadata-update/" class="index-excerpt">
+      <a href="/2020/04/24/fail-mp/" class="index-excerpt">
         
         
           
         
-        <div>MetadataCache什么时候更新updateCache方法用来更新缓存的。   
-发起线程  controller-event-threadcontroller选举的时候
-CLASS_NAME     METHOD_NAME    LINE_NUM  
-kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
+        <div>[转]常见容错机制：failover ，failsafe，failfase ，failback，forking转自https://blog.csdn.net/hongweigg/article/details/52925920常见容错机制：failover ，failsafe，failfase ，failback，forking，来源于阿里的定义。  
+Failover 失败自动切换当出现失败，重</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/virtualbox-debug-kernel/">用virtualbox+模拟串口+CDT调试linux内核 TCP/IP协议栈-起步</a>
+
+      <a href="/2020/04/24/virtualbox-debug-kernel/" class="index-excerpt">
+        
+        
+          
+        
+        <div>经常有人问一台机器如何将hello经网络发送给另一台机器，我确实是不知道，只能看代码了。说明：本人对内核的研究学习也是刚刚起步，有很多不了解的，所以文中可能会有一些“一本正经的胡扯”。请大家辩证的阅读。注意这种方式不能调试 start_kernel等过程，我主要用来调试tcp/ip协议栈代码。如果想调试start_kernel，后面会介绍用qemu的方式。   
+S1. 开发机：我是将一个老的索尼</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -208,7 +247,7 @@ kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
             
           </div>
         
@@ -220,22 +259,21 @@ kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
+      <a class="index-header" href="/2020/04/24/qemu-debug-kernel/">用qemu+gdb tcp server+CDT调试linux内核启动-起步</a>
 
-      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
+      <a href="/2020/04/24/qemu-debug-kernel/" class="index-excerpt">
         
         
           
         
-        <div>几个概念的解释
-LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
-HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
+        <div>用qemu+gdb tcp server+CDT调试linux内核启动-起步说明： 环境信息与 用virtualbox+模拟串口+CDT调试linux内核 TCP IP协议栈-起步 提到的一样，并且本文中会有很多个步骤与之相同，请参考。
+S1. 开发机：我是将一个老的索尼的笔记本装了Ubuntu桌面版本作为开发环境，版本号是Ubuntu 16.04.4 LTS，后面在某些步骤中也会称之为host。</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -252,7 +290,7 @@ HW high water mark的简称，对外公开的消费者的非事务消息(即未�
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
             
           </div>
         
@@ -264,24 +302,24 @@ HW high water mark的简称，对外公开的消费者的非事务消息(即未�
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">kafka-clients 1.0 高阶API消费消息(未完)</a>
+      <a class="index-header" href="/2020/04/24/netty3-hhttp-server/">以http server为例简要分析netty3实现</a>
 
-      <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/" class="index-excerpt">
+      <a href="/2020/04/24/netty3-hhttp-server/" class="index-excerpt">
         
         
           
         
-        <div>消费消息的请求(按序)
-org/apache/kafka/common/requests/RequestHeader  
-org/apache/kafka/common/requests/ApiVersionsRequest  
-org/apache/kafka/common/requests/MetadataRequest  批量查询topic的元数据信息  
-org/apache/kafka/</div>
+        <div>概要最近看了点netty3实现。从webbit项目作为口子。webbit项目是一个基于netty3做的http与websocket server。后面还会继续看下netty4，netty4有很多改进，如其作者所说，有更少的GC，更丰富的SOCKET选项，更好的性能。此篇先谈netty3。
+ChannelBuffer 与 其特色工具类
+线程模型，事件分类，流水线
+accpet请求与读请求
+写出响应与</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -298,7 +336,7 @@ org/apache/kafka/</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/netty3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty3源码分析</a>
             
           </div>
         
@@ -310,109 +348,22 @@ org/apache/kafka/</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer-semd-message/">clients-producer-组包发送消息</a>
+      <a class="index-header" href="/2020/04/24/app-encode-not-right/">应用默认编码不对的问题定位</a>
 
-      <a href="/2020/04/22/kafka1-0-clietns-producer-semd-message/" class="index-excerpt">
+      <a href="/2020/04/24/app-encode-not-right/" class="index-excerpt">
         
         
           
         
-        <div>
-</div>
+        <div>应用默认编码不对的问题定位问题描述某日线上环境报警，分析后发现是java.lang.String.getBytes()方法在不同环境上表现出来的结果是不一样的。 
+JDK的String.getBytes()默认采用什么编码看下JDK的代码不难发现：先是靠Charset.defaultCharset()编码，如果不行靠ISO-8859-1兜底，再不行就直接应用退出了。
+Charset.default</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer/">clients-producer-网络处理与请求响应对接部分</a>
-
-      <a href="/2020/04/22/kafka1-0-clietns-producer/" class="index-excerpt">
-        
-        
-          
-        
-        <div>
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/jmx-basic/">JMX基本概念</a>
-
-      <a href="/2020/04/22/jmx-basic/" class="index-excerpt">
-        
-        
-          
-        
-        <div>Object name的语法
-形似 com.sun.someapp:type=Whatsit,name=25  
-com.sun.someapp 是domain，冒号后面的是key-property-list，每组kv的顺序随意，但是不能有空格，空格字符有特殊含义，不能有冒号。domain名不能含有冒号，不能含有/。  
-key-property-list中的key支持和？somedomain:t</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -439,29 +390,28 @@ key-property-list中的key支持和？somedomain:t</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/netty4-transport-nio/">netty之nio传输层</a>
+      <a class="index-header" href="/2020/04/24/tps-again/">再写一篇tps限流</a>
 
-      <a href="/2020/04/22/netty4-transport-nio/" class="index-excerpt">
+      <a href="/2020/04/24/tps-again/" class="index-excerpt">
         
         
           
         
-        <div>nio基本处理逻辑查看这里  
-Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK API构建出来的Selector再用反射将其中的selectedKeys、publicSelectedKeys替换成他优化过的SelectedSelectionKeySet实例。JDK API构建出来的Selector 代码：  
-// NioEven</div>
+        <div>再写一篇tps限流各种限流算法的称呼网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。主要维度是：是正向计数还是反向计数。是定点(时间点)重置当前计数器还是每次接口调用时按量调整当前还剩的可用请求数。  
+通俗理解正向计数且定点(时间点)重置的流程                       +-------------------</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -469,9 +419,7 @@ Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK 
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
             
           </div>
         
@@ -483,30 +431,27 @@ Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK 
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-pooled-buffer/">netty之池化buffer</a>
+      <a class="index-header" href="/2020/04/24/fastjson-low-version-lost-field/">fastjosn在低版本丢字段问题</a>
 
-      <a href="/2020/04/20/netty4-pooled-buffer/" class="index-excerpt">
+      <a href="/2020/04/24/fastjson-low-version-lost-field/" class="index-excerpt">
         
         
           
         
-        <div>PooledByteBufAllocator buffer分配buffer分配的入口：io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(int, int)netty实际应用时分配调用栈：  
-
-CLASS_NAMEMETHOD_NAMELINE_NUM
-io/netty/buffer/PooledByteBufAllocatornewDi</div>
+        <div>简单的说：对于java bean中有字段类似pId这种写法，特征是第一个字母小写，第二个字母大写，在eclipse中生成的getter setter方法是 getpId, setpId。在低版本的fastjson，比如1.1.41中将java bean序列化成json字符串的时候，会丢掉pId这个字段。  使用高版本，比如1.2.46，就不会有这个问题。那么，这到底是谁的锅？先说结论，fastjs</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -515,8 +460,6 @@ io/netty/buffer/PooledByteBufAllocatornewDi</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
             
           </div>
         
@@ -528,24 +471,25 @@ io/netty/buffer/PooledByteBufAllocatornewDi</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
+      <a class="index-header" href="/2020/04/24/ureplicator-impl/">uReplicator实现分析</a>
 
-      <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
+      <a href="/2020/04/24/ureplicator-impl/" class="index-excerpt">
         
         
           
         
-        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
-使用
-设置日志级别：  ServerBootstrap b =new ServerBootstrap();
-b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
-.option(ChannelOption.SO_BACK</div>
+        <div>MirrorMakerWorker分析是整个同步机制的主入口，主要组织的逻辑有：
+
+配置数据的传入与处理，ConsumerConfig对象的构建
+度量对象的准备，定时上报的度量数据收集线程的定义与启动
+CompactConsumerFetcherManager实例的创建与startConnections
+根据fetchNum创建KafkaConnector实例，KafkaConnector实例中会</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -562,7 +506,7 @@ b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
             
           </div>
         
@@ -574,29 +518,27 @@ b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
+      <a class="index-header" href="/2020/04/24/log4j2-async-config/">log4j2异步日志配置及官方文档的问题澄清</a>
 
-      <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
+      <a href="/2020/04/24/log4j2-async-config/" class="index-excerpt">
         
         
           
         
-        <div>
-初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  
-channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operati</div>
+        <div>配置及demo方法一全部打开加启动参数 -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector启动参数的这个key有点说法：按官方文档说明http://logging.apache.org/log4j/2.x/manual/async.html#AllAsync key是-Dlog4</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -606,7 +548,50 @@ channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/log4j2/">log4j2</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/log4j2-how-to-config-async/">log4j2用asyncRoot配置异步日志是如何使用disruptor</a>
+
+      <a href="/2020/04/24/log4j2-how-to-config-async/" class="index-excerpt">
+        
+        
+          
+        
+        <div>用asyncRoot配置对应的对接disruptor类是AsyncLoggerConfigDisruptor,用Log4jContextSelector启动参数配置全局异步的对应的对接disruptor类是AsyncLoggerDisruptor。下面分析的是AsyncLoggerConfigDisruptor  
+disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/log4j2/">log4j2</a>
             
           </div>
         
@@ -618,7 +603,7 @@ channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

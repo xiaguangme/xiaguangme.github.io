@@ -175,157 +175,23 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</a>
+      <a class="index-header" href="/2020/04/24/log4j2-how-to-use-disruptor/">log4j2如何使用disruptor</a>
 
-      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="index-excerpt">
+      <a href="/2020/04/24/log4j2-how-to-use-disruptor/" class="index-excerpt">
         
         
           
         
-        <div>java
-# 创建断点(支持条件断点)
-curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java","condition":"i == 1","charStart":283,"charEnd":307,"lineNumber":16,"typeName":"com.code260.tools.red</div>
+        <div>与 log4j2用asyncRoot配置异步日志是如何使用disruptor差异有几个：
+给disruptor实例的EventFactory不同此处EventFactory采用的是RingBufferLogEvent.FACTORY，newInstance逻辑大致是：  
+public RingBufferLogEvent newInstance() &#123;
+    final RingBu</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/eclipse/">eclipse</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
-
-      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
-        
-        
-          
-        
-        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
-
-sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
-
-subl 1.txt   sublime比自带</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/ubutnu/">ubutnu</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/about-dubbo-extension-loader/">关于dubbo扩展点的一点分析</a>
-
-      <a href="/2020/04/20/about-dubbo-extension-loader/" class="index-excerpt">
-        
-        
-          
-        
-        <div>扩展点能力
-能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。
-能创建instance。
-能指定这个顶层接口的默认实现类的beanName。做法参见SPI注解部分。
-能把创建出来的instance的字段注入。set开头的且有一个参数且是public的，注入。  
-能adaptive。根据url上对该</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/guice-features-brief-introducting/">guice的能力简述</a>
-
-      <a href="/2020/04/20/guice-features-brief-introducting/" class="index-excerpt">
-        
-        
-          
-        
-        <div>guice这个google出的bean容器框架，ES有用到他。  
-能干什么
-是一个bean容器
-能AOPa
-
-能力细分与使用方式
-以module创建injector。可以看成是一个容器。Module需要自定义且继承自他的AbstractModule。覆写config方法完成装配关系的确定。详细参见这里  
-绑定顶层接口到具体实现类。bind(TransactionLog.class).to(Da</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -342,7 +208,7 @@ subl 1.txt   sublime比自带</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/guice/">guice</a>
+              <a href="/tags/log4j2/">log4j2</a>
             
           </div>
         
@@ -354,21 +220,24 @@ subl 1.txt   sublime比自带</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/not-include-but-why-successfully/">使用部分函数时并未include其所在头文件，但是能编译成功且能运行，为什么？</a>
+      <a class="index-header" href="/2020/04/24/fun-call-assembly/">函数调用与汇编指令的关系</a>
 
-      <a href="/2020/04/20/not-include-but-why-successfully/" class="index-excerpt">
+      <a href="/2020/04/24/fun-call-assembly/" class="index-excerpt">
         
         
           
         
-        <div>最近在看APUE，试了上面的一些例子，其中有个例子是使用getpid函数获取进程id，但是在我写demo时，并未引入其所在的头文件unistd.h，结果也能编译成功，也能运行，于是就琢磨下为啥。Environment info: Ubuntu 18.04.2 LTS, gcc (Ubuntu 4.8.5-4ubuntu8) 4.8.5示意代码如下：  
-int main (int argc, ch</div>
+        <div>写一段简单的C代码分析其背后与汇编指令的关系最近在看hotspot的代码，hotspot解释器会将字节码翻译成汇编指令，所以要先复习下这个基础这篇讲的太泛了，看 这篇吧，是一步一步有图对应的
+C代码#include &lt;stdio.h&gt;
+
+int  main(int args, char** argv)&#123;
+	printf("%d", add1(100, 200, 500, 60</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -395,72 +264,42 @@ int main (int argc, ch</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/cpp-programming-scraps/">c cpp编程用到的系统边角与其拾遗</a>
+      <a class="index-header" href="/2020/04/24/cpp-this-unsigned-pointer/">C++中将对象this转换成unsigned char指针</a>
 
-      <a href="/2020/04/20/cpp-programming-scraps/" class="index-excerpt">
+      <a href="/2020/04/24/cpp-this-unsigned-pointer/" class="index-excerpt">
         
         
           
         
-        <div>拾遗Q：unix编程怎么查一个函数在哪个头文件中A: 可以用诸如 man 3 printf  
-Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的引用
+        <div>示例程序
+//  ---CodeBlob.h---
+#ifndef CODEBLOB_H_
+#define CODEBLOB_H_
 
-下表显示了手册的 章节 号及其包含的手册页类型。1   可执行程序或 shell 命令2   系统调用(内核提供的函数)3   库调用(程序库中的函数)4   特殊文件(通常位于 /dev)5   文件格式和</div>
-      </a>
 
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
+class CodeBlob &#123;
+private:
+  const char* _name;
+  int        _size;
 
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/cabbage-residue/">白菜油渣</a>
-
-      <a href="/2020/04/19/cabbage-residue/" class="index-excerpt">
-        
-        
-          
-        
-        <div>白菜炒猪油渣，朴素的美食
-
+public:
+	CodeBlob();
+	void printName();
+	void printSize();
 </div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/life/">life</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -468,7 +307,7 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/food/">food</a>
+              <a href="/tags/cpp/">cpp</a>
             
           </div>
         
@@ -480,69 +319,22 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/jvm-g1-gc-book/">《JVM G1源码分析和调优》读书笔记</a>
+      <a class="index-header" href="/2020/04/24/vm-interpret-bytecode/">虚拟机解释器与bytecode对接</a>
 
-      <a href="/2020/04/19/jvm-g1-gc-book/" class="index-excerpt">
+      <a href="/2020/04/24/vm-interpret-bytecode/" class="index-excerpt">
         
         
           
         
-        <div>GC的相关算法与JVM的垃圾收集器GC的相关算法
-分代管理
-复制算法
-标记清除
-标记压缩
-
-JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较  
-
-串行收集器 Serial。  Serial GC用于新生代，用了复制算法；Serial Old GC作用于老年代，用的是标记-压缩算法。STW
-并行收集器 Parallel。Parallel new作用于新生代，使用了复制算法；Parall</div>
+        <div>心头一直有个疑问，jvm虚拟是如何对接class中的字节码的？或者说在未进入JIT优化阶段时，解释器是如何对接的？
+大概阐述hotspot通过C++代码在堆上申请一块空间，向里面填充一组指令，然后把这块空间当成一个函数，通过函数指针去调用刚生成的代码。是不是666，是不是哇超酷毙了。  
+关键代码generate_call_stub address generate_call_stub(addre</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/book-paper-study/">book-paper-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/GC/">GC</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/netty4-fastthhreadlocal/">Netty4 FastThreadLocal及CPU cacheline padding补齐</a>
-
-      <a href="/2020/04/19/netty4-fastthhreadlocal/" class="index-excerpt">
-        
-        
-          
-        
-        <div>FastThreadLocal概述： ThreadLocal的一个特定变种改善，有更好的存取性能。内部采用一个数组来代替ThreadLocal内部的hash表来存放变量。虽然这看起来是微不足道的，但是他确实比hash表性能好那么一点，在频繁存取时会更明显。 如果用DefaultThreadFactory创建线程，那么默认创建出来的就是FastThreadLocalThread，就会用FastThr</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -559,7 +351,7 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -571,22 +363,121 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/some-make-files/">几个递进的make file</a>
+      <a class="index-header" href="/2020/04/24/new-object/">对象创建</a>
 
-      <a href="/2020/04/19/some-make-files/" class="index-excerpt">
+      <a href="/2020/04/24/new-object/" class="index-excerpt">
         
         
           
         
-        <div>几个递进的make file春节在家写的几个递进的make file，部分有点问题。接下来 有空我要把GNU make的手册看完。不然这方面太菜了。  
-GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
-1 源文件名 目标都hard code，且一次编译多个目标PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKE</div>
+        <div>对象创建interpreterRuntime.cpp 解释器中new指令的入口：  
+// 宏展开
+ // IRT_ENTRY(void, InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, int index))
+void  InterpreterRuntime::_new(JavaThread* thread, Co</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/compile-hotspot8/">step by step 编译hotspot8</a>
+
+      <a href="/2020/04/24/compile-hotspot8/" class="index-excerpt">
+        
+        
+          
+        
+        <div>编译hotspot8ubuntu desktop 18 全新准备与编译过程再记录下：
+ # 建议使用此gcc和g++版本，过高版本比如gcc7或引发编译报错
+ sudo apt-get install gcc-4.8
+ sudo apt-get install g++-4.8
+ 
+ # 安装相关依赖
+sudo apt-get install  libxext-dev libxrender-dev </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/gc-static-field/">静态字段引用的对象为什么不会被GC回收</a>
+
+      <a href="/2020/04/24/gc-static-field/" class="index-excerpt">
+        
+        
+          
+        
+        <div>示例代码import java.util.ArrayList;
+import java.util.List;
+
+public class StaticFieldClass &#123;
+	
+	public static List&lt;Team&gt; staticField1 = new ArrayList&lt;Team&gt;();
+	
+	static &#123;
+		staticFiel</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -597,6 +488,150 @@ GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
             
           </div>
         
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/gc/">gc</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-request/">kafka-clients 1.0 内部请求接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-request/" class="index-excerpt">
+        
+        
+          
+        
+        <div>AddOffsetsToTxnRequestversion:0nametypedefaultValuedocStringtransactional_idSTRINGnullThe transactional id corresponding to the transaction.
+producer_idINT64nullCurrent producer id in use by the trans</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/">kafka-clients 1.0 内部响应接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/" class="index-excerpt">
+        
+        
+          
+        
+        <div>AddOffsetsToTxnResponseversion:0nametypedefaultValuedocStringthrottle_time_msINT320Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not viol</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-generate-rpc-doc/">生成kafka内部请求与响应的接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-generate-rpc-doc/" class="index-excerpt">
+        
+        
+          
+        
+        <div>生成kafka内部请求与响应的接口文档/**
+ */
+package com.code260.ss.kafka10demo;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.ne</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
         
       </div>
     </div>
@@ -606,7 +641,7 @@ GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/2/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/2/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

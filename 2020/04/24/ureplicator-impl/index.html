@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>uReplicator实现分析 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:05">
+                    星期五, 四月 24日 2020, 7:05 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    810 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    10
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="MirrorMakerWorker分析"><a href="#MirrorMakerWorker分析" class="headerlink" title="MirrorMakerWorker分析"></a>MirrorMakerWorker分析</h2><p>是整个同步机制的主入口，主要组织的逻辑有：</p>
+<ul>
+<li>配置数据的传入与处理，ConsumerConfig对象的构建</li>
+<li>度量对象的准备，定时上报的度量数据收集线程的定义与启动</li>
+<li>CompactConsumerFetcherManager实例的创建与startConnections</li>
+<li>根据fetchNum创建KafkaConnector实例，KafkaConnector实例中会关联CompactConsumerFetcherManager实例</li>
+<li>添加Helix Controller</li>
+<li>添加优雅关闭的钩子</li>
+<li>构造producer的config producerProps</li>
+<li>根据维护KafkaConnector实例的connectorMap来创建MirrorMakerThread实例并启动</li>
+<li>通过shutdownLatch: CountDownLatch来等待关闭退出main方法</li>
+</ul>
+<h3 id="与Helix关联的地方"><a href="#与Helix关联的地方" class="headerlink" title="与Helix关联的地方"></a>与Helix关联的地方</h3><p>实现HelixWorkerOnlineOfflineStateModelFactory和OnlineOfflineStateModel，OnlineOfflineStateModel可以理解成是一个监听器。实例在上下线切换时可以监听到。  </p>
+<pre><code class="hljs scala">helixZkManager = <span class="hljs-type">HelixManagerFactory</span>.getZKHelixManager(helixClusterName, instanceId, <span class="hljs-type">InstanceType</span>.<span class="hljs-type">PARTICIPANT</span>, zkServer)
+<span class="hljs-keyword">val</span> stateMachineEngine: <span class="hljs-type">StateMachineEngine</span> = helixZkManager.getStateMachineEngine()
+<span class="hljs-comment">// register the MirrorMaker worker</span>
+<span class="hljs-keyword">val</span> stateModelFactory = <span class="hljs-keyword">new</span> <span class="hljs-type">HelixWorkerOnlineOfflineStateModelFactory</span>(instanceId, fetchNum, connectorMap)
+stateMachineEngine.registerStateModelFactory(<span class="hljs-string">"OnlineOffline"</span>, stateModelFactory)
+helixZkManager.connect()
+helixAdmin = helixZkManager.getClusterManagmentTool</code></pre>
+
+<pre><code class="hljs scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelixWorkerOnlineOfflineStateModelFactory</span>(<span class="hljs-params">final val instanceId: <span class="hljs-type">String</span>, final val fetchNum: <span class="hljs-type">Int</span>,</span></span>
+<span class="hljs-class"><span class="hljs-params">                                                final val connectorMap: <span class="hljs-type">ConcurrentHashMap</span>[<span class="hljs-type">String</span>, <span class="hljs-type">KafkaConnector</span>]</span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">StateModelFactory</span>[<span class="hljs-type">StateModel</span>] </span>&#123;
+
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">createNewStateModel</span></span>(partitionName: <span class="hljs-type">String</span>) = <span class="hljs-keyword">new</span> <span class="hljs-type">OnlineOfflineStateModel</span>(instanceId, connectorMap)
+
+
+  <span class="hljs-comment">// register mm instance</span>
+  <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OnlineOfflineStateModel</span>(<span class="hljs-params">final val instanceId: <span class="hljs-type">String</span>, final val connectors: <span class="hljs-type">ConcurrentHashMap</span>[<span class="hljs-type">String</span>, <span class="hljs-type">KafkaConnector</span>]</span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">StateModel</span> </span>&#123;
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onBecomeOnlineFromOffline</span></span>(message: <span class="hljs-type">Message</span>, context: <span class="hljs-type">NotificationContext</span>) = &#123;
+      <span class="hljs-comment">// add topic partition on the instance</span>
+      connectorMap.get(getFetcherId(message.getResourceName, message.getPartitionName.toInt)).addTopicPartition(message.getResourceName, message.getPartitionName.toInt)
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onBecomeOfflineFromOnline</span></span>(message: <span class="hljs-type">Message</span>, context: <span class="hljs-type">NotificationContext</span>) = &#123;
+      <span class="hljs-comment">// delete topic partition on the instance</span>
+      connectorMap.get(getFetcherId(message.getResourceName, message.getPartitionName.toInt)).deleteTopicPartition(message.getResourceName, message.getPartitionName.toInt)
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onBecomeDroppedFromOffline</span></span>(message: <span class="hljs-type">Message</span>, context: <span class="hljs-type">NotificationContext</span>) = &#123;
+      <span class="hljs-comment">// do nothing</span>
+    &#125;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getFetcherId</span></span>(topic: <span class="hljs-type">String</span>, partitionId: <span class="hljs-type">Int</span>): <span class="hljs-type">String</span> = &#123;
+      <span class="hljs-string">""</span> + <span class="hljs-type">Utils</span>.abs(<span class="hljs-number">31</span> * topic.hashCode() + partitionId) % fetchNum
+    &#125;
+  &#125;
+
+&#125;</code></pre>
+
+<h3 id="run方法逻辑"><a href="#run方法逻辑" class="headerlink" title="run方法逻辑"></a>run方法逻辑</h3><ul>
+<li>通过KafkaConnector拿到KafkaStream，通过KafkaStream拿到ConsumerIterator</li>
+<li>在没有关闭时，一直迭代ConsumerIterator</li>
+<li>拿到迭代器中的数据，就是取到的消息(为什么迭代器中能一直有消息，因为这样反推iter–&gt;KafkaStream–&gt;KafkaConnector+Queue–&gt;PartitionTopicInfo–&gt;fetcherManager.partitionAddMap–&gt;fetcherManager.partitionInfoMap–&gt;fetcherManager.createFetcherThread–&gt;CompactConsumerFetcherThread.partitionInfoMap–&gt;CompactConsumerFetcherThread.processPartitionData–&gt;CompactConsumerFetcherThread.doWork–&gt;ShutdownableThread.run//spin)</li>
+<li>经过MirrorMakerMessageHandler处理消息形成ProducerRecord数组实例，主要是分区对齐</li>
+<li>用producer发到目标集群</li>
+<li>用maybeFlushAndCommitOffsets方法flush并提交offset</li>
+<li>真正commit offset的动作由自行实现的KafkaConnector完成，记录在ZK上，提交是定时提交  </li>
+</ul>
+<h2 id="CompactConsumerFetcherThread分析"><a href="#CompactConsumerFetcherThread分析" class="headerlink" title="CompactConsumerFetcherThread分析"></a>CompactConsumerFetcherThread分析</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><code>CompactConsumerFetcherThread</code>是继承自Kafka提供的<code>ShutdownableThread</code>，<code>ShutdownableThread</code>内部会在isRunning标志位ok的情况下以spin的形式一直调用<code>doWork</code>方法。  </p>
+<pre><code class="hljs scala"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span></span>(): <span class="hljs-type">Unit</span> = &#123;
+  info(<span class="hljs-string">"Starting "</span>)
+  <span class="hljs-keyword">try</span>&#123;
+    <span class="hljs-keyword">while</span>(isRunning.get())&#123;
+      doWork()
+    &#125;
+  &#125; <span class="hljs-keyword">catch</span>&#123;
+    <span class="hljs-keyword">case</span> e: <span class="hljs-type">Throwable</span> =&gt;
+      <span class="hljs-keyword">if</span>(isRunning.get())
+        error(<span class="hljs-string">"Error due to "</span>, e)
+  &#125;
+  shutdownLatch.countDown()
+  info(<span class="hljs-string">"Stopped "</span>)
+&#125;</code></pre>
+
+<h3 id="doWork方法分析"><a href="#doWork方法分析" class="headerlink" title="doWork方法分析"></a>doWork方法分析</h3><ul>
+<li>锁定partitionMapLock</li>
+<li>锁定updateMapLock</li>
+<li>将partitionAddMap中的数据放到partitionMap，然后清空partitionAddMap</li>
+<li>将partitionDeleteMap中的数据从partitionMap中移除并移除fetcherLagStats中对应的stat，然后清空partitionDeleteMap</li>
+<li>迭代partitionMap将需要拉取的topic、partition、fetchoffset、fetchsize等信息加入fetchRequestBuilder</li>
+<li>用fetchRequestBuilder构造出FetchRequest实例</li>
+<li>如果fetchRequest.requestInfo.isEmpty是空的，那么等待fetchBackOffMs</li>
+<li>对于两次拉取间隔是否过大做日志输出(DUMP_INTERVAL_MS = 5 * 60 * 1000)</li>
+<li>processFetchRequest 处理拉的请求</li>
+</ul>
+<h3 id="processFetchRequest方法分析"><a href="#processFetchRequest方法分析" class="headerlink" title="processFetchRequest方法分析"></a>processFetchRequest方法分析</h3><p>当doWork方法准备好了FetchRequest实例就要靠processFetchRequest方法来拉数据给partitionInfoMap中的PartitionTopicInfo实例中的队列了。简单过程如下：    </p>
+<ul>
+<li>迭代响应中的每条数据，按每个分区维度处理</li>
+<li>拿到消息</li>
+<li>根据拿到的消息算出下一次的new offset，并更新到partitionMap中</li>
+<li>更新度量信息，计算堆积</li>
+<li>将取到的消息在PartitionTopicInfo实例中放入队列。 PartitionTopicInfo实例的队列来自Connect中的构造KafkaStream实例时传递的同一个队列。 这样能打通连接器和stream</li>
+</ul>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/fastjson-low-version-lost-field/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">fastjosn在低版本丢字段问题</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/log4j2-async-config/">
+                        <span class="hidden-mobile">log4j2异步日志配置及官方文档的问题澄清</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "uReplicator实现分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

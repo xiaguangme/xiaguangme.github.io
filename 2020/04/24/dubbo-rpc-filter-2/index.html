@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>dubbo-rpc-filter-2 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:42">
+                    星期五, 四月 24日 2020, 7:42 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    963 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    11
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>2.6.3版本，之前读的是2.4.9版本<br>本篇主要阐述dubbo rpc的filter的实现，包括作用，用法，原理，与Spring Cloud在这些能力的对比。  </p>
+<p>整个filter列表的获取过程在<br>com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper.buildInvokerChain(Invoker<T>, String, String)  </p>
+<pre><code class="hljs java">List&lt;Filter&gt; filters = ExtensionLoader.getExtensionLoader(Filter<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getActivateExtension</span>(<span class="hljs-title">invoker</span>.<span class="hljs-title">getUrl</span>(), <span class="hljs-title">key</span>, <span class="hljs-title">group</span>)</span>;</code></pre>
+<p><code>getActivateExtension</code>会根据filter的注解与url中配置参数结合，过滤出本次命中的filter。  </p>
+<a id="more"></a>
+
+<h2 id="ConsumerContextFilter"><a href="#ConsumerContextFilter" class="headerlink" title="ConsumerContextFilter"></a>ConsumerContextFilter</h2><h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>在consumer端，进行一些参数设置，诸如本端地址，对端地址等。    </p>
+<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><p>无需配置，consumer侧默认使用。<br>在dubbo中，对于这些filter如果在META-INF中配置了且filter类的注解@Activate上没有配置value值，那么就是默认使用。 可以参见com.alibaba.dubbo.common.extension.ExtensionLoader.isActive(Activate, URL)方法实现。  </p>
+<h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p>参见代码即可，比较简单。  </p>
+<h3 id="与Spring-Cloud对比"><a href="#与Spring-Cloud对比" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>N/A</p>
+<h2 id="ExceptionFilter"><a href="#ExceptionFilter" class="headerlink" title="ExceptionFilter"></a>ExceptionFilter</h2><h3 id="作用-1"><a href="#作用-1" class="headerlink" title="作用"></a>作用</h3><p>在provider端，对调用异常进行选择性进行包装。<br>非受检异常直接抛出，jdk的异常直接抛出，异常类与接口类在一个jar包内的直接抛出，是服务接口方法自己声明的要throw的异常直接抛出。<br>其余包装成受检异常放到RpcResult中返回。    </p>
+<h3 id="使用方式-1"><a href="#使用方式-1" class="headerlink" title="使用方式"></a>使用方式</h3><p>无需配置，provider侧默认使用。  </p>
+<h3 id="实现原理-1"><a href="#实现原理-1" class="headerlink" title="实现原理"></a>实现原理</h3><p>参见代码即可，比较简单。  </p>
+<h3 id="与Spring-Cloud对比-1"><a href="#与Spring-Cloud对比-1" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>N/A</p>
+<h2 id="DeprecatedFilter"><a href="#DeprecatedFilter" class="headerlink" title="DeprecatedFilter"></a>DeprecatedFilter</h2><h3 id="作用-2"><a href="#作用-2" class="headerlink" title="作用"></a>作用</h3><p>对于DEPRECATED的方法打一行错误日志。  是配置在consumer端，没太明白他的实际作用，既然要在consumer端配置DEPRECATED，还要打日志做啥呢？consumer端就知道了啊。 有点不解。 或许就是为了标注，这是一个废弃的调用吧。  </p>
+<h3 id="使用方式-2"><a href="#使用方式-2" class="headerlink" title="使用方式"></a>使用方式</h3><p>consumer端配置。  </p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:reference</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"userService"</span> <span class="hljs-attr">interface</span>=<span class="hljs-string">"org.simonme.dubbo.demo.provider.service.UserService"</span> <span class="hljs-attr">filter</span>=<span class="hljs-string">"deprecated"</span> &gt;</span>  
+    <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:method</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"queryUser"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:parameter</span> <span class="hljs-attr">key</span>=<span class="hljs-string">"deprecated"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"true"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:method</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:reference</span>&gt;</span></code></pre>
+
+<h3 id="实现原理-2"><a href="#实现原理-2" class="headerlink" title="实现原理"></a>实现原理</h3><p>参见代码即可，比较简单。  </p>
+<h3 id="与Spring-Cloud对比-2"><a href="#与Spring-Cloud对比-2" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>Spring Cloud貌似没有这个能力。  </p>
+<h2 id="CompatibleFilter"><a href="#CompatibleFilter" class="headerlink" title="CompatibleFilter"></a>CompatibleFilter</h2><h3 id="作用-3"><a href="#作用-3" class="headerlink" title="作用"></a>作用</h3><p>兼容适配器，能对结果返回值做一些类型转换，注入基本类型到装箱类型的互转，复合类型到序列化值的转换(依赖你配置的序列化类型)等。    </p>
+<h3 id="使用方式-3"><a href="#使用方式-3" class="headerlink" title="使用方式"></a>使用方式</h3><p>在consumer配置的filter上加上compatible即可。  </p>
+<h3 id="实现原理-3"><a href="#实现原理-3" class="headerlink" title="实现原理"></a>实现原理</h3><p>参见CompatibleFilter代码即可，比较简单。  </p>
+<h3 id="与Spring-Cloud对比-3"><a href="#与Spring-Cloud对比-3" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>TODO</p>
+<h2 id="TimeoutFilter"><a href="#TimeoutFilter" class="headerlink" title="TimeoutFilter"></a>TimeoutFilter</h2><h3 id="作用-4"><a href="#作用-4" class="headerlink" title="作用"></a>作用</h3><p>用在provider侧，对超时的服务调用，打一个警告日志。      </p>
+<h3 id="使用方式-4"><a href="#使用方式-4" class="headerlink" title="使用方式"></a>使用方式</h3><p>无需配置，默认生效。 </p>
+<h3 id="实现原理-4"><a href="#实现原理-4" class="headerlink" title="实现原理"></a>实现原理</h3><p>参见TimeoutFilter代码即可，比较简单。  </p>
+<h3 id="与Spring-Cloud对比-4"><a href="#与Spring-Cloud对比-4" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>TODO</p>
+<h2 id="TraceFilter"><a href="#TraceFilter" class="headerlink" title="TraceFilter"></a>TraceFilter</h2><h3 id="作用-5"><a href="#作用-5" class="headerlink" title="作用"></a>作用</h3><p>用在provider侧。     </p>
+<h3 id="使用方式-5"><a href="#使用方式-5" class="headerlink" title="使用方式"></a>使用方式</h3><p>无需配置，默认启用这个filter，但是要真正trace，需要telnet管理台，给其发指令，才能真正trace。支持指定接口，指定方法，指定最大trace多少次。 </p>
+<h3 id="实现原理-5"><a href="#实现原理-5" class="headerlink" title="实现原理"></a>实现原理</h3><p>trace的内容如下：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">if</span> (count &lt; max) &#123;
+    String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+      channel.send(<span class="hljs-string">"\r\n"</span> + RpcContext.getContext().getRemoteAddress() + <span class="hljs-string">" -&gt; "</span>
+                                        + invoker.getInterface().getName()
+                                        + <span class="hljs-string">"."</span> + invocation.getMethodName()
+                                        + <span class="hljs-string">"("</span> + JSON.toJSONString(invocation.getArguments()) + <span class="hljs-string">")"</span> + <span class="hljs-string">" -&gt; "</span> + JSON.toJSONString(result.getValue())
+                                        + <span class="hljs-string">"\r\nelapsed: "</span> + (end - start) + <span class="hljs-string">" ms."</span>
+                                        + <span class="hljs-string">"\r\n\r\n"</span> + prompt);
+&#125;</code></pre>
+
+<h3 id="与Spring-Cloud对比-5"><a href="#与Spring-Cloud对比-5" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>TODO</p>
+<h2 id="FutureFilter"><a href="#FutureFilter" class="headerlink" title="FutureFilter"></a>FutureFilter</h2><h3 id="作用-6"><a href="#作用-6" class="headerlink" title="作用"></a>作用</h3><p>用在consumer侧。<a href="http://dubbo.apache.org/zh-cn/docs/user/demos/events-notify.html" target="_blank" rel="noopener">dubbo的事件机制</a>支持oninvoke、onreturn、onreturn事件监听，就是靠这个filter完成对接。       </p>
+<h3 id="使用方式-6"><a href="#使用方式-6" class="headerlink" title="使用方式"></a>使用方式</h3><p>参见<a href="http://dubbo.apache.org/zh-cn/docs/user/demos/events-notify.html" target="_blank" rel="noopener">dubbo的事件机制</a>。  </p>
+<h3 id="实现原理-6"><a href="#实现原理-6" class="headerlink" title="实现原理"></a>实现原理</h3><p>比较简单，参见FutureFilter代码。或者参见<a href="https://blog.csdn.net/u013160932/article/details/81144471" target="_blank" rel="noopener">Dubbo源码分析—-过滤器之FutureFilter</a>  </p>
+<h3 id="与Spring-Cloud对比-6"><a href="#与Spring-Cloud对比-6" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>TODO</p>
+<h3 id="与Spring-Cloud对比-7"><a href="#与Spring-Cloud对比-7" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>TODO</p>
+<h2 id="MonitorFilter"><a href="#MonitorFilter" class="headerlink" title="MonitorFilter"></a>MonitorFilter</h2><h3 id="作用-7"><a href="#作用-7" class="headerlink" title="作用"></a>作用</h3><p>consumer,provider侧都可用。 会将服务的耗时，并发数等送给监控服务。      </p>
+<h3 id="使用方式-7"><a href="#使用方式-7" class="headerlink" title="使用方式"></a>使用方式</h3><p>filter默认启用，但是需要配置后才能触发监控。 配置dubbo:monitor。</p>
+<h3 id="实现原理-7"><a href="#实现原理-7" class="headerlink" title="实现原理"></a>实现原理</h3><p>比较简单，参见MonitorFilter。  具体收集监控动作由<code>MonitorService</code>接口实现完成。dubbo自带了<code>DubboMonitor</code>实现。收集的数据暂时同步擦欧洲放在一个ConcurrentHashMap中，再由ScheduledExecutorService定时异步发送。</p>
+<h3 id="与Spring-Cloud对比-8"><a href="#与Spring-Cloud对比-8" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h3><p>Spring Cloud有专门的组件干这个。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/dubbo-rpc-filter-1/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">dubbo rpc filter实现剖析(一)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/dubbo-protocol-impl/">
+                        <span class="hidden-mobile">dubbo Protocol实现剖析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "dubbo-rpc-filter-2&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

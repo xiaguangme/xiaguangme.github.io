@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>Spring Cloud(2.0)能力大致列表 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-04-24 07:44">
+                    星期五, 四月 24日 2020, 7:44 早上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    15
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>#微服务九大特性<br>出自Martin Fowler的《Microservices》  </p>
+<ol>
+<li>服务组件化  </li>
+<li>按业务组织团队  </li>
+<li>做“产品”的态度  </li>
+<li>智能端点与哑管道  </li>
+<li>去中心化治理  </li>
+<li>去中心化管理数据  </li>
+<li>基础设施自动化  </li>
+<li>容错设计  </li>
+<li>演进式设计  </li>
+</ol>
+<p>#Spring Boot特性</p>
+<ol>
+<li>支持main方法直接拉起嵌入式web容器  </li>
+<li>本地配置方式更友好，支持占位符 支持profile，支持启动参数覆盖等，支持自动配置  </li>
+<li>支持自动装配等 </li>
+</ol>
+<p>#Eureka的特性</p>
+<ol>
+<li>服务发现的server与client，即支持注册与发现能力。    </li>
+<li><code>高可用</code>，可以两个(或以上)节点相互备份，通过eureka.client.serviceUrl.defaultZone配置其他两个节点的url。server既是server也是client。    </li>
+<li>通过注解启用注册中心server端能力 <code>EnableEurekaServer</code>  </li>
+<li>需要注册的provider端只要在classpath下放spring-cloud-starter-netflix-eureka-client相关依赖，那么provider就可以自动注册到eureka注册中心。当然了需要在配置文件中配置eureka服务的url地址，配置项的key是eureka.client.serviceUrl.defaultZone。  </li>
+<li>server支持配置多长时间扫描一次失效服务  </li>
+<li>client端支持配置多长时间给server发一次心跳，支持配置多长时间没有收到心跳就移除服务列表  </li>
+<li>注册与发现时支持密码鉴权  </li>
+<li>支持多注册中心分组  </li>
+</ol>
+<p>#Ribbon特性</p>
+<ol>
+<li>客户端负载均衡器，客户端自己维护要访问的服务端清单，比如来自于注册中心 </li>
+<li>提供spring-cloud-starter-netflix-ribbon  artifact ID 用于引入ribbon  </li>
+<li>提供ribbon+RestTemplate的客户端负载均衡方式，那当然也提供了客户端。    </li>
+<li>用心跳去维护服务端清单的健康行，支持弹性失败  </li>
+<li>多种可插拔负载均衡规则： 轮询，随机，区域感知轮询，响应时间权重，具体参加com.netflix.loadbalancer.IRule的实现    </li>
+<li>支持ribbon.MaxAutoRetries 最大重试次数配置  </li>
+<li>支持配置是否所有操作都能重试  </li>
+<li>支持配置 刷新服务端列表的时间  </li>
+<li>支持配置读超时 与 连接超时 (针对HttpClient)  </li>
+<li>支持配置初始化的服务端列表  </li>
+<li>支持自定义RibbonClient  </li>
+<li>支持自定义负载均衡策略<br><a href="https://github.com/Netflix/ribbon/wiki" target="_blank" rel="noopener">Netflix ribbon自己的wiki</a>写的更清晰一些。  </li>
+</ol>
+<p>#Hystrix特性</p>
+<ol>
+<li>支持用spring-cloud-starter-netflix-hystrix  和 EnableCircuitBreaker 注解完成hystrix引入  </li>
+<li>支持指定fallBack时的方法，方法参数与服务方法参数相同(也就是支持参数传递)  </li>
+<li>支持 全局默认配置 动态全局配置 实例默认配置 实例动态配置 四个层次的配置覆盖能力  </li>
+<li>支持用execution.isolation.strategy配置隔离策略，支持线程(默认)和信号量方式的隔离  </li>
+<li>支持用execution.isolation.thread.timeoutInMilliseconds指定线程执行多长时间超时然后出发fallback，默认值1000ms  </li>
+<li>支持用execution.timeout.enabled配置是否需要启用线程执行超时机制，默认true  </li>
+<li>支持用execution.isolation.thread.interruptOnTimeout指定线程执行超时后是否终端，默认是true  </li>
+<li>支持用execution.isolation.thread.interruptOnCancel指定取消发生时是否要终端线程，默认false  </li>
+<li>支持用execution.isolation.semaphore.maxConcurrentRequests配置信号量模式下的最大并发请求数，默认10  </li>
+<li>支持fallback.isolation.semaphore.maxConcurrentRequests在信号量模式下callback最大并发请求数， 默认10  </li>
+<li>支持用fallback.enabled 指定是否启用fallback，默认true  </li>
+<li>支持用circuitBreaker.enabled 指定是否启用断路器 默认true  </li>
+<li>支持用circuitBreaker.requestVolumeThreshold配置 一个滑动窗口内 多少个请求失败后再启用断路器，默认是20  </li>
+<li>支持用circuitBreaker.sleepWindowInMilliseconds配置断路器被触发后生效多少时间，默认5s  </li>
+<li>支持用circuitBreaker.errorThresholdPercentage 配置失败百分比达到多少时启用断路器并触发fallback逻辑</li>
+<li>支持用circuitBreaker.forceOpen配置在所有服务失败时是否强制开启断路器，默认是false  </li>
+<li>支持用metrics.rollingStats.timeInMilliseconds配置时间窗口时长(断路器要根据单位时间内的失败数量或者比率来决定是否启用)，默认10s  </li>
+<li>支持用metrics.rollingStats.numBuckets设置桶的数量，默认是10  </li>
+<li>支持用requestCache.enabled配置是否启用缓存，在command有getCacheKey() 方法是默认启用此特性。 用@CacheResult注解配合@HystrixCommand注解可以开启缓存，默认是所有方法参数作为key，也可以通过cacheKeyMethod制定getkey方法，也可以使用@CacheKey注解加载服务方法的参数上作为缓存的key，用@CacheRemove注解关闭缓存。 可以参见<a href="https://segmentfault.com/a/1190000011280116" target="_blank" rel="noopener">这里</a> </li>
+<li>支持请求合并。 支持maxRequestsInBatch配置合并批次中的请求数。  支持timerDelayInMilliseconds配置延迟时间，默认10ms。</li>
+<li>支持线程池相关属性配置。  </li>
+<li>支持dashboard<br>所有的详细配置可参见<a href="http://tietang.wang/2016/02/25/hystrix/Hystrix%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/" target="_blank" rel="noopener">这里</a>和<a href="https://github.com/Netflix/Hystrix/wiki/Configuration" target="_blank" rel="noopener">这里</a>   </li>
+</ol>
+<p>#Feign特性</p>
+<ol>
+<li>支持用定义接口的方式替换了写代码实现远程client调用的代码  </li>
+<li>支持从请求header中拿参数作为调用远程服务的请求参数  </li>
+<li>支持用ribbon和hystrix实现负载均衡与服务降级  </li>
+<li>支持client的日志级别配置  </li>
+</ol>
+<p>#Zuul特性</p>
+<ol>
+<li>支持转发，支持转发路由规则配置  </li>
+<li>支持请求过滤，ZuulFilter，自带了多种实现  </li>
+<li>支持动态路由配置，需要配合spring cloud使用  </li>
+<li>支持动态过滤器，groovy脚本</li>
+</ol>
+<p>#config特性</p>
+<ol>
+<li>可以对接git、svn、本地文件存储  </li>
+<li>支持高可用，用eureka或者config server都指向同一git仓库  </li>
+<li>支持配置项加密，支持密钥配置  </li>
+<li>支持动态刷新配置</li>
+</ol>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/04/24/tps/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">TPS限流</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/04/24/dubbo-zk/">
+                        <span class="hidden-mobile">dubbo与zk注册中心如何对接，如何做到服务自动发现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Spring Cloud(2.0)能力大致列表&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
