@@ -5,6 +5,33 @@
   
   <entry>
     <title>tomcat6-endpoint设计</title>
+    <link href="/2020/05/02/dubbo-01.src_env_prepare/"/>
+    <url>/2020/05/02/dubbo-01.src_env_prepare/</url>
+    
+    <content type="html"><![CDATA[<h2 id="01-源代码、环境准备、模块分包梳理"><a href="#01-源代码、环境准备、模块分包梳理" class="headerlink" title="01. 源代码、环境准备、模块分包梳理"></a>01. 源代码、环境准备、模块分包梳理</h2><p>某前辈说道：</p><blockquote><p>一个开发人员如果不去读一读优秀的开源项目的代码，不如回家卖红薯。</p></blockquote><p>所有行文中，所说的<strong>建议</strong>什么什么的，都属于个人观点。既然是观点就有对错，就有上下文和一定的背景，希望大家辩证地看待，也欢迎关于建议进行交流。</p><h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><p>编译过程中，或许一些依赖找不到，需要手动install。</p><pre><code class="hljs shell">git clone https://github.com/apache/dubbo.gitcd dubbogit taggit checkout dubbo-2.5.3  cd ../<span class="hljs-meta">#</span><span class="bash">  补充 一些中央仓库中找不到的依赖</span>mkdir dependencycd dependencycurl -L -o alibaba-dubbo-dependency.zip https://github.com/alibaba/dubbo/files/310085/alibaba-dubbo-dependency.zip unzip alibaba-dubbo-dependency.zipmvn install:install-file -Dfile=alibaba/opensesame/1.0/opensesame-1.0.pom -DgroupId=com.alibaba -DartifactId=opensesame -Dversion=1.0 -Dpackaging=pommvn install:install-file -Dfile=alibaba/opensesame/2.0/opensesame-2.0.pom -DgroupId=com.alibaba -DartifactId=opensesame -Dversion=2.0 -Dpackaging=pommvn install:install-file -Dfile=alibaba/hessian-lite/3.2.1-fixed-2/hessian-lite-3.2.1-fixed-2.jar -DgroupId=com.alibaba -DartifactId=hessian-lite -Dversion=3.2.1-fixed-2 -Dpackaging=jarmvn install:install-file -Dfile=alibaba/fastjson/1.1.8/fastjson-1.1.8.jar -DgroupId=com.alibaba -DartifactId=fastjson -Dversion=1.1.8 -Dpackaging=jarcd ../mvn package -DskipTests</code></pre><p>编译成功即可。因为一些包的下载问题，编译或许需要较长时间，请耐心等待。</p><h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><p>我一般在着手阅读一个开源产品的代码时会准备如下一些通用的事情：</p><ol><li>IDEA/Eclipse。根据个人习惯选择。前提是对各种搜索、调试手段要熟练。</li><li>Source code/Demo。在下一篇文章中会准备demo。代码最好clone一份放到自己的github或者gitee上。因为阅读过程中可能会加一些你对这些代码理解的注释。此外建议，在行尾加阅读注释，这样不会破坏原有行号。<strong>PPS：公司信息安全管理严格的同学，请不要在公司电脑上commit到自己私人仓库，以防麻烦！比如我司。</strong></li><li>建议markdown编辑器或支持markdown语法的云笔记。markdown编辑器推荐Typora。用来记录学习中的总结与心得。建议学习别人的代码一定<strong>要有系统性的总结与输出</strong>，单纯的看一两个或数个片段不容易深入、不容易形成系统的结构性的知识体系。</li><li>问题列表。平时在使用时多思考多琢磨，阅读源码时心中带着疑问去阅读，这样就能有的放矢。在问题解决后就会有<strong>柳暗花明的感觉</strong>和<strong>原来如此的感慨</strong>。在通过阅读代码去解决这些疑惑的同时，亦或许能发现<strong>还能这样设计实现的惊叹与佩服</strong>。此系列文档的问题列表就是文档的目录。</li></ol><p>对于阅读dubbo代码的基础场景，环境方面还需要一个ZooKeeper服务。</p><h3 id="模块分包"><a href="#模块分包" class="headerlink" title="模块分包"></a>模块分包</h3><p>dubbo是一个RPC框架，为了实现RPC框架这个功能，其内部由各个模块、机制是如何划分与组织的？一般而言，项目内部的分包代表了模块的拆分，dubbo的整体设计如下：</p><p><img src="http://dubbo.apache.org/docs/zh-cn/dev/sources/images/dubbo-framework.jpg" srcset="/img/loading.gif" alt="dubbo整体设计"></p><p>dubbo主要分包大致结构如下：</p><ol><li>dubbo-common。扩展点、日志、URL、序列化接口与实现、工具类等。</li><li>dubbo-remoting。该模块的子模块有：<strong>remoting-api</strong>，dubbo-remoting-grizzly，dubbo-remoting-http，dubbo-remoting-mina，dubbo-remoting-netty，dubbo-remoting-p2p，dubbo-remoting-zookeeper。remoting-api定义了网络数据传输、交换与处理等API，如：传输层，传输事件分配器、协议编解码器接口、传输通道处理器接口、Exchanger系列接口、server与client的封装等API。</li><li>dubbo-rpc。该模块的子模块有：<strong>dubbo-rpc-api</strong>，dubbo-rpc-default，dubbo-rpc-injvm，dubbo-rpc-rmi，dubbo-rpc-hessian，dubbo-rpc-http，dubbo-rpc-webservice，dubbo-rpc-thrift，dubbo-rpc-memcached，dubbo-rpc-redis。dubbo-rpc-api定义了rpc所需要的API，如：协议接口、RpcContext、RpcResult、RpcStatus、Exporter、Invoker、Invocation、Filter、ProxyFactory等API以及一些抽象的实现等。</li><li>dubbo-monitor。该模块的子模块有：<strong>dubbo-monitor-api</strong>，dubbo-monitor-default。dubbo的监控模块。</li><li>dubbo-cluster。该模块主要实现的机制有：负载均衡、路由、目录查找。</li><li>dubbo-registry。该模块的子模块有：dubbo-registry-api，dubbo-registry-default，dubbo-registry-multicast，dubbo-registry-zookeeper，dubbo-registry-redis。dubbo-registry-api定义了注册环节所需要的API等，如：注册器，注册服务，注册工厂，注册协议、注册容错策略等。</li><li>dubbo-config。dubbo-config模块主要包含api和spring实现两个。内部主要包含服务协议配置、服务生产者配置、服务消费者配置、注册中心配置、相关配置注解等。</li><li>一些其他的辅助模块分包，如：dubbo-config、dubbo-admin、dubbo-demo等。</li></ol>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>dubbo源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>tomcat6-endpoint设计</title>
     <link href="/2020/04/24/tomcat-endpoint/"/>
     <url>/2020/04/24/tomcat-endpoint/</url>
     
