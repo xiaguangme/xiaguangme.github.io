@@ -175,6 +175,140 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
+
+      <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
+        
+        
+          
+        
+        <div>
+初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  
+channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operati</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</a>
+
+      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="index-excerpt">
+        
+        
+          
+        
+        <div>java
+# 创建断点(支持条件断点)
+curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java","condition":"i == 1","charStart":283,"charEnd":307,"lineNumber":16,"typeName":"com.code260.tools.red</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/dev-tools/">dev-tools</a>
+            
+              <a href="/tags/eclipse/">eclipse</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
+
+      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
+        
+        
+          
+        
+        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
+
+sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
+
+subl 1.txt   sublime比自带</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/dev-tools/">dev-tools</a>
+            
+              <a href="/tags/ubutnu/">ubutnu</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/20/about-dubbo-extension-loader/">关于dubbo扩展点的一点分析</a>
 
       <a href="/2020/04/20/about-dubbo-extension-loader/" class="index-excerpt">
@@ -484,95 +618,11 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
     </div>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/some-make-files/">几个递进的make file</a>
-
-      <a href="/2020/04/19/some-make-files/" class="index-excerpt">
-        
-        
-          
-        
-        <div>几个递进的make file春节在家写的几个递进的make file，部分有点问题。接下来 有空我要把GNU make的手册看完。不然这方面太菜了。  
-GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
-1 源文件名 目标都hard code，且一次编译多个目标PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKE</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/cpp/">cpp</a>
-            
-              <a href="/tags/makefile/">makefile</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/MySenseOfWorth/">我的价值观</a>
-
-      <a href="/2020/04/19/MySenseOfWorth/" class="index-excerpt">
-        
-        
-          
-        
-        <div>我的价值观
-一个底线：遵纪守法，远离黄赌毒。
-一个标准：感恩上进，持续努力，享受尽职。
-一个方法论：三人行必有我师，三人行我亦能成师。
-一个技巧：顺势而为。
-一个兜底：凡事有最坏的打算。
-
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/think/">think</a>
-            
-          </div>
-        
-        
-      </div>
-    </div>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/5/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span>
+      <a class="extend prev" rel="prev" href="/page/5/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

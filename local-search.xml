@@ -4,6 +4,83 @@
   
   
   <entry>
+    <title>中山北路-大桥-江边-和燕路 20KM骑行</title>
+    <link href="/2020/05/03/sport-zhongshan-north-road-yangest-river-road/"/>
+    <url>/2020/05/03/sport-zhongshan-north-road-yangest-river-road/</url>
+    
+    <content type="html"><![CDATA[<h2 id="中山北路-大桥-江边-和燕路-20KM骑行"><a href="#中山北路-大桥-江边-和燕路-20KM骑行" class="headerlink" title="中山北路-大桥-江边-和燕路 20KM骑行"></a>中山北路-大桥-江边-和燕路 20KM骑行</h2><video id="video" controls="" preload="none" poster="" width="800"  autoplay="autoplay">  <source id="mp4" src="/video/life/sport/zhongshan-north-road-yangest-river-road.mp4" type="video/mp4">  </video><p><img src="/img/life/sport/WechatIMG324.jpeg" srcset="/img/loading.gif" alt="">  </p><p><img src="/img/life/sport/WechatIMG325.jpeg" srcset="/img/loading.gif" alt="">  </p><p><img src="/img/life/sport/WechatIMG326.jpeg" srcset="/img/loading.gif" alt=""></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>life</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>sport</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>最近研究了三个新菜</title>
+    <link href="/2020/05/03/food-latest-3/"/>
+    <url>/2020/05/03/food-latest-3/</url>
+    
+    <content type="html"><![CDATA[<h2 id="最近研究了三个新菜"><a href="#最近研究了三个新菜" class="headerlink" title="最近研究了三个新菜"></a>最近研究了三个新菜</h2><ol><li>蒜泥龙虾。要点：菜油，龙虾开背，蒜泥先炒香盛出来。</li><li>高汤咸肉蚕豆米煮百叶卷肉。高汤用咸肉，青脚鸡炖，也可以加点排骨。百叶卷肉的肉糜，用葱姜水拌。葱姜水就葱姜切断后加点盐加点水杀出来的汁水，也需要用手挤一挤。</li><li>内脂豆腐虾米小葱毛豆。小葱与虾米适量。此菜需要无添加的酱油。</li></ol><p>这三个菜调味料除了那个无添加的酱油外就是盐油糖之类了。没有任何鸡精或者含鸡精的调料。原汁原味，美味极了。现在我已经很讨厌外面店里那种味道，要不是鸡精很重，要不是老抽或者耗油很重，要不就是靠胡椒…食材的原味都没有了。</p><p><img src="/img/life/food/WechatIMG327.jpeg" srcset="/img/loading.gif" alt="">  </p><p><img src="/img/life/food/WechatIMG329.jpeg" srcset="/img/loading.gif" alt=""></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>life</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>food</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>[dubbo]03. 扩展点背景以及JDK提供的扩展点</title>
+    <link href="/2020/05/02/dubbo-03.extensible_services/"/>
+    <url>/2020/05/02/dubbo-03.extensible_services/</url>
+    
+    <content type="html"><![CDATA[<h2 id="03-扩展点背景以及JDK提供的扩展点"><a href="#03-扩展点背景以及JDK提供的扩展点" class="headerlink" title="03. 扩展点背景以及JDK提供的扩展点"></a>03. 扩展点背景以及JDK提供的扩展点</h2><h3 id="为什么需要扩展点"><a href="#为什么需要扩展点" class="headerlink" title="为什么需要扩展点"></a>为什么需要扩展点</h3><p>因为为了达成能扩展的目的。</p><p>更多细节可以阅读oracle官方文档<a href="https://www.oracle.com/technical-resources/articles/javase/extensible.html" target="_blank" rel="noopener">Creating Extensible Applications With the Java Platform</a></p><p>重点：</p><blockquote><p><strong>Definitions</strong>  </p><p>A <em>service</em> is a set of programming interfaces and classes that provide access to some specific application functionality or feature. The service may simply define the interfaces for the functionality and a way to retrieve an implementation. In the word-processor example, a dictionary service can define a way to retrieve a dictionary and the definition of a word, but it does not implement the underlying feature set. Instead, it relies on a <em>service provider</em> to implement that functionality.  </p><p>A <em>service provider interface</em> (SPI) is the set of public interfaces and abstract classes that a service defines. The SPI defines the classes and methods available to your application. </p><p>A <em>service provider</em> implements the SPI. An application with extensible services will allow you, vendors, and perhaps even customers to add service providers without modifying the original application.</p></blockquote><h3 id="目前有什么扩展点机制实现"><a href="#目前有什么扩展点机制实现" class="headerlink" title="目前有什么扩展点机制实现"></a>目前有什么扩展点机制实现</h3><p>为了实现扩展，粗略的讲能支持bean容器的框架或机制均可以做扩展点</p><ol><li>JDK自带的扩展点机制，ServiceLoader</li><li>专门的bean容器：spring、guice等</li></ol><h3 id="JDK的扩展点"><a href="#JDK的扩展点" class="headerlink" title="JDK的扩展点"></a>JDK的扩展点</h3><p>ServiceLoader：一个简单的服务提供者加载设施。</p><p>使用文档与demo可以参见<a href="https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html" target="_blank" rel="noopener">这里官方doc</a></p><p>注意其使用时配置方式是：</p><blockquote><p>If com.example.impl.StandardCodecs is an implementation of the CodecSet service then its jar file also contains a file named</p><p> META-INF/services/com.example.CodecSet<br>This file contains the single line:</p><p> com.example.impl.StandardCodecs    # Standard codecs</p></blockquote><p>简单地说：是将SPI接口的具体实现类的全限定名写入在 <strong>META-INF/services</strong>目录下以SPI接口全限定名命名的文件中。ServiceLoader能从此文件中知道这个SPI具体选用哪个实现。</p><h3 id="自己实现一个扩展点机需要哪些基础能力"><a href="#自己实现一个扩展点机需要哪些基础能力" class="headerlink" title="自己实现一个扩展点机需要哪些基础能力"></a>自己实现一个扩展点机需要哪些基础能力</h3><p>根据配置读取相应的实现类并创建实例。</p><h3 id="自己实现一个扩展点可以做些什么高阶能力"><a href="#自己实现一个扩展点可以做些什么高阶能力" class="headerlink" title="自己实现一个扩展点可以做些什么高阶能力"></a>自己实现一个扩展点可以做些什么高阶能力</h3><p>自动装配（注入）字段、代理、适配、包装、激活(一次获取多个命中实例)等。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>dubbo源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>[dubbo]01.源代码、环境准备、模块分包梳理</title>
     <link href="/2020/05/02/dubbo-01.src_env_prepare/"/>
     <url>/2020/05/02/dubbo-01.src_env_prepare/</url>
