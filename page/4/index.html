@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/vm-interpret-bytecode/">虚拟机解释器与bytecode对接</a>
+
+      <a href="/2020/04/24/vm-interpret-bytecode/" class="index-excerpt">
+        
+        
+          
+        
+        <div>心头一直有个疑问，jvm虚拟是如何对接class中的字节码的？或者说在未进入JIT优化阶段时，解释器是如何对接的？
+大概阐述hotspot通过C++代码在堆上申请一块空间，向里面填充一组指令，然后把这块空间当成一个函数，通过函数指针去调用刚生成的代码。是不是666，是不是哇超酷毙了。  
+关键代码generate_call_stub address generate_call_stub(addre</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/24/new-object/">对象创建</a>
 
       <a href="/2020/04/24/new-object/" class="index-excerpt">
@@ -572,51 +616,6 @@ typedef class oopDes</div>
 指针函数，实际上函数，是指返回指针的函数  
 
 其实在C语言中，指针数组和数组指针也是一样的区分办法。  加个“的”便可以解决。为什么会有这样的问题？老</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/c-cpp-point-convert/">指针转换</a>
-
-      <a href="/2020/04/22/c-cpp-point-convert/" class="index-excerpt">
-        
-        
-          
-        
-        <div>指针转换今天在看hotspot代码时，有处没能看明白，于是请教青老师，给出了解答是指针转换的语法
-share/vm/memory/defNewGeneration.cpp DefNewGeneration::collect
-share/vm/memory/genOopClosures.inline.hpp FastScanClosure::do_oop_work
-share/vm/memory/d</div>
       </a>
 
       <div class="index-btm post-metas">
