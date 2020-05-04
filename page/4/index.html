@@ -175,6 +175,61 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/cpp-this-unsigned-pointer/">C++中将对象this转换成unsigned char指针</a>
+
+      <a href="/2020/04/24/cpp-this-unsigned-pointer/" class="index-excerpt">
+        
+        
+          
+        
+        <div>示例程序
+//  ---CodeBlob.h---
+#ifndef CODEBLOB_H_
+#define CODEBLOB_H_
+
+
+class CodeBlob &#123;
+private:
+  const char* _name;
+  int        _size;
+
+public:
+	CodeBlob();
+	void printName();
+	void printSize();
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/cpp/">cpp</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/24/vm-interpret-bytecode/">虚拟机解释器与bytecode对接</a>
 
       <a href="/2020/04/24/vm-interpret-bytecode/" class="index-excerpt">
@@ -564,58 +619,6 @@ klassklass对应元数据，包括常量池、字段、方法等。是在加载c
 oopoop对应java中的实例。oop是指向oopDesc的指针。  
 // share/vm/oops/oopsHierarchy.hpp
 typedef class oopDes</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/c-cpp-point-function/">函数指针与指针函数，直接向内存区域写入操作码并转成函数指针并调用</a>
-
-      <a href="/2020/04/22/c-cpp-point-function/" class="index-excerpt">
-        
-        
-          
-        
-        <div>函数指针与指针函数阅读hotspot的代码，需要先弄清楚这两个很容易混淆的概念。最近我想到一个办法去区分折扣两个，就是在中间加个“的”：  
-
-函数的指针
-指针的函数  
-
-这样就很容易区分了。  
-
-函数指针，实际上是指针，是指向函数的指针  
-指针函数，实际上函数，是指返回指针的函数  
-
-其实在C语言中，指针数组和数组指针也是一样的区分办法。  加个“的”便可以解决。为什么会有这样的问题？老</div>
       </a>
 
       <div class="index-btm post-metas">
