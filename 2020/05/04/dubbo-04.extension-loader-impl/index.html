@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]04.dubbo扩展点实现 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-05-04 21:55">
+                    星期一, 五月 4日 2020, 9:55 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    26
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="04-dubbo扩展点实现"><a href="#04-dubbo扩展点实现" class="headerlink" title="04.dubbo扩展点实现"></a>04.dubbo扩展点实现</h2><h3 id="怎么入手分析与学习"><a href="#怎么入手分析与学习" class="headerlink" title="怎么入手分析与学习"></a>怎么入手分析与学习</h3><ol>
+<li>可以看官方的ExtensionLoaderTest 测试用例，以这些具体的case作为入口。</li>
+<li>也可以直接看ExtensionLoader代码。可以从getExtension,getAdaptiveExtension,getActivateExtension三个方法作为入口。</li>
+</ol>
+<h3 id="扩展点的使用"><a href="#扩展点的使用" class="headerlink" title="扩展点的使用"></a>扩展点的使用</h3><h4 id="配置文件相关"><a href="#配置文件相关" class="headerlink" title="配置文件相关"></a>配置文件相关</h4><p>配置文件放在哪里？</p>
+<ol>
+<li>META-INF/dubbo/internal/配置文件  </li>
+<li>META-INF/dubbo/配置文件  </li>
+<li>META-INF/services/配置文件  </li>
+</ol>
+<p>配置文件名是顶层接口全限定名，比如：com.alibaba.dubbo.rpc.Protocol  </p>
+<p>配置文件中内容：<br>一行是一个实现类的定义，大致是<br>beanName=实现类的class的全限定名，这个后面还可以接上#xxx（这个能力实际使用少）。beanName=这部分不是必须的。可以仅仅写实现类的全限定名。   </p>
+<h4 id="注解相关"><a href="#注解相关" class="headerlink" title="注解相关"></a>注解相关</h4><h5 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h5><p>SPI注解用在顶层接口上，其值表示这个接口的<strong>默认实现类的beanName</strong>，也即是说指定一个顶层接口的默认实现通过SPI注解加载顶层接口上指定即可。  </p>
+<p>加了SPI注解的接口，我们就可以用扩展点机制结合配置文件的配置后，得到一个接口的具体实现，使用时如下：</p>
+<pre><code class="hljs java"><span class="hljs-meta">@SPI</span>(<span class="hljs-string">"dubbo"</span>)
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">Protocol</span> </span>&#123;
+  <span class="hljs-comment">// ...</span>
+&#125;
+
+ExtensionLoader.getExtensionLoader(Protocol<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getExtension</span>(<span class="hljs-title">DubboProtocol</span>.<span class="hljs-title">NAME</span>)</span>;</code></pre>
+
+
+
+<h5 id="Adaptive"><a href="#Adaptive" class="headerlink" title="Adaptive"></a>Adaptive</h5><p>Adaptive注解用在<strong>顶层接口或者接口的方法</strong>上，其表示这个接口或者这个方法需要有adaptive的类委托完成，未加注解的会生成不支持的操作的方式实现。</p>
+<p>我们以ProxyFactory为例子看下使用时具体做法。</p>
+<p>首先，在对应的接口的方法上加了@Adaptive注解，表示这个方法需要adaptive。</p>
+<pre><code class="hljs java"><span class="hljs-meta">@SPI</span>(<span class="hljs-string">"javassist"</span>)
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">ProxyFactory</span> </span>&#123;
+
+    <span class="hljs-meta">@Adaptive</span>(&#123;Constants.PROXY_KEY&#125;)
+    &lt;T&gt; <span class="hljs-function">T <span class="hljs-title">getProxy</span><span class="hljs-params">(Invoker&lt;T&gt; invoker)</span> <span class="hljs-keyword">throws</span> RpcException</span>;
+
+    <span class="hljs-meta">@Adaptive</span>(&#123;Constants.PROXY_KEY&#125;)
+    &lt;T&gt; <span class="hljs-function">Invoker&lt;T&gt; <span class="hljs-title">getInvoker</span><span class="hljs-params">(T proxy, Class&lt;T&gt; type, URL url)</span> <span class="hljs-keyword">throws</span> RpcException</span>;
+&#125;</code></pre>
+
+<p>其次，在使用的地方主要代码如下：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getAdaptiveExtension</span>()</span>;
+<span class="hljs-comment">//...只列举相关代码</span>
+<span class="hljs-comment">// 创建服务代理</span>
+<span class="hljs-keyword">return</span> (T) proxyFactory.getProxy(invoker);</code></pre>
+
+<h5 id="Activate"><a href="#Activate" class="headerlink" title="Activate"></a>Activate</h5><p>Activate注解用在实现类上，其表示实现类在rpc时根据url参数中以及注解中指定的key 目标value是否能匹配来决定此bean是否被选中(一般用在过滤器的命中判断上)。  </p>
+<h4 id="生成的代码"><a href="#生成的代码" class="headerlink" title="生成的代码"></a>生成的代码</h4><h5 id="adaptive类代码示例"><a href="#adaptive类代码示例" class="headerlink" title="adaptive类代码示例"></a>adaptive类代码示例</h5><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.alibaba.dubbo.registry;
+
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.extension.ExtensionLoader;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RegistryFactory</span>$<span class="hljs-title">Adaptive</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">com</span>.<span class="hljs-title">alibaba</span>.<span class="hljs-title">dubbo</span>.<span class="hljs-title">registry</span>.<span class="hljs-title">RegistryFactory</span> </span>&#123;
+	<span class="hljs-keyword">public</span> com.alibaba.dubbo.registry.<span class="hljs-function">Registry <span class="hljs-title">getRegistry</span><span class="hljs-params">(com.alibaba.dubbo.common.URL arg0)</span> </span>&#123;
+		<span class="hljs-keyword">if</span> (arg0 == <span class="hljs-keyword">null</span>)
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"url == null"</span>);
+		com.alibaba.dubbo.common.URL url = arg0;
+		String extName = (url.getProtocol() == <span class="hljs-keyword">null</span> ? <span class="hljs-string">"dubbo"</span> : url.getProtocol());
+		<span class="hljs-keyword">if</span> (extName == <span class="hljs-keyword">null</span>)
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalStateException(
+					<span class="hljs-string">"Fail to get extension(com.alibaba.dubbo.registry.RegistryFactory) name from url("</span> + url.toString()
+							+ <span class="hljs-string">") use keys([protocol])"</span>);
+		com.alibaba.dubbo.registry.RegistryFactory extension = (com.alibaba.dubbo.registry.RegistryFactory) ExtensionLoader
+				.getExtensionLoader(com.alibaba.dubbo.registry.RegistryFactory<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getExtension</span>(<span class="hljs-title">extName</span>)</span>;
+		<span class="hljs-keyword">return</span> extension.getRegistry(arg0);
+	&#125;
+&#125;</code></pre>
+
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.alibaba.dubbo.rpc.cluster;
+
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.extension.ExtensionLoader;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Cluster</span>$<span class="hljs-title">Adaptive</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">com</span>.<span class="hljs-title">alibaba</span>.<span class="hljs-title">dubbo</span>.<span class="hljs-title">rpc</span>.<span class="hljs-title">cluster</span>.<span class="hljs-title">Cluster</span> </span>&#123;
+	<span class="hljs-keyword">public</span> com.alibaba.dubbo.rpc.<span class="hljs-function">Invoker <span class="hljs-title">join</span><span class="hljs-params">(com.alibaba.dubbo.rpc.cluster.Directory arg0)</span></span>
+<span class="hljs-function">			<span class="hljs-keyword">throws</span> com.alibaba.dubbo.rpc.RpcException </span>&#123;
+		<span class="hljs-keyword">if</span> (arg0 == <span class="hljs-keyword">null</span>)
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"com.alibaba.dubbo.rpc.cluster.Directory argument == null"</span>);
+		<span class="hljs-keyword">if</span> (arg0.getUrl() == <span class="hljs-keyword">null</span>)
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"com.alibaba.dubbo.rpc.cluster.Directory argument getUrl() == null"</span>);
+		com.alibaba.dubbo.common.URL url = arg0.getUrl();
+		String extName = url.getParameter(<span class="hljs-string">"cluster"</span>, <span class="hljs-string">"failover"</span>);
+		<span class="hljs-keyword">if</span> (extName == <span class="hljs-keyword">null</span>)
+			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalStateException(
+					<span class="hljs-string">"Fail to get extension(com.alibaba.dubbo.rpc.cluster.Cluster) name from url("</span> + url.toString()
+							+ <span class="hljs-string">") use keys([cluster])"</span>);
+		com.alibaba.dubbo.rpc.cluster.Cluster extension = (com.alibaba.dubbo.rpc.cluster.Cluster) ExtensionLoader
+				.getExtensionLoader(com.alibaba.dubbo.rpc.cluster.Cluster<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getExtension</span>(<span class="hljs-title">extName</span>)</span>;
+		<span class="hljs-keyword">return</span> extension.join(arg0);
+	&#125;
+&#125;</code></pre>
+
+<h3 id="getExtension实现"><a href="#getExtension实现" class="headerlink" title="getExtension实现"></a>getExtension实现</h3><p>大概逻辑是：先从已经创建的instance中查找，找不到则创建。</p>
+<pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> ConcurrentMap&lt;String, Holder&lt;Object&gt;&gt; cachedInstances = <span class="hljs-keyword">new</span> ConcurrentHashMap&lt;String, Holder&lt;Object&gt;&gt;();
+
+<span class="hljs-function"><span class="hljs-keyword">public</span> T <span class="hljs-title">getExtension</span><span class="hljs-params">(String name)</span> </span>&#123;
+  <span class="hljs-keyword">if</span> (name == <span class="hljs-keyword">null</span> || name.length() == <span class="hljs-number">0</span>)
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(<span class="hljs-string">"Extension name == null"</span>);
+  <span class="hljs-keyword">if</span> (<span class="hljs-string">"true"</span>.equals(name)) &#123;
+    <span class="hljs-keyword">return</span> getDefaultExtension();
+  &#125;
+  Holder&lt;Object&gt; holder = cachedInstances.get(name);
+  <span class="hljs-keyword">if</span> (holder == <span class="hljs-keyword">null</span>) &#123;
+    cachedInstances.putIfAbsent(name, <span class="hljs-keyword">new</span> Holder&lt;Object&gt;());
+    holder = cachedInstances.get(name);
+  &#125;
+  Object instance = holder.get();
+  <span class="hljs-keyword">if</span> (instance == <span class="hljs-keyword">null</span>) &#123;
+    <span class="hljs-keyword">synchronized</span> (holder) &#123;
+      instance = holder.get();
+      <span class="hljs-keyword">if</span> (instance == <span class="hljs-keyword">null</span>) &#123;
+        instance = createExtension(name);
+        holder.set(instance);
+      &#125;
+    &#125;
+  &#125;
+  <span class="hljs-keyword">return</span> (T) instance;
+&#125;</code></pre>
+
+<h4 id="createExtension"><a href="#createExtension" class="headerlink" title="createExtension"></a>createExtension</h4><p>创建分两步：</p>
+<ol>
+<li>构造实例 ExtensionLoader.createExtension</li>
+<li>为实例的字段进行注入 ExtensionLoader.injectExtension</li>
+</ol>
+<h3 id="getAdaptiveExtension实现"><a href="#getAdaptiveExtension实现" class="headerlink" title="getAdaptiveExtension实现"></a>getAdaptiveExtension实现</h3><p>前文讲扩展点使用时，已经讲了，Adaptive模式支持两个级别： 类级别与方法级别。关于这一点我们可以看注解Adaptive的Target声明表示其支持TYPE和METHOD：</p>
+<pre><code class="hljs java"><span class="hljs-meta">@Target</span>(&#123;ElementType.TYPE, ElementType.METHOD&#125;)
+<span class="hljs-keyword">public</span> <span class="hljs-meta">@interface</span> Adaptive &#123;
+  <span class="hljs-comment">//......</span>
+&#125;</code></pre>
+
+<p>dubbo自身代码中使用类级别的adaptive的不多，大概有AdaptiveCompiler和AdaptiveExtensionFactory。</p>
+<p>不论是类级别的还是方法级别的adaptive，dubbo的扩展点机制都会为其生成一个扩展类。类级别的，一个类对应一个扩展类。方法级别的，一个类中的多个加了Adaptive注解的方法在一起生成一个扩展类。</p>
+<p>代码入口处：ExtensionLoader.createAdaptiveExtension。</p>
+<p>主要流程：</p>
+<pre><code class="hljs flow">st&#x3D;&gt;start: 开始
+
+getAdaptiveExtensionClass&#x3D;&gt;subroutine: getAdaptiveExtensionClass
+创建适配class
+
+newInstance&#x3D;&gt;operation: newInstance
+创建适配实例
+
+injectExtension&#x3D;&gt;operation: injectExtension
+注入相应字段
+
+e&#x3D;&gt;end: 结束
+
+st-&gt;getAdaptiveExtensionClass-&gt;newInstance-&gt;injectExtension-&gt;e</code></pre>
+
+<p>创建适配class的流程:</p>
+<pre><code class="hljs flow">st&#x3D;&gt;start: 开始
+
+getAdaptiveExtensionClass&#x3D;&gt;subroutine: getAdaptiveExtensionClass
+创建适配class
+
+newInstance&#x3D;&gt;operation: newInstance
+创建适配实例
+
+injectExtension&#x3D;&gt;operation: injectExtension
+注入相应字段
+
+e&#x3D;&gt;end: 结束
+
+st-&gt;getAdaptiveExtensionClass-&gt;newInstance-&gt;injectExtension-&gt;e</code></pre>
+
+
+
+
+
+<p>我们还是以ProxyFactory为例子看下其实现。</p>
+<p>我们逐一分析其实现。</p>
+<h4 id="类级别adaptive"><a href="#类级别adaptive" class="headerlink" title="类级别adaptive"></a>类级别adaptive</h4><p>根据类级别的adaptive注解指定值作为name去获取相应的实例。</p>
+<h4 id="方法级别adaptive"><a href="#方法级别adaptive" class="headerlink" title="方法级别adaptive"></a>方法级别adaptive</h4><p>根据方法级别的adaptive注解指定值作为键从url中获取键对应的值作为name，然后再用name去获取相应的实例<br>name与实现的关系同于extension。</p>
+<p>对于方法级 获取getAdaptiveExtension过程通过动态生成代码的方式实现<br>当然将这个动态生成的代码硬编码在代码中，通过getExtension获取的作用也是等价的<br>参见AbstractClusterInvoker line220<br>loadbalance = xExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()<br>                    .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));</p>
+<p>TODO @200502</p>
+<h3 id="总结梳理下dubbo扩展点有哪些能力"><a href="#总结梳理下dubbo扩展点有哪些能力" class="headerlink" title="总结梳理下dubbo扩展点有哪些能力"></a>总结梳理下dubbo扩展点有哪些能力</h3><p>粗略的讲有：自动装配（注入）字段、代理、适配、包装、激活(一次获取多个命中实例)等。</p>
+<ol>
+<li>能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。</li>
+<li>能创建instance。</li>
+<li>能指定这个顶层接口的默认实现类的beanName。做法参见SPI注解部分。</li>
+<li>能把创建出来的instance的字段注入。set开头的且有一个参数且是public的，注入。  </li>
+<li>能adaptive。根据url上对该接口配置的实现类，将该接口的事情交给这个实现类去做(我更多的理解成委托)。此能力采用代码生成再编译的方式。代码生成示例可以参见adaptive类代码示例。 adaptive只会生成一个adaptive实现类。生成代码的逻辑在com.alibaba.dubbo.common.extension.ExtensionLoader.createAdaptiveExtensionClassCode()  </li>
+<li>能wrapper。wrapper是指这个顶层接口的实现类的构造函数的入参是这个顶层接口类型。那么这个实现类称之为wrapper类，可以有多个，构建instance时不分多个之间的顺序。因为用来给构造函数传参的instance是这个顶层类的默认实现。比如com.alibaba.dubbo.rpc.Protocol接口，有实现类 com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol beanName是injvm，QosProtocolWrapper、ProtocolListenerWrapper、ProtocolFilterWrapper是其三个wrapper类。创建warpper instance的代码逻辑在com.alibaba.dubbo.common.extension.ExtensionLoader.createExtension(String)中。  </li>
+<li>能active。实现类加了Activate注解的。在ExtensionLoader.getActivateExtension时会根据当前的url(配置信息)中值来匹配Activate注解中指定的值是否能match，能match的表示是activate，意思是命中的。在过滤器扩展点中用到。比如这个过滤器是给CONSUMER group用。示例有ExceptionFilter等。同时该注解还能支持order属性来定义bean的顺序。     </li>
+</ol>
+<h3 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h3><p>查找所有的dubbo扩展点形式的配置文件  </p>
+<pre><code class="hljs shell">find ./ -type f -name "com.alibaba.dubbo*"|grep -v "/target/"|grep -v "/bin/"|grep -v "/test/"</code></pre>
+
+<p>另：<br>关于代理模式，dubbo未实现通用的，只是rpc语义实现里rpc调用的代理，借助扩展点机器加动态代理完成。<br>具体其顶层接口是com.alibaba.dubbo.rpc.ProxyFactory。用在比如将EchoService编织进每次RPC调用中。  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/04/config-default-jdk-version-for-maven/">
+                        <span class="hidden-mobile">maven项目导入后默认使用JDK版本问题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]04.dubbo扩展点实现&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
