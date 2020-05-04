@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    2k 字
+                    1.9k 字
                   </span>
                 
 
@@ -171,7 +171,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    26
+                    25
                      分钟
                   </span>
                 
@@ -327,48 +327,21 @@ ExtensionLoader.getExtensionLoader(Protocol<span class="hljs-class">.<span class
 <p>dubbo自身代码中使用类级别的adaptive的不多，大概有AdaptiveCompiler和AdaptiveExtensionFactory。</p>
 <p>不论是类级别的还是方法级别的adaptive，dubbo的扩展点机制都会为其生成一个扩展类。类级别的，一个类对应一个扩展类。方法级别的，一个类中的多个加了Adaptive注解的方法在一起生成一个扩展类。</p>
 <p>代码入口处：ExtensionLoader.createAdaptiveExtension。</p>
-<p>主要流程：</p>
-<pre><code class="hljs flow">st&#x3D;&gt;start: 开始
+<p>获取adaptive扩展实例的主要流程：</p>
+<pre><code class="hljs mermaid">graph LR
 
-getAdaptiveExtensionClass&#x3D;&gt;subroutine: getAdaptiveExtensionClass
-创建适配class
+A[getAdaptiveExtensionClass&lt;br&gt;创建适配class] --&gt;B[newInstance&lt;br&gt;创建适配实例] 
+B --&gt; C[injectExtension&lt;br&gt;注入相应字段]</code></pre>
 
-newInstance&#x3D;&gt;operation: newInstance
-创建适配实例
+<p>getAdaptiveExtensionClass创建适配class的流程:</p>
+<pre><code class="hljs mermaid">graph LR
 
-injectExtension&#x3D;&gt;operation: injectExtension
-注入相应字段
+A[createAdaptiveExtensionClassCode&lt;br&gt;生成适配class的代码] --&gt;B[Compiler.compile&lt;br&gt;编译适配class的代码] 
+B --&gt;C[javassist.CtClass.toClass&lt;br&gt;javassist编译出class]</code></pre>
 
-e&#x3D;&gt;end: 结束
-
-st-&gt;getAdaptiveExtensionClass-&gt;newInstance-&gt;injectExtension-&gt;e</code></pre>
-
-<p>创建适配class的流程:</p>
-<pre><code class="hljs flow">st&#x3D;&gt;start: 开始
-
-getAdaptiveExtensionClass&#x3D;&gt;subroutine: getAdaptiveExtensionClass
-创建适配class
-
-newInstance&#x3D;&gt;operation: newInstance
-创建适配实例
-
-injectExtension&#x3D;&gt;operation: injectExtension
-注入相应字段
-
-e&#x3D;&gt;end: 结束
-
-st-&gt;getAdaptiveExtensionClass-&gt;newInstance-&gt;injectExtension-&gt;e</code></pre>
-
-
-
-
-
+<p>通过上述两个流程图大概能明白扩展的适配实例的创建过程，就是通过生成代码的再编译出class再load上来后，再创建对应实例并注入字段的过程来完成的。</p>
 <p>我们还是以ProxyFactory为例子看下其实现。</p>
 <p>我们逐一分析其实现。</p>
-<h4 id="类级别adaptive"><a href="#类级别adaptive" class="headerlink" title="类级别adaptive"></a>类级别adaptive</h4><p>根据类级别的adaptive注解指定值作为name去获取相应的实例。</p>
-<h4 id="方法级别adaptive"><a href="#方法级别adaptive" class="headerlink" title="方法级别adaptive"></a>方法级别adaptive</h4><p>根据方法级别的adaptive注解指定值作为键从url中获取键对应的值作为name，然后再用name去获取相应的实例<br>name与实现的关系同于extension。</p>
-<p>对于方法级 获取getAdaptiveExtension过程通过动态生成代码的方式实现<br>当然将这个动态生成的代码硬编码在代码中，通过getExtension获取的作用也是等价的<br>参见AbstractClusterInvoker line220<br>loadbalance = xExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()<br>                    .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));</p>
-<p>TODO @200502</p>
 <h3 id="总结梳理下dubbo扩展点有哪些能力"><a href="#总结梳理下dubbo扩展点有哪些能力" class="headerlink" title="总结梳理下dubbo扩展点有哪些能力"></a>总结梳理下dubbo扩展点有哪些能力</h3><p>粗略的讲有：自动装配（注入）字段、代理、适配、包装、激活(一次获取多个命中实例)等。</p>
 <ol>
 <li>能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。</li>
