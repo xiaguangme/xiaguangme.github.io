@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    644 字
+                    1.5k 字
                   </span>
                 
 
@@ -171,7 +171,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    9
+                    23
                      分钟
                   </span>
                 
@@ -226,7 +226,7 @@ A[自定义spring配置标签-格式结构-]--&gt;B[DubboNamespaceHandler对接s
 B--&gt;C[定义DubboBeanDefinitionParser解析处理那些标签]
 C--&gt;D[ReferenceBean getobject 对接spring的FactoryBean接口]
 D--&gt;E[ReferenceConfig createProxy]
-E--&gt;F[具体的协议实现refer出Invoker实现 默认是DubboProtocolrefer出DubboInvoker]
+E--&gt;F[组装配置上下文url-含注册中心信息-具体的协议实现refer出Invoker实现&lt;br&gt;默认是DubboProtocolrefer出DubboInvoker]
 F--&gt;G[JavassistProxyFactory把上步的Invoker实例wrap起来生成消费的proxy]</code></pre>
 
 
@@ -264,7 +264,124 @@ ReferenceBean&lt;T&gt;(ReferenceConfig&lt;T&gt;).get() line: <span class="hljs-n
 ReferenceBean&lt;T&gt;.getObject() line: <span class="hljs-number">65</span>	
 DefaultListableBeanFactory(FactoryBeanRegistrySupport).doGetObjectFromFactoryBean(FactoryBean&lt;?&gt;, String) line: <span class="hljs-number">168</span></code></pre>
 
-<h3 id="ReferenceConfig-createProxy"><a href="#ReferenceConfig-createProxy" class="headerlink" title="ReferenceConfig createProxy"></a>ReferenceConfig createProxy</h3><p>invoker = refprotocol.refer(interfaceClass, urls.get(0));</p>
+<h3 id="ReferenceConfig-createProxy分析"><a href="#ReferenceConfig-createProxy分析" class="headerlink" title="ReferenceConfig.createProxy分析"></a>ReferenceConfig.createProxy分析</h3><p>createProxy方法的主要流程：</p>
+<pre><code class="hljs mermaid">graph TD
+A(1.判断是哪种协议:InJVm,指定url直连,rpc-default-dubbo)--&gt;B[2.组装出url]
+B--&gt;C[3.用对应的Protocol扩展实现结合url推出Invoker实例]
+C--&gt;D[4.调用proxyFactory.getProxy创建代理的reference bean]</code></pre>
+
+<p>第二步如果是InJvm，则处理代码如下：</p>
+<pre><code class="hljs java">URL url = <span class="hljs-keyword">new</span> URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, <span class="hljs-number">0</span>, interfaceClass.getName()).addParameters(map);<span class="hljs-comment">// 直接new的URL的protocol是InJvm，然后下一步refer</span>
+invoker = refprotocol.refer(interfaceClass, url);</code></pre>
+
+<p>第二步如果是默认的走zookeeper注册中心这种，类似我们demo那种，url组出来的样子大概如下：  </p>
+<p>registry://127.0.0.1:2182/com.alibaba.dubbo.registry.RegistryService?application=consumer-of-helloworld-app&amp;dubbo=2.0.0&amp;pid=42451&amp;refer=application%3Dconsumer-of-helloworld-app%26dubbo%3D2.0.0%26interface%3Dcom.code260.ss.dubbo.demov.facade.service.HelloService%26methods%3DsayHello%26pid%3D42451%26side%3Dconsumer%26timeout%3D3000000%26timestamp%3D1588645452894&amp;registry=zookeeper&amp;timestamp=1588645571661</p>
+<p>这个url的加工过程有个重要环节就是com.alibaba.dubbo.config.AbstractInterfaceConfig.loadRegistries(boolean)，该方法将注册中心的信息，如注册中心地址与端口127.0.0.1:2182，采用协议registry=zookeepe拼接到url中，并将url的协议设置成registry://，参见AbstractInterfaceConfig类192行处。</p>
+<p>第三步 推出Invoker实例的逻辑比较简单，我们以默认的dubbo协议DubboProtocol为例子看下，就是new一个DubboInvoker实例的过程，将配置上下文url送进去：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> &lt;T&gt; <span class="hljs-function">Invoker&lt;T&gt; <span class="hljs-title">refer</span><span class="hljs-params">(Class&lt;T&gt; serviceType, URL url)</span> <span class="hljs-keyword">throws</span> RpcException </span>&#123;
+  <span class="hljs-comment">// create rpc invoker.</span>
+  DubboInvoker&lt;T&gt; invoker = <span class="hljs-keyword">new</span> DubboInvoker&lt;T&gt;(serviceType, url, getClients(url), invokers);
+  invokers.add(invoker);
+  <span class="hljs-keyword">return</span> invoker;
+&#125;</code></pre>
+
+<p>第四步，调用proxyFactory.getProxy创建代理的reference bean，下面单独一个段落分析。</p>
+<h3 id="ProxyFactory-getProxy"><a href="#ProxyFactory-getProxy" class="headerlink" title="ProxyFactory.getProxy"></a>ProxyFactory.getProxy</h3><p>getProxy主要处理的逻辑和流程有：</p>
+<ol>
+<li>植入回声服务EchoService  com.alibaba.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(Invoker<T>)</li>
+<li>生成代理类 com.alibaba.dubbo.common.bytecode.Proxy.getProxy(ClassLoader, Class&lt;?&gt;…)，com.alibaba.dubbo.common.bytecode.ClassGenerator。生成办法跟扩展点机制的adaptive机制的手法类似，依靠Javassist完成，具体细节参见刚才提到的getProxy方法和ClassGenerator类。大致描述下过程：<ol>
+<li>先跟据interfaces构建<strong>proxy</strong>的class和<strong>Proxy</strong>的class，<strong>注意proxy的p的大小写</strong>！再用Proxy的实例调用其newInstance方法创建proxy实例。上面一句有点绕：<strong>proxy是相当于bean</strong>，<strong>Proxy相当于构建bean的builder</strong>，此处命名不是很友好，仅靠大小写区分。</li>
+<li>Proxy实例会做cache ProxyCacheMap。</li>
+<li>Proxy实例的命名是proxy后加一个整数  整数是通过PROXY_CLASS_COUNTER 这个AtomicLong维护<br>此处interfaces已经自动加入EchoService。</li>
+</ol>
+</li>
+</ol>
+<p>生成的代码：</p>
+<p>Proxy相当于构建bean的builder:</p>
+<pre><code class="hljs java">[arthas@<span class="hljs-number">43605</span>]$ jad com.alibaba.dubbo.common.bytecode.Proxy0
+
+ClassLoader:
++-sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+  +-sun.misc.Launcher$ExtClassLoader@<span class="hljs-number">7823</span>a2f9
+
+Location:
+
+
+<span class="hljs-comment">/*</span>
+<span class="hljs-comment"> * Decompiled with CFR.</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Could not load the following classes:</span>
+<span class="hljs-comment"> *  com.alibaba.dubbo.common.bytecode.ClassGenerator$DC</span>
+<span class="hljs-comment"> *  com.alibaba.dubbo.common.bytecode.Proxy</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">package</span> com.alibaba.dubbo.common.bytecode;
+
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.bytecode.ClassGenerator;
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.bytecode.Proxy;
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.bytecode.proxy0;
+<span class="hljs-keyword">import</span> java.lang.reflect.InvocationHandler;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Proxy0</span></span>
+<span class="hljs-class"><span class="hljs-keyword">extends</span> <span class="hljs-title">Proxy</span></span>
+<span class="hljs-class"><span class="hljs-keyword">implements</span> <span class="hljs-title">ClassGenerator</span>.<span class="hljs-title">DC</span> </span>&#123;
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">newInstance</span><span class="hljs-params">(InvocationHandler invocationHandler)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> proxy0(invocationHandler);
+    &#125;
+&#125;</code></pre>
+
+<p>proxy是相当于bean:</p>
+<pre><code class="hljs java">[arthas@<span class="hljs-number">43605</span>]$ jad com.alibaba.dubbo.common.bytecode.proxy0
+
+ClassLoader:
++-sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+  +-sun.misc.Launcher$ExtClassLoader@<span class="hljs-number">7823</span>a2f9
+
+Location:
+
+
+<span class="hljs-comment">/*</span>
+<span class="hljs-comment"> * Decompiled with CFR.</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Could not load the following classes:</span>
+<span class="hljs-comment"> *  com.alibaba.dubbo.common.bytecode.ClassGenerator$DC</span>
+<span class="hljs-comment"> *  com.alibaba.dubbo.rpc.service.EchoService</span>
+<span class="hljs-comment"> *  com.code260.ss.dubbo.demov.facade.service.HelloService</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">package</span> com.alibaba.dubbo.common.bytecode;
+
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.common.bytecode.ClassGenerator;
+<span class="hljs-keyword">import</span> com.alibaba.dubbo.rpc.service.EchoService;
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.service.HelloService;
+<span class="hljs-keyword">import</span> java.lang.reflect.InvocationHandler;
+<span class="hljs-keyword">import</span> java.lang.reflect.Method;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">proxy0</span></span>
+<span class="hljs-class"><span class="hljs-keyword">implements</span> <span class="hljs-title">ClassGenerator</span>.<span class="hljs-title">DC</span>,</span>
+<span class="hljs-class"><span class="hljs-title">EchoService</span>,</span>
+<span class="hljs-class"><span class="hljs-title">HelloService</span> </span>&#123;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Method[] methods;
+    <span class="hljs-keyword">private</span> InvocationHandler handler;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">sayHello</span><span class="hljs-params">(String string)</span> </span>&#123;
+        Object[] arrobject = <span class="hljs-keyword">new</span> Object[]&#123;string&#125;;
+        Object object = <span class="hljs-keyword">this</span>.handler.invoke(<span class="hljs-keyword">this</span>, methods[<span class="hljs-number">0</span>], arrobject);
+    &#125;
+
+    <span class="hljs-keyword">public</span> Object $echo(Object object) &#123;
+        Object[] arrobject = <span class="hljs-keyword">new</span> Object[]&#123;object&#125;;
+        Object object2 = <span class="hljs-keyword">this</span>.handler.invoke(<span class="hljs-keyword">this</span>, methods[<span class="hljs-number">1</span>], arrobject);
+        <span class="hljs-keyword">return</span> object2;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">proxy0</span><span class="hljs-params">()</span> </span>&#123;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">proxy0</span><span class="hljs-params">(InvocationHandler invocationHandler)</span> </span>&#123;
+        <span class="hljs-keyword">this</span>.handler = invocationHandler;
+    &#125;
+&#125;</code></pre>
+
+<p>至此，HelloService在consumer侧reference bean的实现类生成完毕。</p>
 
             </article>
             <hr>
