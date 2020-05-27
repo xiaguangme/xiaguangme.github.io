@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>[dubbo]07.提供者provider侧 service bean注册逻辑 - Code to 60 码到60岁</title>
+  <title>[dubbo]07.提供者provider bean构建逻辑 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    575 字
+                    573 字
                   </span>
                 
 
@@ -200,7 +200,7 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="07-提供者provider侧-service-bean注册逻辑"><a href="#07-提供者provider侧-service-bean注册逻辑" class="headerlink" title="07.提供者provider侧 service bean注册逻辑"></a>07.提供者provider侧 service bean注册逻辑</h2><p>Server 侧demo</p>
+              <h2 id="07-提供者provider-bean构建逻辑"><a href="#07-提供者provider-bean构建逻辑" class="headerlink" title="07.提供者provider bean构建逻辑"></a>07.提供者provider bean构建逻辑</h2><p>Server 侧demo</p>
 <p>启动类</p>
 <pre><code class="hljs java"><span class="hljs-meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>
 @ContextConfiguration("/com/code260/ss/dubbo/demov/server/conf/registercenter/zookeeper/applicationContextNode1.xml")
@@ -436,7 +436,7 @@ D--&gt;E[ServiceBean export]</code></pre>
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "[dubbo]07.提供者provider侧 service bean注册逻辑&nbsp;",
+        "[dubbo]07.提供者provider bean构建逻辑&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
