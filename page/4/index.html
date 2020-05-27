@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/fun-call-assembly/">函数调用与汇编指令的关系</a>
+
+      <a href="/2020/04/24/fun-call-assembly/" class="index-excerpt">
+        
+        
+          
+        
+        <div>写一段简单的C代码分析其背后与汇编指令的关系最近在看hotspot的代码，hotspot解释器会将字节码翻译成汇编指令，所以要先复习下这个基础这篇讲的太泛了，看 这篇吧，是一步一步有图对应的
+C代码#include &lt;stdio.h&gt;
+
+int  main(int args, char** argv)&#123;
+	printf("%d", add1(100, 200, 500, 60</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/cpp/">cpp</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/24/cpp-this-unsigned-pointer/">C++中将对象this转换成unsigned char指针</a>
 
       <a href="/2020/04/24/cpp-this-unsigned-pointer/" class="index-excerpt">
@@ -573,52 +617,6 @@ int add(int a, int b) &#123;
 &#125;
 
 int addAgain(int a, int</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/hotspot-object-model/">JVM中对象模型及相应名词概念</a>
-
-      <a href="/2020/04/22/hotspot-object-model/" class="index-excerpt">
-        
-        
-          
-        
-        <div>JVM中对象模型及相应名词概念java对象在jvm中的模型是OOP-Klass 模型；
-klassklass对应元数据，包括常量池、字段、方法等。是在加载class阶段创建instanceKlass。存放在方法区。
-oopoop对应java中的实例。oop是指向oopDesc的指针。  
-// share/vm/oops/oopsHierarchy.hpp
-typedef class oopDes</div>
       </a>
 
       <div class="index-btm post-metas">

@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>[dubbo]07.提供者provider侧 service bean注册逻辑</title>
+    <link href="/2020/05/17/dubbo-07.build-provider/"/>
+    <url>/2020/05/17/dubbo-07.build-provider/</url>
+    
+    <content type="html"><![CDATA[<h2 id="07-提供者provider侧-service-bean注册逻辑"><a href="#07-提供者provider侧-service-bean注册逻辑" class="headerlink" title="07.提供者provider侧 service bean注册逻辑"></a>07.提供者provider侧 service bean注册逻辑</h2><p>Server 侧demo</p><p>启动类</p><pre><code class="hljs java"><span class="hljs-meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>@ContextConfiguration("/com/code260/ss/dubbo/demov/server/conf/registercenter/zookeeper/applicationContextNode1.xml")<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloServiceTestNode1</span></span><span class="hljs-class"></span>&#123;    <span class="hljs-meta">@Test</span>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testSayHello</span><span class="hljs-params">()</span></span><span class="hljs-function">    </span>&#123;        <span class="hljs-keyword">try</span>        &#123;            System.out.println(<span class="hljs-string">"zookeeper注册中心demo：I am node1:-)"</span>);            System.in.read();        &#125;        <span class="hljs-keyword">catch</span> (IOException e)        &#123;            e.printStackTrace();        &#125;    &#125;&#125;</code></pre><p>服务配置</p><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:service</span> <span class="hljs-attr">interface</span>=<span class="hljs-string">"com.code260.ss.dubbo.demov.facade.service.HelloService"</span> <span class="hljs-attr">ref</span>=<span class="hljs-string">"m00001.app001.xx.helloService"</span> <span class="hljs-attr">filter</span>=<span class="hljs-string">"tpslimiter"</span> <span class="hljs-attr">connections</span>=<span class="hljs-string">"50"</span>&gt;</span>    <span class="hljs-comment">&lt;!--     &lt;dubbo:parameter key="tps" value="5" /&gt;</span><span class="hljs-comment">        &lt;dubbo:parameter key="tps.interval" value="1000" /&gt; --&gt;</span>    <span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:service</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">bean</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"m00001.app001.xx.helloService"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"com.code260.ss.dubbo.demov.server.service.impl.HelloServiceImpl"</span>/&gt;</span></code></pre><p>我们通过dubbo:service引用了一个HelloServiceImpl的bean，这样HelloServiceImpl对应的HelloService接口就算有一个provider了，那么dubbo:service是如何实现的？</p><p>先描述下整体流程：</p><pre><code class="hljs mermaid">graph TDA[自定义spring配置标签-格式结构-]--&gt;B[DubboNamespaceHandler对接spring自定义namespace注册标签解析器]B--&gt;C[定义DubboBeanDefinitionParser解析处理那些标签]C--&gt;D[ServiceBean对接spring的onApplicationEvent的ContextRefreshedEvent事件]D--&gt;E[ServiceBean export]</code></pre><p>涉及DubboNamespaceHandler的部分在上一篇文章中已经解释了，此处跳过。</p><h3 id="DubboBeanDefinitionParser"><a href="#DubboBeanDefinitionParser" class="headerlink" title="DubboBeanDefinitionParser"></a>DubboBeanDefinitionParser</h3><p>对接ServiceBean部分的代码：</p><pre><code class="hljs java"><span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ServiceBean<span class="hljs-class">.<span class="hljs-keyword">class</span>.<span class="hljs-title">equals</span>(<span class="hljs-title">beanClass</span>)) </span>&#123;            String className = element.getAttribute(<span class="hljs-string">"class"</span>);            <span class="hljs-keyword">if</span>(className != <span class="hljs-keyword">null</span> &amp;&amp; className.length() &gt; <span class="hljs-number">0</span>) &#123;                RootBeanDefinition classDefinition = <span class="hljs-keyword">new</span> RootBeanDefinition();                classDefinition.setBeanClass(ReflectUtils.forName(className));                classDefinition.setLazyInit(<span class="hljs-keyword">false</span>);                parseProperties(element.getChildNodes(), classDefinition);                beanDefinition.getPropertyValues().addPropertyValue(<span class="hljs-string">"ref"</span>, <span class="hljs-keyword">new</span> BeanDefinitionHolder(classDefinition, id + <span class="hljs-string">"Impl"</span>));            &#125;        &#125;</code></pre><p>className如果存在，则做这一段逻辑处理，如果className不存在则没有逻辑处理。</p><p>我们如果不配置class属性时，则会配置一个ref属性指向一个配置好的beanId。</p><p>如果className存在是指dubbo:service标签配置了class属性，此时自动生成ref属性。ref指向一个自动构建的bean定义。构建逻辑时候：构建RootBeanDefinition实例，从而构建BeanDefinitionHolder，最终把BeanDefinitionHolder实例放到原来beanDefinition的property中，property的名称是ref。</p><h3 id="ServiceBean"><a href="#ServiceBean" class="headerlink" title="ServiceBean"></a>ServiceBean</h3><p>该类实现了spring的ApplicationListener接口的onApplicationEvent方法，在该方法中在侦测到ContextRefreshedEvent事件时对接ServiceBean的export逻辑。详细的export逻辑会在后面文章中讲解。</p><h4 id="afterPropertiesSet"><a href="#afterPropertiesSet" class="headerlink" title="afterPropertiesSet"></a>afterPropertiesSet</h4><p>阅读ServiceBean的afterPropertiesSet方法的代码发现，除了最后面的export方法调用外，前面还有不少代码，是干什么的呢？</p><p>主要是做了一些关联配置的设置处理，包括ProviderConfig、ApplicationConfig、ModuleConfig、RegistryConfig列表、MonitorConfig、ProtocolConfig列表等</p><h4 id="destory"><a href="#destory" class="headerlink" title="destory"></a>destory</h4><p>ServiceBean实现了DisposableBean接口，实现了其destory方法，用于在销毁时触发unexport逻辑。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>dubbo源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>[dubbo]06.消费者consumer侧 reference bean生成逻辑</title>
     <link href="/2020/05/05/dubbo-06.build-consumer-proxy/"/>
     <url>/2020/05/05/dubbo-06.build-consumer-proxy/</url>
