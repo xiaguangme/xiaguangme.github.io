@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    573 字
+                    558 字
                   </span>
                 
 
@@ -256,7 +256,7 @@ D--&gt;E[ServiceBean export]</code></pre>
 <p>我们如果不配置class属性时，则会配置一个ref属性指向一个配置好的beanId。</p>
 <p>如果className存在是指dubbo:service标签配置了class属性，此时自动生成ref属性。ref指向一个自动构建的bean定义。构建逻辑时候：构建RootBeanDefinition实例，从而构建BeanDefinitionHolder，最终把BeanDefinitionHolder实例放到原来beanDefinition的property中，property的名称是ref。</p>
 <h3 id="ServiceBean"><a href="#ServiceBean" class="headerlink" title="ServiceBean"></a>ServiceBean</h3><p>该类实现了spring的ApplicationListener接口的onApplicationEvent方法，在该方法中在侦测到ContextRefreshedEvent事件时对接ServiceBean的export逻辑。详细的export逻辑会在后面文章中讲解。</p>
-<h4 id="afterPropertiesSet"><a href="#afterPropertiesSet" class="headerlink" title="afterPropertiesSet"></a>afterPropertiesSet</h4><p>阅读ServiceBean的afterPropertiesSet方法的代码发现，除了最后面的export方法调用外，前面还有不少代码，是干什么的呢？</p>
+<h4 id="afterPropertiesSet"><a href="#afterPropertiesSet" class="headerlink" title="afterPropertiesSet"></a>afterPropertiesSet</h4><p>阅读ServiceBean的afterPropertiesSet方法的代码发现，有不少代码，是干什么的呢？</p>
 <p>主要是做了一些关联配置的设置处理，包括ProviderConfig、ApplicationConfig、ModuleConfig、RegistryConfig列表、MonitorConfig、ProtocolConfig列表等</p>
 <h4 id="destory"><a href="#destory" class="headerlink" title="destory"></a>destory</h4><p>ServiceBean实现了DisposableBean接口，实现了其destory方法，用于在销毁时触发unexport逻辑。</p>
 
@@ -290,6 +290,12 @@ D--&gt;E[ServiceBean export]</code></pre>
                 <div class="post-prevnext row">
                   <div class="post-prev col-6">
                     
+                    
+                      <a href="/2020/05/28/dubbo-08.provider-how-to-register-and-open-server/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[dubbo]08.提供者如何注册服务 如何延迟暴露</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </div>
                   <div class="post-next col-6">
