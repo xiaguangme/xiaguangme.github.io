@@ -175,6 +175,228 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-offset-range-query/">offset range 查询</a>
+
+      <a href="/2020/04/22/kafka1-0-offset-range-query/" class="index-excerpt">
+        
+        
+          
+        
+        <div>offset range 查询我们在实际使用过程中经常需要查询某个topic的某分区的offset的range命令行：  
+kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -2      
+kafka-run-class.sh kafka.tools.GetOf</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-message-write/">消息写入</a>
+
+      <a href="/2020/04/22/kafka1-0-message-write/" class="index-excerpt">
+        
+        
+          
+        
+        <div>消息写入生产消息时的rpc请求日志leader节点  
+[2019-09-25 19:40:22,266] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=5, clientId=broker-0-fetcher-0, correlationId=8855) -- &#123;replica_id=0,max_wait_ti</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-metadata-update/">MetadataCache更新</a>
+
+      <a href="/2020/04/22/kafka1-0-metadata-update/" class="index-excerpt">
+        
+        
+          
+        
+        <div>MetadataCache什么时候更新updateCache方法用来更新缓存的。   
+发起线程  controller-event-threadcontroller选举的时候
+CLASS_NAME     METHOD_NAME    LINE_NUM  
+kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
+
+      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
+        
+        
+          
+        
+        <div>几个概念的解释
+LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
+HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">kafka-clients 1.0 高阶API消费消息(未完)</a>
+
+      <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/" class="index-excerpt">
+        
+        
+          
+        
+        <div>消费消息的请求(按序)
+org/apache/kafka/common/requests/RequestHeader  
+org/apache/kafka/common/requests/ApiVersionsRequest  
+org/apache/kafka/common/requests/MetadataRequest  批量查询topic的元数据信息  
+org/apache/kafka/</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer-semd-message/">clients-producer-组包发送消息</a>
 
       <a href="/2020/04/22/kafka1-0-clietns-producer-semd-message/" class="index-excerpt">
@@ -389,238 +611,11 @@ io/netty/buffer/PooledByteBufAllocatornewDi</div>
     </div>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
-
-      <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
-        
-        
-          
-        
-        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
-使用
-设置日志级别：  ServerBootstrap b =new ServerBootstrap();
-b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
-.option(ChannelOption.SO_BACK</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
-
-      <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
-        
-        
-          
-        
-        <div>
-初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  
-channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operati</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</a>
-
-      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="index-excerpt">
-        
-        
-          
-        
-        <div>java
-# 创建断点(支持条件断点)
-curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java","condition":"i == 1","charStart":283,"charEnd":307,"lineNumber":16,"typeName":"com.code260.tools.red</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/eclipse/">eclipse</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
-
-      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
-        
-        
-          
-        
-        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
-
-sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
-
-subl 1.txt   sublime比自带</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/ubutnu/">ubutnu</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/about-dubbo-extension-loader/">关于dubbo扩展点的一点分析</a>
-
-      <a href="/2020/04/20/about-dubbo-extension-loader/" class="index-excerpt">
-        
-        
-          
-        
-        <div>扩展点能力
-能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。
-能创建instance。
-能指定这个顶层接口的默认实现类的beanName。做法参见SPI注解部分。
-能把创建出来的instance的字段注入。set开头的且有一个参数且是public的，注入。  
-能adaptive。根据url上对该</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/5/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/7/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/5/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/7/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

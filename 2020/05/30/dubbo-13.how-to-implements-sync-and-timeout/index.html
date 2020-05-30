@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]13.调用端如何同步等待网络返回结果以及如何实现调用端超时 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-05-30 19:39">
+                    星期六, 五月 30日 2020, 7:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    604 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    8
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="13-调用端如何同步等待网络返回结果以及如何实现调用端超时"><a href="#13-调用端如何同步等待网络返回结果以及如何实现调用端超时" class="headerlink" title="13.调用端如何同步等待网络返回结果以及如何实现调用端超时"></a>13.调用端如何同步等待网络返回结果以及如何实现调用端超时</h2><p>rpc的调用不同于我们那种简单的在本地的同步调用，当一个调用发出去之后，要经过编解码，发送到provider端，等provider端处理完回来再接收到响应结果。这个过程是”异步的“，那么我们再调用时如何让异步转同步，能等到结果的？  </p>
+<p>在前面讲 发现到服务之后如何玩转调用的最简过程 部分时，当consumer端发送调用请求时要过HeaderExchangeChannel.request(Object, int) line: 112    。我们来看下这部分的代码：  </p>
+<pre><code class="hljs java">    <span class="hljs-function"><span class="hljs-keyword">public</span> ResponseFuture <span class="hljs-title">request</span><span class="hljs-params">(Object request, <span class="hljs-keyword">int</span> timeout)</span> <span class="hljs-keyword">throws</span> RemotingException </span>&#123;
+        <span class="hljs-keyword">if</span> (closed) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RemotingException(<span class="hljs-keyword">this</span>.getLocalAddress(), <span class="hljs-keyword">null</span>, <span class="hljs-string">"Failed to send request "</span> + request + <span class="hljs-string">", cause: The channel "</span> + <span class="hljs-keyword">this</span> + <span class="hljs-string">" is closed!"</span>);
+        &#125;
+        <span class="hljs-comment">// create request.</span>
+        Request req = <span class="hljs-keyword">new</span> Request();
+        req.setVersion(<span class="hljs-string">"2.0.0"</span>);
+        req.setTwoWay(<span class="hljs-keyword">true</span>);
+        req.setData(request);
+<span class="hljs-number">109</span>        DefaultFuture future = <span class="hljs-keyword">new</span> DefaultFuture(channel, req, timeout);
+<span class="hljs-number">110</span>        <span class="hljs-keyword">try</span>&#123;
+<span class="hljs-number">112</span>            channel.send(req);
+        &#125;<span class="hljs-keyword">catch</span> (RemotingException e) &#123;
+            future.cancel();
+            <span class="hljs-keyword">throw</span> e;
+        &#125;
+        <span class="hljs-keyword">return</span> future;
+    &#125;</code></pre>
+
+<p>我们看到109行构建了DefaultFuture对象，并将其作为返回值返回，DefaultFuture是ResponseFuture子类。  </p>
+<p>那么，我们就发现了，同步等待结果是靠dubbo自己又做DefaultFuture的包装完成的，背后是靠ReentrantLock的Condition对象的await完成等待，并实现客户端调用超时机制。   </p>
+<p>get的时候用上面的condition进行等待。  </p>
+<p>接收到结果的时候，对上面的condition进行signal完成等待。至于 Condition对象为什么能完成异步转同步的等待，已经不在本系列文章的讲解范围了。在JDK并发库源码阅读中讲。  </p>
+<p>附上部分代码：  </p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doReceived</span><span class="hljs-params">(Response res)</span> </span>&#123;
+    lock.lock();
+    <span class="hljs-keyword">try</span> &#123;
+        response = res;
+        <span class="hljs-keyword">if</span> (done != <span class="hljs-keyword">null</span>) &#123;
+            done.signal();
+        &#125;
+    &#125; <span class="hljs-keyword">finally</span> &#123;
+        lock.unlock();
+    &#125;
+    <span class="hljs-keyword">if</span> (callback != <span class="hljs-keyword">null</span>) &#123;
+        invokeCallback(callback);
+    &#125;
+&#125;</code></pre>
+
+
+
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">get</span><span class="hljs-params">(<span class="hljs-keyword">int</span> timeout)</span> <span class="hljs-keyword">throws</span> RemotingException </span>&#123;
+     <span class="hljs-keyword">if</span> (timeout &lt;= <span class="hljs-number">0</span>) &#123;
+         timeout = Constants.DEFAULT_TIMEOUT;
+     &#125;
+     <span class="hljs-keyword">if</span> (! isDone()) &#123;
+         <span class="hljs-keyword">long</span> start = System.currentTimeMillis();
+         lock.lock();
+         <span class="hljs-keyword">try</span> &#123;
+             <span class="hljs-keyword">while</span> (! isDone()) &#123;
+                 done.await(timeout, TimeUnit.MILLISECONDS);
+                 <span class="hljs-keyword">if</span> (isDone() || System.currentTimeMillis() - start &gt; timeout) &#123;
+                     <span class="hljs-keyword">break</span>;
+                 &#125;
+             &#125;
+         &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;
+             <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RuntimeException(e);
+         &#125; <span class="hljs-keyword">finally</span> &#123;
+             lock.unlock();
+         &#125;
+         <span class="hljs-keyword">if</span> (! isDone()) &#123;
+             <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> TimeoutException(sent &gt; <span class="hljs-number">0</span>, channel, getTimeoutMessage(<span class="hljs-keyword">false</span>));
+         &#125;
+     &#125;
+     <span class="hljs-keyword">return</span> returnFromResponse();
+ &#125;</code></pre>
+
+
+
+<p>这个方式是基于有前面的代码阅读基础的方式发现对应的代码逻辑在这里。如果没有前面的代码阅读基础，还有个办法就是，在跑case的时候把provider端用debug的方式挂起。 然后用jstack看consumer的堆栈也能发现，等待的代码逻辑在这里。  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/30/dubbo-12.how-to-decode-response/">
+                        <span class="hidden-mobile">[dubbo]12.如何解码响应结果</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]13.调用端如何同步等待网络返回结果以及如何实现调用端超时&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

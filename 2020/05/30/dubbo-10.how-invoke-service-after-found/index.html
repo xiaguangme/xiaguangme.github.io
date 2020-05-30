@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]10.发现到服务之后如何玩转调用的最简过程 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-05-30 18:19">
+                    星期六, 五月 30日 2020, 6:19 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.3k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    21
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="10-发现到服务之后如何玩转调用的最简过程"><a href="#10-发现到服务之后如何玩转调用的最简过程" class="headerlink" title="10.发现到服务之后如何玩转调用的最简过程"></a>10.发现到服务之后如何玩转调用的最简过程</h2><p>上一篇文章中讲述了消费这么找到服务，怎么为后面的调用准备client与invoker。  </p>
+<p>这篇我们探讨下，当一个rpc服务真正发起调用时是怎样的，经历那些过程。  </p>
+<p>我们先截取一段服务发起调用时的调用栈，在截取调用栈之前我们先准备一个用例，有返回值的rpc调用，后面文章也会用到。</p>
+<h3 id="相关case代码"><a href="#相关case代码" class="headerlink" title="相关case代码"></a>相关case代码</h3><p>facade端的接口:  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.code260.ss.dubbo.demov.facade.service;
+
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.bean.User;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * &lt;一句话功能简述&gt;</span>
+<span class="hljs-comment"> * &lt;功能详细描述&gt;</span>
+<span class="hljs-comment"> * </span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@author</span>  chen.simon</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@version</span>  [版本号, 2016-9-6]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@see</span>  [相关类/方法]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@since</span>  [产品/模块版本]</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">UserService</span></span>
+<span class="hljs-class"></span>&#123;
+    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">queryUser</span><span class="hljs-params">(Integer id)</span></span>;
+&#125;</code></pre>
+
+<p>server端的实现：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.code260.ss.dubbo.demov.server.service.impl;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.bean.Team;
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.bean.User;
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.service.UserService;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * &lt;一句话功能简述&gt;</span>
+<span class="hljs-comment"> * &lt;功能详细描述&gt;</span>
+<span class="hljs-comment"> * </span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@author</span>  chen.simon</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@version</span>  [版本号, 2016-9-7]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@see</span>  [相关类/方法]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@since</span>  [产品/模块版本]</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">UserServiceImpl</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">UserService</span></span>
+<span class="hljs-class"></span>&#123;
+    
+    <span class="hljs-comment">/**</span>
+<span class="hljs-comment">     * <span class="hljs-doctag">@param</span> id</span>
+<span class="hljs-comment">     * <span class="hljs-doctag">@return</span></span>
+<span class="hljs-comment">     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">queryUser</span><span class="hljs-params">(Integer id)</span></span>
+<span class="hljs-function">    </span>&#123;
+        User u = <span class="hljs-keyword">new</span> User();
+        u.setId(id);
+        StringBuffer sb = <span class="hljs-keyword">new</span> StringBuffer();
+        String line = <span class="hljs-string">"aabbccddeeffgghhjji\n"</span>;
+        <span class="hljs-keyword">int</span> bodysize = <span class="hljs-number">1</span> * <span class="hljs-number">10</span> * <span class="hljs-number">7</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span> ; i &lt;  bodysize / (line.length()); i++)&#123;
+            sb.append(line);
+        &#125;
+        u.setName(sb.toString());
+        Team team = <span class="hljs-keyword">new</span> Team();
+        team.setId(<span class="hljs-number">100</span>);
+        team.setName(<span class="hljs-string">"xx office"</span>);
+        u.setTeam(team);
+        System.out.println(<span class="hljs-string">"Query user--"</span> + id +<span class="hljs-string">"@"</span> + <span class="hljs-keyword">new</span> Date());
+        <span class="hljs-keyword">return</span> u;
+    &#125;
+&#125;</code></pre>
+
+<p>server端的node启动还是跟HelloService的公用：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.code260.ss.dubbo.demov.server.registercenter.zookeeper;
+
+<span class="hljs-keyword">import</span> java.io.IOException;
+
+<span class="hljs-keyword">import</span> org.junit.Test;
+<span class="hljs-keyword">import</span> org.junit.runner.RunWith;
+<span class="hljs-keyword">import</span> org.springframework.test.context.ContextConfiguration;
+<span class="hljs-keyword">import</span> org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+<span class="hljs-meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>
+@ContextConfiguration("/com/code260/ss/dubbo/demov/server/conf/registercenter/zookeeper/applicationContextNode1.xml")
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HelloServiceTestNode1</span></span>
+<span class="hljs-class"></span>&#123;
+
+    <span class="hljs-meta">@Test</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testSayHello</span><span class="hljs-params">()</span></span>
+<span class="hljs-function">    </span>&#123;
+        <span class="hljs-keyword">try</span>
+        &#123;
+            System.out.println(<span class="hljs-string">"zookeeper注册中心demo：I am node1:-)"</span>);
+            System.in.read();
+        &#125;
+        <span class="hljs-keyword">catch</span> (IOException e)
+        &#123;
+            e.printStackTrace();
+        &#125;
+    &#125;
+&#125;</code></pre>
+
+<p>server端的provider配置：  </p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:service</span> <span class="hljs-attr">interface</span>=<span class="hljs-string">"com.code260.ss.dubbo.demov.facade.service.UserService"</span> <span class="hljs-attr">ref</span>=<span class="hljs-string">"m00001.app001.xx.userService"</span> <span class="hljs-attr">filter</span>=<span class="hljs-string">"accesslog"</span> </span>
+<span class="hljs-tag">    <span class="hljs-attr">timeout</span>=<span class="hljs-string">"600000"</span> <span class="hljs-attr">token</span>=<span class="hljs-string">"123456"</span>  <span class="hljs-attr">connections</span>=<span class="hljs-string">"10"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:parameter</span> <span class="hljs-attr">key</span>=<span class="hljs-string">"accesslog"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"true"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:service</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">bean</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"m00001.app001.xx.userService"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"com.code260.ss.dubbo.demov.server.service.impl.UserServiceImpl"</span> /&gt;</span></code></pre>
+
+<p>client端的test case：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">package</span> com.code260.ss.dubbo.demov.client.registercenter.zookeeper;
+
+<span class="hljs-keyword">import</span> org.junit.Test;
+<span class="hljs-keyword">import</span> org.junit.runner.RunWith;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.test.context.ContextConfiguration;
+<span class="hljs-keyword">import</span> org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.bean.User;
+<span class="hljs-keyword">import</span> com.code260.ss.dubbo.demov.facade.service.UserService;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * &lt;一句话功能简述&gt; &lt;功能详细描述&gt;</span>
+<span class="hljs-comment"> * </span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@author</span> Chenxiaguang</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@version</span> [版本号, 2015-8-12]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@see</span> [相关类/方法]</span>
+<span class="hljs-comment"> * <span class="hljs-doctag">@since</span> [产品/模块版本]</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>
+@ContextConfiguration("/com/code260/ss/dubbo/demov/client/conf/registercenter/zookeeper/applicationContext.xml")
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">UserClientTest</span></span>
+<span class="hljs-class"></span>&#123;
+    
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> UserService userService;
+    
+    <span class="hljs-meta">@Test</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testQueryUser</span><span class="hljs-params">()</span></span>
+<span class="hljs-function">    </span>&#123;
+        User user = userService.queryUser(<span class="hljs-number">100</span>);
+        System.out.println(user.getName());
+    &#125;
+&#125;</code></pre>
+
+<p>Client端的consumer配置：  </p>
+<pre><code class="hljs xml">	<span class="hljs-tag">&lt;<span class="hljs-name">dubbo:reference</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"userService"</span> <span class="hljs-attr">interface</span>=<span class="hljs-string">"com.code260.ss.dubbo.demov.facade.service.UserService"</span> <span class="hljs-attr">filter</span>=<span class="hljs-string">"cache,validation,deprecated,compatible"</span> &gt;</span>
+	    <span class="hljs-comment">&lt;!-- 能支持的全部cache定义在META-INF/dubbo/internal/com.alibaba.dubbo.cache.CacheFactory 当然你也可以遵循dubbo扩展点机制进行扩展。 --&gt;</span>
+	    <span class="hljs-comment">&lt;!-- 何种类型的cache --&gt;</span>
+	    <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:parameter</span> <span class="hljs-attr">key</span>=<span class="hljs-string">"cache"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"lru"</span> /&gt;</span>
+<span class="hljs-comment">&lt;!-- 	    &lt;dubbo:parameter key="validation" value="JValidator"/&gt; --&gt;</span>
+	    <span class="hljs-comment">&lt;!-- 配置一个实现了javax.validation.spi.ValidationProvider&lt;T&gt;接口校验器 --&gt;</span>
+<span class="hljs-comment">&lt;!-- 	    &lt;dubbo:parameter key="jvalidation" value="org.hibernate.validator.HibernateValidator" /&gt;--&gt;</span>	    
+	    <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:method</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"queryUser"</span>&gt;</span>
+	        <span class="hljs-tag">&lt;<span class="hljs-name">dubbo:parameter</span> <span class="hljs-attr">key</span>=<span class="hljs-string">"deprecated"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"true"</span> /&gt;</span>
+	    <span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:method</span>&gt;</span>
+<span class="hljs-comment">&lt;!--  	    &lt;dubbo:parameter key="token" value="123456" /&gt; --&gt;</span>
+	<span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:reference</span>&gt;</span></code></pre>
+
+<h3 id="服务发起调用时的调用栈"><a href="#服务发起调用时的调用栈" class="headerlink" title="服务发起调用时的调用栈"></a>服务发起调用时的调用栈</h3><pre><code class="hljs java">HeaderExchangeChannel.request(Object, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">112</span>	
+HeaderExchangeClient.request(Object, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">91</span>	
+DubboInvoker&lt;T&gt;.doInvoke(Invocation) line: <span class="hljs-number">96</span>	
+DubboInvoker&lt;T&gt;(AbstractInvoker&lt;T&gt;).invoke(Invocation) line: <span class="hljs-number">144</span>	
+CompatibleFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">43</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+DeprecatedFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">51</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+ValidationFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">57</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+CacheFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">55</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+MonitorFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">75</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+FutureFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">53</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+ConsumerContextFilter.invoke(Invoker&lt;?&gt;, Invocation) line: <span class="hljs-number">48</span>	
+ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(Invocation) line: <span class="hljs-number">91</span>	
+ListenerInvokerWrapper&lt;T&gt;.invoke(Invocation) line: <span class="hljs-number">74</span>	
+RegistryDirectory$InvokerDelegete&lt;T&gt;(InvokerWrapper&lt;T&gt;).invoke(Invocation) line: <span class="hljs-number">53</span>	
+FailoverClusterInvoker&lt;T&gt;.doInvoke(Invocation, List&lt;Invoker&lt;T&gt;&gt;, LoadBalance) line: <span class="hljs-number">77</span>	
+FailoverClusterInvoker&lt;T&gt;(AbstractClusterInvoker&lt;T&gt;).invoke(Invocation) line: <span class="hljs-number">227</span>	
+MockClusterInvoker&lt;T&gt;.invoke(Invocation) line: <span class="hljs-number">72</span>	
+InvokerInvocationHandler.invoke(Object, Method, Object[]) line: <span class="hljs-number">52</span>	
+proxy0.queryUser(Integer) line: not available	
+UserClientTest.testQueryUser() line: <span class="hljs-number">38</span></code></pre>
+
+<p>上面的栈展示了从UserClientTest.testQueryUser()这个case调用rpc服务到HeaderExchangeChannel.request请求远端服务的过程栈。  </p>
+<p>请求远端服务的方式是HeaderExchangeChannel.request(Object, int) line: 112，代码如下：  </p>
+<pre><code class="hljs java">channel.send(req);</code></pre>
+
+<p>这个channel是： </p>
+<blockquote>
+<p>com.alibaba.dubbo.remoting.transport.netty.NettyClient [/192.168.2.3:53474 -&gt; /192.168.2.3:20880]</p>
+</blockquote>
+<p>当然这是有返回值two way的服务调用方式，没有返回值像HelloService那种one way的略有差别。  </p>
+<h3 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h3><pre><code class="hljs mermaid">graph TD
+A(1-为consumer服务生成的代理)--&gt;B(2-分布式集群容错调用器)
+B--&gt;C(3-注册目录服务调用)
+C--&gt;D(4-调用链上的过滤器)
+D--&gt;E(5-rpc协议调用器DubboInvoker)
+E--&gt;F(6-HeaderExchangeClient交换层的client)
+F--&gt;G(7-网络层的NettyClient发送请求)</code></pre>
+
+<p>1处的<strong>为consumer服务生成的代理</strong>这个代理的生成过程分析可以参见前面的文章：06.消费者consumer侧 reference bean生成逻辑。   </p>
+<p>2-分布式集群容错调用器 后面文章讲。  </p>
+<p>4-调用链上的过滤器 后面文章讲。  </p>
+<p>此文主要是描述下consumer端发起调用的一个全貌，一个顶层堆栈流程。  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/30/dubbo-11.how-to-enode-request/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[dubbo]11.如何编码请求</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/05/30/dubbo-09.how-to-find-service-for-consumer/">
+                        <span class="hidden-mobile">[dubbo]09.消费者如何发现服务</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]10.发现到服务之后如何玩转调用的最简过程&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
