@@ -175,6 +175,90 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/jdk-concurrent-source-study/">JDK并发基础与部分源码解读</a>
+
+      <a href="/2020/04/24/jdk-concurrent-source-study/" class="index-excerpt">
+        
+        
+          
+        
+        <div>之前写的一个ppt 搬到博客来
+
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/JDK%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">JDK源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/tps/">TPS限流</a>
+
+      <a href="/2020/04/24/tps/" class="index-excerpt">
+        
+        
+          
+        
+        <div>限流是高可用服务需要具备的能力之一 ，粗暴简单的就像我们之前做的并发数控制。好一点的有tps限流，可用令牌桶等算法实现。《亿级流量网站架构核心技术》一书P67限流详解也有讲。dubbo提供了此机制，TpsLimitFilter。guava也提供了相应的工具类RateLimiter。#1. dubbo提供的tps限流##1.1 demo使用###1.1.1 在source folder下放置，MET</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/24/spring-cloud2-features/">Spring Cloud(2.0)能力大致列表</a>
 
       <a href="/2020/04/24/spring-cloud2-features/" class="index-excerpt">
@@ -521,94 +605,6 @@ S1. 开发机：我是将一个老的索尼的笔记本装了Ubuntu桌面版本�
               <a href="/tags/java/">java</a>
             
               <a href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/netty3-hhttp-server/">以http server为例简要分析netty3实现</a>
-
-      <a href="/2020/04/24/netty3-hhttp-server/" class="index-excerpt">
-        
-        
-          
-        
-        <div>概要最近看了点netty3实现。从webbit项目作为口子。webbit项目是一个基于netty3做的http与websocket server。后面还会继续看下netty4，netty4有很多改进，如其作者所说，有更少的GC，更丰富的SOCKET选项，更好的性能。此篇先谈netty3。
-ChannelBuffer 与 其特色工具类
-线程模型，事件分类，流水线
-accpet请求与读请求
-写出响应与</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty3源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/app-encode-not-right/">应用默认编码不对的问题定位</a>
-
-      <a href="/2020/04/24/app-encode-not-right/" class="index-excerpt">
-        
-        
-          
-        
-        <div>应用默认编码不对的问题定位问题描述某日线上环境报警，分析后发现是java.lang.String.getBytes()方法在不同环境上表现出来的结果是不一样的。 
-JDK的String.getBytes()默认采用什么编码看下JDK的代码不难发现：先是靠Charset.defaultCharset()编码，如果不行靠ISO-8859-1兜底，再不行就直接应用退出了。
-Charset.default</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
             
           </div>
         

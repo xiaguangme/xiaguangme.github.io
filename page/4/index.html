@@ -175,6 +175,94 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/netty3-hhttp-server/">以http server为例简要分析netty3实现</a>
+
+      <a href="/2020/04/24/netty3-hhttp-server/" class="index-excerpt">
+        
+        
+          
+        
+        <div>概要最近看了点netty3实现。从webbit项目作为口子。webbit项目是一个基于netty3做的http与websocket server。后面还会继续看下netty4，netty4有很多改进，如其作者所说，有更少的GC，更丰富的SOCKET选项，更好的性能。此篇先谈netty3。
+ChannelBuffer 与 其特色工具类
+线程模型，事件分类，流水线
+accpet请求与读请求
+写出响应与</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty3源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/app-encode-not-right/">应用默认编码不对的问题定位</a>
+
+      <a href="/2020/04/24/app-encode-not-right/" class="index-excerpt">
+        
+        
+          
+        
+        <div>应用默认编码不对的问题定位问题描述某日线上环境报警，分析后发现是java.lang.String.getBytes()方法在不同环境上表现出来的结果是不一样的。 
+JDK的String.getBytes()默认采用什么编码看下JDK的代码不难发现：先是靠Charset.defaultCharset()编码，如果不行靠ISO-8859-1兜底，再不行就直接应用退出了。
+Charset.default</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/24/tps-again/">再写一篇tps限流</a>
 
       <a href="/2020/04/24/tps-again/" class="index-excerpt">
@@ -521,95 +609,6 @@ public:
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/vm-interpret-bytecode/">虚拟机解释器与bytecode对接</a>
-
-      <a href="/2020/04/24/vm-interpret-bytecode/" class="index-excerpt">
-        
-        
-          
-        
-        <div>心头一直有个疑问，jvm虚拟是如何对接class中的字节码的？或者说在未进入JIT优化阶段时，解释器是如何对接的？
-大概阐述hotspot通过C++代码在堆上申请一块空间，向里面填充一组指令，然后把这块空间当成一个函数，通过函数指针去调用刚生成的代码。是不是666，是不是哇超酷毙了。  
-关键代码generate_call_stub address generate_call_stub(addre</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/new-object/">对象创建</a>
-
-      <a href="/2020/04/24/new-object/" class="index-excerpt">
-        
-        
-          
-        
-        <div>对象创建interpreterRuntime.cpp 解释器中new指令的入口：  
-// 宏展开
- // IRT_ENTRY(void, InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, int index))
-void  InterpreterRuntime::_new(JavaThread* thread, Co</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         

@@ -175,6 +175,99 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/c-cpp-point-convert/">指针转换</a>
+
+      <a href="/2020/04/22/c-cpp-point-convert/" class="index-excerpt">
+        
+        
+          
+        
+        <div>指针转换今天在看hotspot代码时，有处没能看明白，于是请教青老师，给出了解答是指针转换的语法
+share/vm/memory/defNewGeneration.cpp DefNewGeneration::collect
+share/vm/memory/genOopClosures.inline.hpp FastScanClosure::do_oop_work
+share/vm/memory/d</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/hotspot-callstub/">CallStub相关</a>
+
+      <a href="/2020/04/22/hotspot-callstub/" class="index-excerpt">
+        
+        
+          
+        
+        <div>CallStub相关调用入口share/vm/runtime/stubRoutines.hpp  
+// Calls to Java SimonNote: 函数指针结合typedef类型定义
+typedef void (*CallStub)(
+  address   link,
+  intptr_t* result,
+  BasicType result_type,
+  Method* metho</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/22/kafka1-0-offset-range-query/">offset range 查询</a>
 
       <a href="/2020/04/22/kafka1-0-offset-range-query/" class="index-excerpt">
@@ -515,95 +608,6 @@ key-property-list中的key支持和？somedomain:t</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/java/">java</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/netty4-transport-nio/">netty之nio传输层</a>
-
-      <a href="/2020/04/22/netty4-transport-nio/" class="index-excerpt">
-        
-        
-          
-        
-        <div>nio基本处理逻辑查看这里  
-Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK API构建出来的Selector再用反射将其中的selectedKeys、publicSelectedKeys替换成他优化过的SelectedSelectionKeySet实例。JDK API构建出来的Selector 代码：  
-// NioEven</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-pooled-buffer/">netty之池化buffer</a>
-
-      <a href="/2020/04/20/netty4-pooled-buffer/" class="index-excerpt">
-        
-        
-          
-        
-        <div>PooledByteBufAllocator buffer分配buffer分配的入口：io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(int, int)netty实际应用时分配调用栈：  
-
-CLASS_NAMEMETHOD_NAMELINE_NUM
-io/netty/buffer/PooledByteBufAllocatornewDi</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
             
           </div>
         

@@ -175,6 +175,95 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/netty4-transport-nio/">netty之nio传输层</a>
+
+      <a href="/2020/04/22/netty4-transport-nio/" class="index-excerpt">
+        
+        
+          
+        
+        <div>nio基本处理逻辑查看这里  
+Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK API构建出来的Selector再用反射将其中的selectedKeys、publicSelectedKeys替换成他优化过的SelectedSelectionKeySet实例。JDK API构建出来的Selector 代码：  
+// NioEven</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/netty4-pooled-buffer/">netty之池化buffer</a>
+
+      <a href="/2020/04/20/netty4-pooled-buffer/" class="index-excerpt">
+        
+        
+          
+        
+        <div>PooledByteBufAllocator buffer分配buffer分配的入口：io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(int, int)netty实际应用时分配调用栈：  
+
+CLASS_NAMEMETHOD_NAMELINE_NUM
+io/netty/buffer/PooledByteBufAllocatornewDi</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
 
       <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
@@ -524,97 +613,6 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/cabbage-residue/">白菜油渣</a>
-
-      <a href="/2020/04/19/cabbage-residue/" class="index-excerpt">
-        
-        
-          
-        
-        <div>白菜炒猪油渣，朴素的美食
-
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/life/">life</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/food/">food</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/jvm-g1-gc-book/">《JVM G1源码分析和调优》读书笔记</a>
-
-      <a href="/2020/04/19/jvm-g1-gc-book/" class="index-excerpt">
-        
-        
-          
-        
-        <div>GC的相关算法与JVM的垃圾收集器GC的相关算法
-分代管理
-复制算法
-标记清除
-标记压缩
-
-JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较  
-
-串行收集器 Serial。  Serial GC用于新生代，用了复制算法；Serial Old GC作用于老年代，用的是标记-压缩算法。STW
-并行收集器 Parallel。Parallel new作用于新生代，使用了复制算法；Parall</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/book-paper-study/">book-paper-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/GC/">GC</a>
             
           </div>
         
