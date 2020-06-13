@@ -175,33 +175,6 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-26.generic-invoke-impl/">dubbo-26.generic-invoke-impl</a>
-
-      <a href="/2020/06/13/dubbo-26.generic-invoke-impl/" class="index-excerpt">
-        
-        
-          
-        
-        <div>26. 泛化调用实现看两个filter即可，剩下的filter下篇文章讲  
-GenericFilter作用先讨论一个问题，rpc，最简单的场景是consumer端调用provider端的一个服务，这个服务双方都遵循一个接口实现，按最简单的dubbo的demo玩法，是需要consumer和provider两段都要有这个接口声明的（包括接口参数的类型的相关类），比如：org.simonme.dubb</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/13/dubbo-27.filters-impl/">[dubbo]27.各个filter分析以及和spring cloud对比</a>
 
       <a href="/2020/06/13/dubbo-27.filters-impl/" class="index-excerpt">
@@ -245,9 +218,9 @@ GenericFilter作用先讨论一个问题，rpc，最简单的场景是consumer�
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/26.dubbo-generic-invoke-impl/">[dubbo]26.泛化调用实现</a>
+      <a class="index-header" href="/2020/06/13/dubbo-26.generic-invoke-impl/">[dubbo]26.泛化调用实现</a>
 
-      <a href="/2020/06/13/26.dubbo-generic-invoke-impl/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-26.generic-invoke-impl/" class="index-excerpt">
         
         
           
@@ -569,6 +542,49 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
         <div>19.被consumer端调用时的线程模型与链路provider侧  
 线程模型       +-----------------+         +-----------------+         +-----------------+
 +------&gt;   boss&#x2F;         +--------&gt;+  worker&#x2F;        +-------</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/06/13/dubbo-18.retry-offline/">[dubbo]18.重试、provider下线、网络断开等容错怎么实现</a>
+
+      <a href="/2020/06/13/dubbo-18.retry-offline/" class="index-excerpt">
+        
+        
+          
+        
+        <div>18.重试、provider下线、网络断开等容错怎么实现case构造的方式可以在DubboInvoker.doInvoke打断点，然后让provider下线，然后再继续执行刚才断点停住的地方等等构造异常场景。  
+如果有provider服务停掉， consumer端如何感知？再次启动刚停掉的provider呢provider停掉会触发zk客户端的监听，监听对客户端的invoker列表进行刷新。再次</div>
       </a>
 
       <div class="index-btm post-metas">
