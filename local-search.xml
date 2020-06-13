@@ -44,6 +44,33 @@
   
   
   <entry>
+    <title>[dubbo]26.泛化调用实现</title>
+    <link href="/2020/06/13/26.dubbo-generic-invoke-impl/"/>
+    <url>/2020/06/13/26.dubbo-generic-invoke-impl/</url>
+    
+    <content type="html"><![CDATA[<h2 id="26-泛化调用实现"><a href="#26-泛化调用实现" class="headerlink" title="26.泛化调用实现"></a>26.泛化调用实现</h2><p>看两个filter即可，剩下的filter下篇文章讲  </p><h4 id="GenericFilter"><a href="#GenericFilter" class="headerlink" title="GenericFilter"></a>GenericFilter</h4><h5 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h5><p>先讨论一个问题，rpc，最简单的场景是consumer端调用provider端的一个服务，这个服务双方都遵循一个接口实现，按最简单的dubbo的demo玩法，是需要consumer和provider两段都要有这个接口声明的（包括接口参数的类型的相关类），比如：<br>org.simonme.dubbo.demo.provider.service.UserService.queryUser(int) 这是一个查询用户的服务接口，但是，如果consumer端没有这个服务的接口声明及其相关联的bean类，也就是如果仅仅在provider端能找到这个接口类，在consumer工程里压根没有这个类，那是否还能进行调用？<br>dubbo是可以的。 就是通过在proivder侧用GenericFilter达成目的。  </p><h5 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h5><p>需要在consumer端声明这个bean的时候，加上<code>generic=&quot;true&quot;</code>配置即可。  </p><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:reference</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"userService"</span> <span class="hljs-attr">interface</span>=<span class="hljs-string">"org.simonme.dubbo.demo.provider.service.UserService"</span> <span class="hljs-attr">generic</span>=<span class="hljs-string">"true"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">dubbo:reference</span>&gt;</span></code></pre><p>generic还支持nativejava和bean两个可选的选项。nativejava对应byte[]类型的参数，bean对应com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor类型的参数。 </p><p>此外在使用这个服务时，形式略有不同：  </p><pre><code class="hljs java"><span class="hljs-meta">@Autowired</span><span class="hljs-keyword">private</span> GenericService userService;<span class="hljs-meta">@SuppressWarnings</span>(<span class="hljs-string">"static-access"</span>)<span class="hljs-meta">@Test</span><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">testSayHello</span><span class="hljs-params">()</span></span><span class="hljs-function"></span>&#123;    Object result = userService.$invoke(<span class="hljs-string">"queryUser"</span>, <span class="hljs-keyword">new</span> String[] &#123; <span class="hljs-string">"int"</span> &#125;,  <span class="hljs-keyword">new</span> Object[]&#123;<span class="hljs-number">100</span>&#125;);    System.out.println(result);    System.out.println(result.getClass());&#125;</code></pre><p>用<code>GenericService</code> 表示你这个未知的服务类型，用<code>$invoke</code>这个特殊方法发起的你的服务方法调用。调用完之后，dubbo会把结果以hashmap的形式返回给你。比如，我这里是个User的bean，User有id和name字段，那么返回的map中就与id和value两个key，其对应的值就是bean的这两个字段的字段值。<br>为了便于理解，贴一下UserService的代码:  </p><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">UserService</span></span><span class="hljs-class"></span>&#123;    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">queryUser</span><span class="hljs-params">(@Range(min=<span class="hljs-number">0</span>,message=<span class="hljs-string">"用户id值不能小于0"</span>)</span><span class="hljs-keyword">int</span> id)</span>;&#125;</code></pre><p>上面这个写法，解释了怎么在consumer端没有org.simonme.dubbo.demo.provider.service.UserService接口声明的时候，调用他的queryUser方法。provider端无需改动，和正常写rpc服务一样配置即可。<br>用法也可以参见官方文档，<a href="http://dubbo.apache.org/zh-cn/docs/user/demos/generic-reference.html" target="_blank" rel="noopener">使用泛化调用</a>。</p><h5 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h5><p>直接看GenericFilter代码，通过方法名(必须是$invoke),参数个数等判断是否命中，很简单，不再多说。 </p><h5 id="与Spring-Cloud对比"><a href="#与Spring-Cloud对比" class="headerlink" title="与Spring Cloud对比"></a>与Spring Cloud对比</h5><p>Spring Cloud可以算有这个能力，因为Spring Cloud是http json的，http json天然不需要调用端有接口声明。</p><h4 id="GenericImplFilter"><a href="#GenericImplFilter" class="headerlink" title="GenericImplFilter"></a>GenericImplFilter</h4><h5 id="作用-1"><a href="#作用-1" class="headerlink" title="作用"></a>作用</h5><p>与 GenericFilter  类似，是一个相对的东西，他是用在provider端没有服务接口声明类时，使用的。使用方法可以参见官方文档<a href="http://dubbo.apache.org/zh-cn/docs/user/demos/generic-service.html" target="_blank" rel="noopener">实现泛化调用</a>。不再多说。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>dubbo源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>[dubbo]25.TPS限流知识</title>
     <link href="/2020/06/13/dubbo-25.tps-flow-contril/"/>
     <url>/2020/06/13/dubbo-25.tps-flow-contril/</url>
