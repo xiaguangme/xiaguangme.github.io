@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]24.调用链如何构建的？ProtocolFilterWrapper分析 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-06-13 13:18">
+                    星期六, 六月 13日 2020, 1:18 下午
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    688 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    9
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="24-调用链如何构建的？ProtocolFilterWrapper分析"><a href="#24-调用链如何构建的？ProtocolFilterWrapper分析" class="headerlink" title="24.调用链如何构建的？ProtocolFilterWrapper分析"></a>24.调用链如何构建的？ProtocolFilterWrapper分析</h2><p>调用链的构建，可以理解成多个invoker实例组成链的构建。</p>
+<p>调用链构建在dubbo中分为两步骤：</p>
+<ol>
+<li>JavassistProxyFactory$1的构建。此步骤是将真正的业务方法同规避反射的手段包起来。</li>
+<li>ProtocolFilterWrapper$1的构建。此步骤是将每个filter用Invoker实例包起来并串起来链来。</li>
+</ol>
+<p>具体代码和示意图参见下面</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><h4 id="JavassistProxyFactory-1的构建代码"><a href="#JavassistProxyFactory-1的构建代码" class="headerlink" title="JavassistProxyFactory$1的构建代码"></a>JavassistProxyFactory$1的构建代码</h4><pre><code class="hljs java"><span class="hljs-comment">// JavassistProxyFactory</span>
+<span class="hljs-comment">// public class JavassistProxyFactory extends AbstractProxyFactory</span>
+<span class="hljs-keyword">public</span> &lt;T&gt; <span class="hljs-function">Invoker&lt;T&gt; <span class="hljs-title">getInvoker</span><span class="hljs-params">(T proxy, Class&lt;T&gt; type, URL url)</span> </span>&#123;
+        <span class="hljs-comment">// TODO Wrapper类不能正确处理带$的类名</span>
+        <span class="hljs-keyword">final</span> Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf(<span class="hljs-string">'$'</span>) &lt; <span class="hljs-number">0</span> ? proxy.getClass() : type);
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> AbstractProxyInvoker&lt;T&gt;(proxy, type, url) &#123;
+            <span class="hljs-meta">@Override</span>
+            <span class="hljs-function"><span class="hljs-keyword">protected</span> Object <span class="hljs-title">doInvoke</span><span class="hljs-params">(T proxy, String methodName, </span></span>
+<span class="hljs-function"><span class="hljs-params">                                      Class&lt;?&gt;[] parameterTypes, </span></span>
+<span class="hljs-function"><span class="hljs-params">                                      Object[] arguments)</span> <span class="hljs-keyword">throws</span> Throwable </span>&#123;
+                <span class="hljs-keyword">return</span> wrapper.invokeMethod(proxy, methodName, parameterTypes, arguments);
+            &#125;
+        &#125;;
+    &#125;</code></pre>
+
+<h4 id="ProtocolFilterWrapper-1的构建代码"><a href="#ProtocolFilterWrapper-1的构建代码" class="headerlink" title="ProtocolFilterWrapper$1的构建代码"></a>ProtocolFilterWrapper$1的构建代码</h4><pre><code class="hljs java"><span class="hljs-comment">// ProtocolFilterWrapper </span>
+<span class="hljs-comment">// public class ProtocolFilterWrapper implements Protocol</span>
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> &lt;T&gt; <span class="hljs-function">Invoker&lt;T&gt; <span class="hljs-title">buildInvokerChain</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Invoker&lt;T&gt; invoker, String key, String group)</span> </span>&#123;
+        Invoker&lt;T&gt; last = invoker;
+        List&lt;Filter&gt; filters = ExtensionLoader.getExtensionLoader(Filter<span class="hljs-class">.<span class="hljs-keyword">class</span>).<span class="hljs-title">getActivateExtension</span>(<span class="hljs-title">invoker</span>.<span class="hljs-title">getUrl</span>(), <span class="hljs-title">key</span>, <span class="hljs-title">group</span>)</span>;
+        <span class="hljs-keyword">if</span> (filters.size() &gt; <span class="hljs-number">0</span>) &#123;
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = filters.size() - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i --) &#123;
+                <span class="hljs-keyword">final</span> Filter filter = filters.get(i);
+                <span class="hljs-keyword">final</span> Invoker&lt;T&gt; next = last;
+                last = <span class="hljs-keyword">new</span> Invoker&lt;T&gt;() &#123;
+
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> Class&lt;T&gt; <span class="hljs-title">getInterface</span><span class="hljs-params">()</span> </span>&#123;
+                        <span class="hljs-keyword">return</span> invoker.getInterface();
+                    &#125;
+
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> URL <span class="hljs-title">getUrl</span><span class="hljs-params">()</span> </span>&#123;
+                        <span class="hljs-keyword">return</span> invoker.getUrl();
+                    &#125;
+
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">isAvailable</span><span class="hljs-params">()</span> </span>&#123;
+                        <span class="hljs-keyword">return</span> invoker.isAvailable();
+                    &#125;
+
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> Result <span class="hljs-title">invoke</span><span class="hljs-params">(Invocation invocation)</span> <span class="hljs-keyword">throws</span> RpcException </span>&#123;
+                        <span class="hljs-keyword">return</span> filter.invoke(next, invocation);
+                    &#125;
+
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">destroy</span><span class="hljs-params">()</span> </span>&#123;
+                        invoker.destroy();
+                    &#125;
+
+                    <span class="hljs-meta">@Override</span>
+                    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">toString</span><span class="hljs-params">()</span> </span>&#123;
+                        <span class="hljs-keyword">return</span> invoker.toString();
+                    &#125;
+                &#125;;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">return</span> last;
+    &#125;</code></pre>
+
+<h3 id="构建图示"><a href="#构建图示" class="headerlink" title="构建图示"></a>构建图示</h3><h4 id="ProtocolFilterWrapper-1的构建图示"><a href="#ProtocolFilterWrapper-1的构建图示" class="headerlink" title="ProtocolFilterWrapper$1的构建图示"></a>ProtocolFilterWrapper$1的构建图示</h4><pre><code class="hljs plain">        filter * n
+   +-+-+                                                        +-+-+
+ ①   |  +----------+   +----------+   +----------+  +----------+  |
+     |  | filter0  &lt;----|filter1  &lt;---+ filter2  &lt;---|filtern  |  |
+     |  +----------+   +----------+   +----------+  +----------+  |
+   +-+-+                                                        +-+-+
+                                     &lt;-------------------------+
+  +----------------------------------------+                ②  |
+    ③   JavassistProxyFactory$1            |                   |
+                                           |                   |
+                      +             +      |                   |
+             +--------+  inVoker    |      |                   |
+             |        +--------------------v----+              |
+             |        |   filtern   |  next     |              |
+             |        +-------------+-----------+              |
+             |                                                 |
+             +-----------------------------+                   |
+                                           |                   |
+build                 +             +      |                   |
+Invoker      +--------+  inVoker    |      |                   |
+Chain        |        +--------------------v----+              |
+             |        |   filter2   |  next     |              |
+             |        +-------------+-----------+              |
+             |                                                 |
+             +-----------------------------+                   |
+                                           |                   |
+                      +             +      |                   |
+             +--------+  inVoker    |      |                   |
+             |        +--------------------v----+              |
+             |        |   filter1   |  next     |              |
+             |        +-------------+-----------+              |
+             |                                                 |
+             +-----------------------------+                   |
+                                           |                   |
+                      +             +      |                   |
+             +--------+  inVoker    |      |                   |
+             |        +--------------------v----+              |
+             |        |   filter0   |  next     |              v
+             |        +-------------+-----------+
+             |
+             |
+  &lt;----------+
+    ④  ProtocolFilterWrapper$1</code></pre>
+
+<h3 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h3><h4 id="JavassistProxyFactory-1的构建解释"><a href="#JavassistProxyFactory-1的构建解释" class="headerlink" title="JavassistProxyFactory$1的构建解释"></a>JavassistProxyFactory$1的构建解释</h4><p>此步骤是将真正的业务方法同规避反射的手段包起来。具体实现逻辑在：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">final</span> Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf(<span class="hljs-string">'$'</span>) &lt; <span class="hljs-number">0</span> ? proxy.getClass() : type);</code></pre>
+
+<p>这个通过动态生成生成的Wrapper通过直接调用业务类方法规避了反射调用。具体细节和生成的代码可以参见《反射调用是如何优化的？Wrapper的作用是什么？》。</p>
+<h4 id="ProtocolFilterWrapper-1的构建解释"><a href="#ProtocolFilterWrapper-1的构建解释" class="headerlink" title="ProtocolFilterWrapper$1的构建解释"></a>ProtocolFilterWrapper$1的构建解释</h4><p>从③处将JavassistProxyFactory$1送进来到④处将ProtocolFilterWrapper$1送出去之间，就是构建调用链的整个过程。</p>
+<p>构建过程中<strong>倒序</strong>迭代过滤器，将每一个过滤器用invoker匿名内部类包起来，并结合外围变量next组成一个类似闭包的样子，通过<strong>每次切换外围next变量的指向形成链</strong>。迭代过程中，<strong>每次next都指向上一次构建</strong>invoker匿名内部类包起来的闭包。</p>
+<p>为啥要倒序迭代？因为这样<strong>能达成调用时正序迭代</strong>，结合调用时调用栈能看的更清楚。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/06/13/dubbo-25.tps-flow-contril/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[dubbo]25.TPS限流知识</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/06/13/dubbo-23.io-thread-biz-thread/">
+                        <span class="hidden-mobile">[dubbo]23.IO线程与业务线程的合与分，以及提供的策略选择实现分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]24.调用链如何构建的？ProtocolFilterWrapper分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

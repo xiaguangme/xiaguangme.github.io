@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]20.反射调用是如何优化的？Wrapper的作用是什么？ - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-06-13 11:17">
+                    星期六, 六月 13日 2020, 11:17 上午
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.1k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    18
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="20-反射调用是如何优化的？Wrapper的作用是什么？"><a href="#20-反射调用是如何优化的？Wrapper的作用是什么？" class="headerlink" title="20.反射调用是如何优化的？Wrapper的作用是什么？"></a>20.反射调用是如何优化的？Wrapper的作用是什么？</h2><h3 id="反编译生成的代码"><a href="#反编译生成的代码" class="headerlink" title="反编译生成的代码"></a>反编译生成的代码</h3><p>对于动态代码生成的class可以写出到本地，办法是：  </p>
+<p>在com.alibaba.dubbo.common.bytecode.<strong>ClassGenerator.mCtc</strong>这个实例有</p>
+<p>javassist.CtClass.<strong>writeFile</strong>(String)方法，可以在com.alibaba.dubbo.common.bytecode.ClassGenerator.toClass()结束时将生成的class写出到本地。  </p>
+<p>对于动态代码生成的class可以用<a href="https://bitbucket.org/mstrobel/procyon/src/default/" target="_blank" rel="noopener">procyon反编译器</a>反编译，命令行形式的，JD有点力不从心。  </p>
+<p>也可以用阿尔特斯等诊断工具导出。  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alibaba.dubbo.common.bytecode.ClassGenerator.mCtc</span>
+<span class="hljs-comment">// mCtc.writeFile("d:/")</span>
+<span class="hljs-comment">//D:\002.tools&gt;java -jar procyon-decompiler-0.5.36.jar //d:\com\alibaba\dubbo\common\bytecode\Wrapper0.class</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Decompiled by Procyon v0.5.36</span>
+<span class="hljs-comment">//</span>
+
+<span class="hljs-keyword">package</span> com.alibaba.dubbo.common.bytecode;
+
+<span class="hljs-keyword">import</span> java.lang.reflect.InvocationTargetException;
+<span class="hljs-keyword">import</span> org.simonme.dubbo.demo.provider.service.HelloService;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Wrapper0</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Wrapper</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">ClassGenerator</span>$<span class="hljs-title">DC</span></span>
+<span class="hljs-class"></span>&#123;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] pns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Map pts;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] mns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] dmns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Class[] mts0;
+
+    <span class="hljs-keyword">public</span> String[] getPropertyNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper0.pns;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">hasProperty</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> Wrapper0.pts.containsKey(s);
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Class <span class="hljs-title">getPropertyType</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> Wrapper0.pts.get(s);
+    &#125;
+
+    <span class="hljs-keyword">public</span> String[] getMethodNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper0.mns;
+    &#125;
+
+    <span class="hljs-keyword">public</span> String[] getDeclaredMethodNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper0.dmns;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setPropertyValue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s, <span class="hljs-keyword">final</span> Object o2)</span> </span>&#123;
+        <span class="hljs-keyword">try</span> &#123;
+            <span class="hljs-keyword">final</span> HelloService helloService = (HelloService)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchPropertyException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found property \""</span>).append(s).append(<span class="hljs-string">"\" filed or setter method in class org.simonme.dubbo.demo.provider.service.HelloService."</span>).toString());
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">getPropertyValue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        <span class="hljs-keyword">try</span> &#123;
+            <span class="hljs-keyword">final</span> HelloService helloService = (HelloService)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchPropertyException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found property \""</span>).append(s).append(<span class="hljs-string">"\" filed or setter method in class org.simonme.dubbo.demo.provider.service.HelloService."</span>).toString());
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">invokeMethod</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s, <span class="hljs-keyword">final</span> Class[] array, <span class="hljs-keyword">final</span> Object[] array2)</span> <span class="hljs-keyword">throws</span> InvocationTargetException </span>&#123;
+        HelloService helloService;
+        <span class="hljs-keyword">try</span> &#123;
+            helloService = (HelloService)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">try</span> &#123;
+            <span class="hljs-keyword">if</span> (<span class="hljs-string">"sayHello"</span>.equals(s) &amp;&amp; array.length == <span class="hljs-number">1</span>) &#123;
+                helloService.sayHello((String)array2[<span class="hljs-number">0</span>]);
+                <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t2) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> InvocationTargetException(t2);
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchMethodException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found method \""</span>).append(s).append(<span class="hljs-string">"\" in class org.simonme.dubbo.demo.provider.service.HelloService."</span>).toString());
+    &#125;
+&#125;</code></pre>
+
+<p>invokeMethod 实现了方法调用 </p>
+<pre><code class="hljs java"><span class="hljs-comment">// D:\002.tools&gt;java -jar procyon-decompiler-0.5.36.jar // d:\com\alibaba\dubbo\common\bytecode\Wrapper1.class</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Decompiled by Procyon v0.5.36</span>
+<span class="hljs-comment">//</span>
+
+<span class="hljs-keyword">package</span> com.alibaba.dubbo.common.bytecode;
+
+<span class="hljs-keyword">import</span> java.lang.reflect.InvocationTargetException;
+<span class="hljs-keyword">import</span> org.simonme.dubbo.demo.provider.service.DepenededService;
+<span class="hljs-keyword">import</span> org.simonme.dubbo.demo.provider.service.impl.HelloServiceSlowImpl;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Wrapper1</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Wrapper</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">ClassGenerator</span>$<span class="hljs-title">DC</span></span>
+<span class="hljs-class"></span>&#123;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] pns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Map pts;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] mns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String[] dmns;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Class[] mts0;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Class[] mts1;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Class[] mts2;
+
+    <span class="hljs-keyword">public</span> String[] getPropertyNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper1.pns;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">hasProperty</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> Wrapper1.pts.containsKey(s);
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Class <span class="hljs-title">getPropertyType</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        <span class="hljs-keyword">return</span> Wrapper1.pts.get(s);
+    &#125;
+
+    <span class="hljs-keyword">public</span> String[] getMethodNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper1.mns;
+    &#125;
+
+    <span class="hljs-keyword">public</span> String[] getDeclaredMethodNames() &#123;
+        <span class="hljs-keyword">return</span> Wrapper1.dmns;
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">setPropertyValue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s, <span class="hljs-keyword">final</span> Object o2)</span> </span>&#123;
+        HelloServiceSlowImpl helloServiceSlowImpl;
+        <span class="hljs-keyword">try</span> &#123;
+            helloServiceSlowImpl = (HelloServiceSlowImpl)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">if</span> (s.equals(<span class="hljs-string">"depenededService"</span>)) &#123;
+            helloServiceSlowImpl.setDepenededService((DepenededService)o2);
+            <span class="hljs-keyword">return</span>;
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchPropertyException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found property \""</span>).append(s).append(<span class="hljs-string">"\" filed or setter method in class org.simonme.dubbo.demo.provider.service.impl.HelloServiceSlowImpl."</span>).toString());
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">getPropertyValue</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s)</span> </span>&#123;
+        HelloServiceSlowImpl helloServiceSlowImpl;
+        <span class="hljs-keyword">try</span> &#123;
+            helloServiceSlowImpl = (HelloServiceSlowImpl)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">if</span> (s.equals(<span class="hljs-string">"depenededService"</span>)) &#123;
+            <span class="hljs-keyword">return</span> helloServiceSlowImpl.getDepenededService();
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchPropertyException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found property \""</span>).append(s).append(<span class="hljs-string">"\" filed or setter method in class org.simonme.dubbo.demo.provider.service.impl.HelloServiceSlowImpl."</span>).toString());
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Object <span class="hljs-title">invokeMethod</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Object o, <span class="hljs-keyword">final</span> String s, <span class="hljs-keyword">final</span> Class[] array, <span class="hljs-keyword">final</span> Object[] array2)</span> <span class="hljs-keyword">throws</span> InvocationTargetException </span>&#123;
+        HelloServiceSlowImpl helloServiceSlowImpl;
+        <span class="hljs-keyword">try</span> &#123;
+            helloServiceSlowImpl = (HelloServiceSlowImpl)o;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalArgumentException(t);
+        &#125;
+        <span class="hljs-keyword">try</span> &#123;
+            <span class="hljs-keyword">if</span> (<span class="hljs-string">"sayHello"</span>.equals(s) &amp;&amp; array.length == <span class="hljs-number">1</span>) &#123;
+                helloServiceSlowImpl.sayHello((String)array2[<span class="hljs-number">0</span>]);
+                <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+            &#125;
+            <span class="hljs-keyword">if</span> (<span class="hljs-string">"getDepenededService"</span>.equals(s) &amp;&amp; array.length == <span class="hljs-number">0</span>) &#123;
+                <span class="hljs-keyword">return</span> helloServiceSlowImpl.getDepenededService();
+            &#125;
+            <span class="hljs-keyword">if</span> (<span class="hljs-string">"setDepenededService"</span>.equals(s) &amp;&amp; array.length == <span class="hljs-number">1</span>) &#123;
+                helloServiceSlowImpl.setDepenededService((DepenededService)array2[<span class="hljs-number">0</span>]);
+                <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+            &#125;
+        &#125;
+        <span class="hljs-keyword">catch</span> (Throwable t2) &#123;
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> InvocationTargetException(t2);
+        &#125;
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoSuchMethodException(<span class="hljs-keyword">new</span> StringBuffer().append(<span class="hljs-string">"Not found method \""</span>).append(s).append(<span class="hljs-string">"\" in class org.simonme.dubbo.demo.provider.service.impl.HelloServiceSlowImpl."</span>).toString());
+    &#125;
+&#125;</code></pre>
+
+<h3 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h3><p>wrap的作用 我的理解是将反射(读取字段、调用业务方法) 转成 直接调用，同时以统一的调用接口对外暴露</p>
+<p>JavassistProxyFactory.getInvoker</p>
+<p>先用Wrapper机制wrapper一下 。 对于生成的Wrapper实例再怎么放到调用链中和其他Invoker实例怎么相互对接并产生作用可以参见《调用链如何构建的？ProtocolFilterWrapper等分析》。</p>
+<p>getPropertyValue与setPropertyValue在你的<strong>业务服务实现类中如果实例字段</strong>，比如依赖其他服务，这个生成的方法就会起作用了，可以参见上面反编译的第二段代码，<strong>上面贴了两段反编译的代码对比也是这个目的</strong>。</p>
+<p>顺带说一句，JavassistProxyFactory 除了在其getInvoker对接wrapper机制完成上述事情之外，还<strong>通过其getProxy方法结合其父类的getProxy方法将EchoService回声服务自动织入</strong>进业务服务实现中。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/06/13/dubbo-21.how-to-implement-group/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[dubbo]21.服务分组实现</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/06/13/dubbo-19.provider-thread-model-chain/">
+                        <span class="hidden-mobile">[dubbo]19.被consumer端调用时的线程模型与链路</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]20.反射调用是如何优化的？Wrapper的作用是什么？&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

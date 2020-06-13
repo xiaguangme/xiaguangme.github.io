@@ -175,16 +175,15 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/vm-interpret-bytecode/">虚拟机解释器与bytecode对接</a>
+      <a class="index-header" href="/2020/04/24/virtualbox-debug-kernel/">用virtualbox+模拟串口+CDT调试linux内核 TCP/IP协议栈-起步</a>
 
-      <a href="/2020/04/24/vm-interpret-bytecode/" class="index-excerpt">
+      <a href="/2020/04/24/virtualbox-debug-kernel/" class="index-excerpt">
         
         
           
         
-        <div>心头一直有个疑问，jvm虚拟是如何对接class中的字节码的？或者说在未进入JIT优化阶段时，解释器是如何对接的？
-大概阐述hotspot通过C++代码在堆上申请一块空间，向里面填充一组指令，然后把这块空间当成一个函数，通过函数指针去调用刚生成的代码。是不是666，是不是哇超酷毙了。  
-关键代码generate_call_stub address generate_call_stub(addre</div>
+        <div>经常有人问一台机器如何将hello经网络发送给另一台机器，我确实是不知道，只能看代码了。说明：本人对内核的研究学习也是刚刚起步，有很多不了解的，所以文中可能会有一些“一本正经的胡扯”。请大家辩证的阅读。注意这种方式不能调试 start_kernel等过程，我主要用来调试tcp/ip协议栈代码。如果想调试start_kernel，后面会介绍用qemu的方式。   
+S1. 开发机：我是将一个老的索尼</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -207,7 +206,7 @@
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+              <a href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
             
           </div>
         
@@ -219,17 +218,15 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/new-object/">对象创建</a>
+      <a class="index-header" href="/2020/04/24/qemu-debug-kernel/">用qemu+gdb tcp server+CDT调试linux内核启动-起步</a>
 
-      <a href="/2020/04/24/new-object/" class="index-excerpt">
+      <a href="/2020/04/24/qemu-debug-kernel/" class="index-excerpt">
         
         
           
         
-        <div>对象创建interpreterRuntime.cpp 解释器中new指令的入口：  
-// 宏展开
- // IRT_ENTRY(void, InterpreterRuntime::_new(JavaThread* thread, ConstantPool* pool, int index))
-void  InterpreterRuntime::_new(JavaThread* thread, Co</div>
+        <div>用qemu+gdb tcp server+CDT调试linux内核启动-起步说明： 环境信息与 用virtualbox+模拟串口+CDT调试linux内核 TCP IP协议栈-起步 提到的一样，并且本文中会有很多个步骤与之相同，请参考。
+S1. 开发机：我是将一个老的索尼的笔记本装了Ubuntu桌面版本作为开发环境，版本号是Ubuntu 16.04.4 LTS，后面在某些步骤中也会称之为host。</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -252,7 +249,7 @@ void  InterpreterRuntime::_new(JavaThread* thread, Co</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+              <a href="/tags/linux%E5%86%85%E6%A0%B8%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">linux内核源码分析</a>
             
           </div>
         
@@ -264,20 +261,18 @@ void  InterpreterRuntime::_new(JavaThread* thread, Co</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/compile-hotspot8/">step by step 编译hotspot8</a>
+      <a class="index-header" href="/2020/04/24/netty3-hhttp-server/">以http server为例简要分析netty3实现</a>
 
-      <a href="/2020/04/24/compile-hotspot8/" class="index-excerpt">
+      <a href="/2020/04/24/netty3-hhttp-server/" class="index-excerpt">
         
         
           
         
-        <div>编译hotspot8ubuntu desktop 18 全新准备与编译过程再记录下：
- # 建议使用此gcc和g++版本，过高版本比如gcc7或引发编译报错
- sudo apt-get install gcc-4.8
- sudo apt-get install g++-4.8
- 
- # 安装相关依赖
-sudo apt-get install  libxext-dev libxrender-dev </div>
+        <div>概要最近看了点netty3实现。从webbit项目作为口子。webbit项目是一个基于netty3做的http与websocket server。后面还会继续看下netty4，netty4有很多改进，如其作者所说，有更少的GC，更丰富的SOCKET选项，更好的性能。此篇先谈netty3。
+ChannelBuffer 与 其特色工具类
+线程模型，事件分类，流水线
+accpet请求与读请求
+写出响应与</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -300,7 +295,7 @@ sudo apt-get install  libxext-dev libxrender-dev </div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+              <a href="/tags/netty3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty3源码分析</a>
             
           </div>
         
@@ -312,22 +307,16 @@ sudo apt-get install  libxext-dev libxrender-dev </div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/gc-static-field/">静态字段引用的对象为什么不会被GC回收</a>
+      <a class="index-header" href="/2020/04/24/app-encode-not-right/">应用默认编码不对的问题定位</a>
 
-      <a href="/2020/04/24/gc-static-field/" class="index-excerpt">
+      <a href="/2020/04/24/app-encode-not-right/" class="index-excerpt">
         
         
           
         
-        <div>示例代码import java.util.ArrayList;
-import java.util.List;
-
-public class StaticFieldClass &#123;
-	
-	public static List&lt;Team&gt; staticField1 = new ArrayList&lt;Team&gt;();
-	
-	static &#123;
-		staticFiel</div>
+        <div>应用默认编码不对的问题定位问题描述某日线上环境报警，分析后发现是java.lang.String.getBytes()方法在不同环境上表现出来的结果是不一样的。 
+JDK的String.getBytes()默认采用什么编码看下JDK的代码不难发现：先是靠Charset.defaultCharset()编码，如果不行靠ISO-8859-1兜底，再不行就直接应用退出了。
+Charset.default</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -350,7 +339,46 @@ public class StaticFieldClass &#123;
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/gc/">gc</a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/tps-again/">再写一篇tps限流</a>
+
+      <a href="/2020/04/24/tps-again/" class="index-excerpt">
+        
+        
+          
+        
+        <div>再写一篇tps限流各种限流算法的称呼网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。主要维度是：是正向计数还是反向计数。是定点(时间点)重置当前计数器还是每次接口调用时按量调整当前还剩的可用请求数。  
+通俗理解正向计数且定点(时间点)重置的流程                       +-------------------</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
             
           </div>
         
@@ -362,21 +390,65 @@ public class StaticFieldClass &#123;
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-request/">kafka-clients 1.0 内部请求接口文档</a>
+      <a class="index-header" href="/2020/04/24/fastjson-low-version-lost-field/">fastjosn在低版本丢字段问题</a>
 
-      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-request/" class="index-excerpt">
+      <a href="/2020/04/24/fastjson-low-version-lost-field/" class="index-excerpt">
         
         
           
         
-        <div>AddOffsetsToTxnRequestversion:0nametypedefaultValuedocStringtransactional_idSTRINGnullThe transactional id corresponding to the transaction.
-producer_idINT64nullCurrent producer id in use by the trans</div>
+        <div>简单的说：对于java bean中有字段类似pId这种写法，特征是第一个字母小写，第二个字母大写，在eclipse中生成的getter setter方法是 getpId, setpId。在低版本的fastjson，比如1.1.41中将java bean序列化成json字符串的时候，会丢掉pId这个字段。  使用高版本，比如1.2.46，就不会有这个问题。那么，这到底是谁的锅？先说结论，fastjs</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/ureplicator-impl/">uReplicator实现分析</a>
+
+      <a href="/2020/04/24/ureplicator-impl/" class="index-excerpt">
+        
+        
+          
+        
+        <div>MirrorMakerWorker分析是整个同步机制的主入口，主要组织的逻辑有：
+
+配置数据的传入与处理，ConsumerConfig对象的构建
+度量对象的准备，定时上报的度量数据收集线程的定义与启动
+CompactConsumerFetcherManager实例的创建与startConnections
+根据fetchNum创建KafkaConnector实例，KafkaConnector实例中会</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
@@ -405,27 +477,27 @@ producer_idINT64nullCurrent producer id in use by the trans</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/">kafka-clients 1.0 内部响应接口文档</a>
+      <a class="index-header" href="/2020/04/24/log4j2-async-config/">log4j2异步日志配置及官方文档的问题澄清</a>
 
-      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/" class="index-excerpt">
+      <a href="/2020/04/24/log4j2-async-config/" class="index-excerpt">
         
         
           
         
-        <div>AddOffsetsToTxnResponseversion:0nametypedefaultValuedocStringthrottle_time_msINT320Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not viol</div>
+        <div>配置及demo方法一全部打开加启动参数 -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector启动参数的这个key有点说法：按官方文档说明http://logging.apache.org/log4j/2.x/manual/async.html#AllAsync key是-Dlog4</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -435,7 +507,7 @@ producer_idINT64nullCurrent producer id in use by the trans</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/log4j2/">log4j2</a>
             
           </div>
         
@@ -447,35 +519,28 @@ producer_idINT64nullCurrent producer id in use by the trans</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-generate-rpc-doc/">生成kafka内部请求与响应的接口文档</a>
+      <a class="index-header" href="/2020/04/24/log4j2-how-to-config-async/">log4j2用asyncRoot配置异步日志是如何使用disruptor</a>
 
-      <a href="/2020/04/22/kafka1-0-generate-rpc-doc/" class="index-excerpt">
+      <a href="/2020/04/24/log4j2-how-to-config-async/" class="index-excerpt">
         
         
           
         
-        <div>生成kafka内部请求与响应的接口文档/**
- */
-package com.code260.ss.kafka10demo;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.ne</div>
+        <div>用asyncRoot配置对应的对接disruptor类是AsyncLoggerConfigDisruptor,用Log4jContextSelector启动参数配置全局异步的对应的对接disruptor类是AsyncLoggerDisruptor。下面分析的是AsyncLoggerConfigDisruptor  
+disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -485,7 +550,7 @@ import java.ne</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/log4j2/">log4j2</a>
             
           </div>
         
@@ -497,40 +562,30 @@ import java.ne</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/c-cpp-call-simple-fun/">简单的main方法调用一个加减法函数背后的细节</a>
+      <a class="index-header" href="/2020/04/24/log4j2-how-to-use-disruptor/">log4j2如何使用disruptor</a>
 
-      <a href="/2020/04/22/c-cpp-call-simple-fun/" class="index-excerpt">
+      <a href="/2020/04/24/log4j2-how-to-use-disruptor/" class="index-excerpt">
         
         
           
         
-        <div>测试程序/*
- * AddTest.c
- *
- *  Created on: 2019年10月13日
- *      Author: appweb
- */
-#include &lt;stdio.h&gt;
-
-int add(int a, int b) &#123;
-	int c = addAgain(a, b);
-	return c;
-&#125;
-
-int addAgain(int a, int</div>
+        <div>与 log4j2用asyncRoot配置异步日志是如何使用disruptor差异有几个：
+给disruptor实例的EventFactory不同此处EventFactory采用的是RingBufferLogEvent.FACTORY，newInstance逻辑大致是：  
+public RingBufferLogEvent newInstance() &#123;
+    final RingBu</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -540,105 +595,7 @@ int addAgain(int a, int</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/hotspot-object-model/">JVM中对象模型及相应名词概念</a>
-
-      <a href="/2020/04/22/hotspot-object-model/" class="index-excerpt">
-        
-        
-          
-        
-        <div>JVM中对象模型及相应名词概念java对象在jvm中的模型是OOP-Klass 模型；
-klassklass对应元数据，包括常量池、字段、方法等。是在加载class阶段创建instanceKlass。存放在方法区。
-oopoop对应java中的实例。oop是指向oopDesc的指针。  
-// share/vm/oops/oopsHierarchy.hpp
-typedef class oopDes</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/c-cpp-point-function/">函数指针与指针函数，直接向内存区域写入操作码并转成函数指针并调用</a>
-
-      <a href="/2020/04/22/c-cpp-point-function/" class="index-excerpt">
-        
-        
-          
-        
-        <div>函数指针与指针函数阅读hotspot的代码，需要先弄清楚这两个很容易混淆的概念。最近我想到一个办法去区分折扣两个，就是在中间加个“的”：  
-
-函数的指针
-指针的函数  
-
-这样就很容易区分了。  
-
-函数指针，实际上是指针，是指向函数的指针  
-指针函数，实际上函数，是指返回指针的函数  
-
-其实在C语言中，指针数组和数组指针也是一样的区分办法。  加个“的”便可以解决。为什么会有这样的问题？老</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+              <a href="/tags/log4j2/">log4j2</a>
             
           </div>
         
@@ -650,7 +607,7 @@ typedef class oopDes</div>
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/4/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/6/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/4/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/6/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

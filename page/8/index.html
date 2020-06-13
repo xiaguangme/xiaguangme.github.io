@@ -175,29 +175,28 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/cabbage-residue/">白菜油渣</a>
+      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer/">clients-producer-网络处理与请求响应对接部分</a>
 
-      <a href="/2020/04/19/cabbage-residue/" class="index-excerpt">
+      <a href="/2020/04/22/kafka1-0-clietns-producer/" class="index-excerpt">
         
         
           
         
-        <div>白菜炒猪油渣，朴素的美食
-
+        <div>
 </div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/life/">life</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -205,7 +204,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/food/">food</a>
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
             
           </div>
         
@@ -217,36 +218,30 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/jvm-g1-gc-book/">《JVM G1源码分析和调优》读书笔记</a>
+      <a class="index-header" href="/2020/04/22/jmx-basic/">JMX基本概念</a>
 
-      <a href="/2020/04/19/jvm-g1-gc-book/" class="index-excerpt">
+      <a href="/2020/04/22/jmx-basic/" class="index-excerpt">
         
         
           
         
-        <div>GC的相关算法与JVM的垃圾收集器GC的相关算法
-分代管理
-复制算法
-标记清除
-标记压缩
-
-JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较  
-
-串行收集器 Serial。  Serial GC用于新生代，用了复制算法；Serial Old GC作用于老年代，用的是标记-压缩算法。STW
-并行收集器 Parallel。Parallel new作用于新生代，使用了复制算法；Parall</div>
+        <div>Object name的语法
+形似 com.sun.someapp:type=Whatsit,name=25  
+com.sun.someapp 是domain，冒号后面的是key-property-list，每组kv的顺序随意，但是不能有空格，空格字符有特殊含义，不能有冒号。domain名不能含有冒号，不能含有/。  
+key-property-list中的key支持和？somedomain:t</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/book-paper-study/">book-paper-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -254,7 +249,7 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/GC/">GC</a>
+              <a href="/tags/java/">java</a>
             
           </div>
         
@@ -266,20 +261,22 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/netty4-fastthhreadlocal/">Netty4 FastThreadLocal及CPU cacheline padding补齐</a>
+      <a class="index-header" href="/2020/04/22/netty4-transport-nio/">netty之nio传输层</a>
 
-      <a href="/2020/04/19/netty4-fastthhreadlocal/" class="index-excerpt">
+      <a href="/2020/04/22/netty4-transport-nio/" class="index-excerpt">
         
         
           
         
-        <div>FastThreadLocal概述： ThreadLocal的一个特定变种改善，有更好的存取性能。内部采用一个数组来代替ThreadLocal内部的hash表来存放变量。虽然这看起来是微不足道的，但是他确实比hash表性能好那么一点，在频繁存取时会更明显。 如果用DefaultThreadFactory创建线程，那么默认创建出来的就是FastThreadLocalThread，就会用FastThr</div>
+        <div>nio基本处理逻辑查看这里  
+Selector的处理Selector实例构建NioEventLoop.openSelector()方法先用JDK API构建出来的Selector再用反射将其中的selectedKeys、publicSelectedKeys替换成他优化过的SelectedSelectionKeySet实例。JDK API构建出来的Selector 代码：  
+// NioEven</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
@@ -308,22 +305,157 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/some-make-files/">几个递进的make file</a>
+      <a class="index-header" href="/2020/04/20/netty4-pooled-buffer/">netty之池化buffer</a>
 
-      <a href="/2020/04/19/some-make-files/" class="index-excerpt">
+      <a href="/2020/04/20/netty4-pooled-buffer/" class="index-excerpt">
         
         
           
         
-        <div>几个递进的make file春节在家写的几个递进的make file，部分有点问题。接下来 有空我要把GNU make的手册看完。不然这方面太菜了。  
-GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
-1 源文件名 目标都hard code，且一次编译多个目标PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKE</div>
+        <div>PooledByteBufAllocator buffer分配buffer分配的入口：io.netty.buffer.PooledByteBufAllocator.newDirectBuffer(int, int)netty实际应用时分配调用栈：  
+
+CLASS_NAMEMETHOD_NAMELINE_NUM
+io/netty/buffer/PooledByteBufAllocatornewDi</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
+
+      <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
+        
+        
+          
+        
+        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
+使用
+设置日志级别：  ServerBootstrap b =new ServerBootstrap();
+b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
+.option(ChannelOption.SO_BACK</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
+
+      <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
+        
+        
+          
+        
+        <div>
+初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  
+channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operati</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</a>
+
+      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="index-excerpt">
+        
+        
+          
+        
+        <div>java
+# 创建断点(支持条件断点)
+curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java","condition":"i == 1","charStart":283,"charEnd":307,"lineNumber":16,"typeName":"com.code260.tools.red</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
           </div>
         
         
@@ -338,9 +470,9 @@ GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/cpp/">cpp</a>
+              <a href="/tags/dev-tools/">dev-tools</a>
             
-              <a href="/tags/makefile/">makefile</a>
+              <a href="/tags/eclipse/">eclipse</a>
             
           </div>
         
@@ -352,37 +484,139 @@ GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/MySenseOfWorth/">我的价值观</a>
+      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
 
-      <a href="/2020/04/19/MySenseOfWorth/" class="index-excerpt">
+      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
         
         
           
         
-        <div>我的价值观
-一个底线：遵纪守法，远离黄赌毒。
-一个标准：感恩上进，持续努力，享受尽职。
-一个方法论：三人行必有我师，三人行我亦能成师。
-一个技巧：顺势而为。
-一个兜底：凡事有最坏的打算。
+        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
 
-</div>
+sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
+
+subl 1.txt   sublime比自带</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/think/">think</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/dev-tools/">dev-tools</a>
+            
+              <a href="/tags/ubutnu/">ubutnu</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/about-dubbo-extension-loader/">关于dubbo扩展点的一点分析</a>
+
+      <a href="/2020/04/20/about-dubbo-extension-loader/" class="index-excerpt">
+        
+        
+          
+        
+        <div>扩展点能力
+能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。
+能创建instance。
+能指定这个顶层接口的默认实现类的beanName。做法参见SPI注解部分。
+能把创建出来的instance的字段注入。set开头的且有一个参数且是public的，注入。  
+能adaptive。根据url上对该</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/guice-features-brief-introducting/">guice的能力简述</a>
+
+      <a href="/2020/04/20/guice-features-brief-introducting/" class="index-excerpt">
+        
+        
+          
+        
+        <div>guice这个google出的bean容器框架，ES有用到他。  
+能干什么
+是一个bean容器
+能AOPa
+
+能力细分与使用方式
+以module创建injector。可以看成是一个容器。Module需要自定义且继承自他的AbstractModule。覆写config方法完成装配关系的确定。详细参见这里  
+绑定顶层接口到具体实现类。bind(TransactionLog.class).to(Da</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/guice/">guice</a>
+            
+          </div>
         
       </div>
     </div>
@@ -392,7 +626,7 @@ GNU make手册都需要make先设置环境变量BUILD_MODE为run或者debug
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/7/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span>
+      <a class="extend prev" rel="prev" href="/page/7/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/9/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

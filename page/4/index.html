@@ -175,18 +175,15 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/netty3-hhttp-server/">以http server为例简要分析netty3实现</a>
+      <a class="index-header" href="/2020/04/24/tomcat-io-buffer/">tomcat6-输入输出buffer设计</a>
 
-      <a href="/2020/04/24/netty3-hhttp-server/" class="index-excerpt">
+      <a href="/2020/04/24/tomcat-io-buffer/" class="index-excerpt">
         
         
           
         
-        <div>概要最近看了点netty3实现。从webbit项目作为口子。webbit项目是一个基于netty3做的http与websocket server。后面还会继续看下netty4，netty4有很多改进，如其作者所说，有更少的GC，更丰富的SOCKET选项，更好的性能。此篇先谈netty3。
-ChannelBuffer 与 其特色工具类
-线程模型，事件分类，流水线
-accpet请求与读请求
-写出响应与</div>
+        <div>之前写的一个ppt 搬到博客来
+</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -209,7 +206,7 @@ accpet请求与读请求
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty3源码分析</a>
+              <a href="/tags/tomcat%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">tomcat源码分析</a>
             
           </div>
         
@@ -221,16 +218,15 @@ accpet请求与读请求
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/app-encode-not-right/">应用默认编码不对的问题定位</a>
+      <a class="index-header" href="/2020/04/24/tomcat-servlet-spec/">tomcat6-servlet规范对接 与 ClassLoader隔离</a>
 
-      <a href="/2020/04/24/app-encode-not-right/" class="index-excerpt">
+      <a href="/2020/04/24/tomcat-servlet-spec/" class="index-excerpt">
         
         
           
         
-        <div>应用默认编码不对的问题定位问题描述某日线上环境报警，分析后发现是java.lang.String.getBytes()方法在不同环境上表现出来的结果是不一样的。 
-JDK的String.getBytes()默认采用什么编码看下JDK的代码不难发现：先是靠Charset.defaultCharset()编码，如果不行靠ISO-8859-1兜底，再不行就直接应用退出了。
-Charset.default</div>
+        <div>之前写的一个ppt 搬到博客来
+</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -243,7 +239,7 @@ Charset.default</div>
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -252,6 +248,8 @@ Charset.default</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/java/">java</a>
+            
+              <a href="/tags/tomcat%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">tomcat源码分析</a>
             
           </div>
         
@@ -263,15 +261,58 @@ Charset.default</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/tps-again/">再写一篇tps限流</a>
+      <a class="index-header" href="/2020/04/24/jdk-concurrent-source-study/">JDK并发基础与部分源码解读</a>
 
-      <a href="/2020/04/24/tps-again/" class="index-excerpt">
+      <a href="/2020/04/24/jdk-concurrent-source-study/" class="index-excerpt">
         
         
           
         
-        <div>再写一篇tps限流各种限流算法的称呼网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。主要维度是：是正向计数还是反向计数。是定点(时间点)重置当前计数器还是每次接口调用时按量调整当前还剩的可用请求数。  
-通俗理解正向计数且定点(时间点)重置的流程                       +-------------------</div>
+        <div>之前写的一个ppt 搬到博客来
+
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/JDK%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">JDK源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/tps/">TPS限流</a>
+
+      <a href="/2020/04/24/tps/" class="index-excerpt">
+        
+        
+          
+        
+        <div>限流是高可用服务需要具备的能力之一 ，粗暴简单的就像我们之前做的并发数控制。好一点的有tps限流，可用令牌桶等算法实现。《亿级流量网站架构核心技术》一书P67限流详解也有讲。dubbo提供了此机制，TpsLimitFilter。guava也提供了相应的工具类RateLimiter。#1. dubbo提供的tps限流##1.1 demo使用###1.1.1 在source folder下放置，MET</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -304,14 +345,29 @@ Charset.default</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/fastjson-low-version-lost-field/">fastjosn在低版本丢字段问题</a>
+      <a class="index-header" href="/2020/04/24/spring-cloud2-features/">Spring Cloud(2.0)能力大致列表</a>
 
-      <a href="/2020/04/24/fastjson-low-version-lost-field/" class="index-excerpt">
+      <a href="/2020/04/24/spring-cloud2-features/" class="index-excerpt">
         
         
           
         
-        <div>简单的说：对于java bean中有字段类似pId这种写法，特征是第一个字母小写，第二个字母大写，在eclipse中生成的getter setter方法是 getpId, setpId。在低版本的fastjson，比如1.1.41中将java bean序列化成json字符串的时候，会丢掉pId这个字段。  使用高版本，比如1.2.46，就不会有这个问题。那么，这到底是谁的锅？先说结论，fastjs</div>
+        <div>#微服务九大特性出自Martin Fowler的《Microservices》  
+
+服务组件化  
+按业务组织团队  
+做“产品”的态度  
+智能端点与哑管道  
+去中心化治理  
+去中心化管理数据  
+基础设施自动化  
+容错设计  
+演进式设计  
+
+#Spring Boot特性
+
+支持main方法直接拉起嵌入式web容器  
+本地配置方式更友好，支持占位符 支持profile，支持启动参数</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -332,7 +388,7 @@ Charset.default</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
             
           </div>
         
@@ -344,19 +400,16 @@ Charset.default</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/ureplicator-impl/">uReplicator实现分析</a>
+      <a class="index-header" href="/2020/04/24/dubbo-zk/">dubbo与zk注册中心如何对接，如何做到服务自动发现</a>
 
-      <a href="/2020/04/24/ureplicator-impl/" class="index-excerpt">
+      <a href="/2020/04/24/dubbo-zk/" class="index-excerpt">
         
         
           
         
-        <div>MirrorMakerWorker分析是整个同步机制的主入口，主要组织的逻辑有：
-
-配置数据的传入与处理，ConsumerConfig对象的构建
-度量对象的准备，定时上报的度量数据收集线程的定义与启动
-CompactConsumerFetcherManager实例的创建与startConnections
-根据fetchNum创建KafkaConnector实例，KafkaConnector实例中会</div>
+        <div>先看下consumer端发起调用时的链路流程：  
+ +---------------------------+            +---------------------------+            +---------------------------+              
+ |      helloService         |            |    </div>
       </a>
 
       <div class="index-btm post-metas">
@@ -379,7 +432,7 @@ CompactConsumerFetcherManager实例的创建与startConnections
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -391,14 +444,15 @@ CompactConsumerFetcherManager实例的创建与startConnections
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/log4j2-async-config/">log4j2异步日志配置及官方文档的问题澄清</a>
+      <a class="index-header" href="/2020/04/24/dubbo-rpc-filter-1/">dubbo rpc filter实现剖析(一)</a>
 
-      <a href="/2020/04/24/log4j2-async-config/" class="index-excerpt">
+      <a href="/2020/04/24/dubbo-rpc-filter-1/" class="index-excerpt">
         
         
           
         
-        <div>配置及demo方法一全部打开加启动参数 -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector启动参数的这个key有点说法：按官方文档说明http://logging.apache.org/log4j/2.x/manual/async.html#AllAsync key是-Dlog4</div>
+        <div>2.6.3版本，之前读的是2.4.9版本本篇主要阐述dubbo rpc的filter的实现，包括作用，用法，原理，与Spring Cloud在这些能力的对比。  
+共提供了多少个？是哪些?发布时默认装配了哪些给他自身的扩展点机制？从类与接口关系分析的结果文档中可以看到共20个：241 Filter–241.1 CacheFilter–241.2 MonitorFilter–241.3 Access</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -411,7 +465,7 @@ CompactConsumerFetcherManager实例的创建与startConnections
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -421,7 +475,7 @@ CompactConsumerFetcherManager实例的创建与startConnections
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/log4j2/">log4j2</a>
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -433,15 +487,16 @@ CompactConsumerFetcherManager实例的创建与startConnections
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/log4j2-how-to-config-async/">log4j2用asyncRoot配置异步日志是如何使用disruptor</a>
+      <a class="index-header" href="/2020/04/24/dubbo-rpc-filter-2/">dubbo-rpc-filter-2</a>
 
-      <a href="/2020/04/24/log4j2-how-to-config-async/" class="index-excerpt">
+      <a href="/2020/04/24/dubbo-rpc-filter-2/" class="index-excerpt">
         
         
           
         
-        <div>用asyncRoot配置对应的对接disruptor类是AsyncLoggerConfigDisruptor,用Log4jContextSelector启动参数配置全局异步的对应的对接disruptor类是AsyncLoggerDisruptor。下面分析的是AsyncLoggerConfigDisruptor  
-disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
+        <div>2.6.3版本，之前读的是2.4.9版本本篇主要阐述dubbo rpc的filter的实现，包括作用，用法，原理，与Spring Cloud在这些能力的对比。  
+整个filter列表的获取过程在com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper.buildInvokerChain(Invoker, String, String)  
+List</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -454,7 +509,7 @@ disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -464,7 +519,7 @@ disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/log4j2/">log4j2</a>
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -476,17 +531,16 @@ disruptor的创建与启动需要的部件实现AsyncLoggerConfigDi</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/log4j2-how-to-use-disruptor/">log4j2如何使用disruptor</a>
+      <a class="index-header" href="/2020/04/24/dubbo-protocol-impl/">dubbo Protocol实现剖析</a>
 
-      <a href="/2020/04/24/log4j2-how-to-use-disruptor/" class="index-excerpt">
+      <a href="/2020/04/24/dubbo-protocol-impl/" class="index-excerpt">
         
         
           
         
-        <div>与 log4j2用asyncRoot配置异步日志是如何使用disruptor差异有几个：
-给disruptor实例的EventFactory不同此处EventFactory采用的是RingBufferLogEvent.FACTORY，newInstance逻辑大致是：  
-public RingBufferLogEvent newInstance() &#123;
-    final RingBu</div>
+        <div>
+2.6.3版本，之前读的是2.4.9版本本篇主要阐述dubbo rpc的com.alibaba.dubbo.rpc.Protocol的实现，包括作用，用法，原理等等。
+类与接口关系以及其装配根据类与接口关系文档可以看到Protocol实现关系如下：264 Protocol–264.1 QosProtocolWrapper–264.2 RegistryProtocol–264.3 Abstract</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -499,7 +553,7 @@ public RingBufferLogEvent newInstance() &#123;
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -509,7 +563,7 @@ public RingBufferLogEvent newInstance() &#123;
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/log4j2/">log4j2</a>
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -521,18 +575,15 @@ public RingBufferLogEvent newInstance() &#123;
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/fun-call-assembly/">函数调用与汇编指令的关系</a>
+      <a class="index-header" href="/2020/04/24/fail-mp/">【转】常见容错机制</a>
 
-      <a href="/2020/04/24/fun-call-assembly/" class="index-excerpt">
+      <a href="/2020/04/24/fail-mp/" class="index-excerpt">
         
         
           
         
-        <div>写一段简单的C代码分析其背后与汇编指令的关系最近在看hotspot的代码，hotspot解释器会将字节码翻译成汇编指令，所以要先复习下这个基础这篇讲的太泛了，看 这篇吧，是一步一步有图对应的
-C代码#include &lt;stdio.h&gt;
-
-int  main(int args, char** argv)&#123;
-	printf("%d", add1(100, 200, 500, 60</div>
+        <div>[转]常见容错机制：failover ，failsafe，failfase ，failback，forking转自https://blog.csdn.net/hongweigg/article/details/52925920常见容错机制：failover ，failsafe，failfase ，failback，forking，来源于阿里的定义。  
+Failover 失败自动切换当出现失败，重</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -553,62 +604,7 @@ int  main(int args, char** argv)&#123;
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/24/cpp-this-unsigned-pointer/">C++中将对象this转换成unsigned char指针</a>
-
-      <a href="/2020/04/24/cpp-this-unsigned-pointer/" class="index-excerpt">
-        
-        
-          
-        
-        <div>示例程序
-//  ---CodeBlob.h---
-#ifndef CODEBLOB_H_
-#define CODEBLOB_H_
-
-
-class CodeBlob &#123;
-private:
-  const char* _name;
-  int        _size;
-
-public:
-	CodeBlob();
-	void printName();
-	void printSize();
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/cpp/">cpp</a>
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
             
           </div>
         
@@ -620,7 +616,7 @@ public:
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/3/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/3/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/5/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   
