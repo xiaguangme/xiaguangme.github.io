@@ -175,6 +175,49 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/06/13/dubbo-18.retry-offline/">[dubbo]18.重试、provider下线、网络断开等容错怎么实现</a>
+
+      <a href="/2020/06/13/dubbo-18.retry-offline/" class="index-excerpt">
+        
+        
+          
+        
+        <div>18.重试、provider下线、网络断开等容错怎么实现case构造的方式可以在DubboInvoker.doInvoke打断点，然后让provider下线，然后再继续执行刚才断点停住的地方等等构造异常场景。  
+如果有provider服务停掉， consumer端如何感知？再次启动刚停掉的provider呢provider停掉会触发zk客户端的监听，监听对客户端的invoker列表进行刷新。再次</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/13/dubbo-17.consumer-how-to-implement-load-blance/">[dubbo]17.负载均衡如何实现</a>
 
       <a href="/2020/06/13/dubbo-17.consumer-how-to-implement-load-blance/" class="index-excerpt">
@@ -553,53 +596,6 @@ ZkclientZookeeperClient.addTargetChildListener(Str</div>
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>&nbsp;2020-05-30
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/28/dubbo-08.provider-how-to-register-and-open-server/">[dubbo]08.提供者如何注册服务 如何延迟暴露</a>
-
-      <a href="/2020/05/28/dubbo-08.provider-how-to-register-and-open-server/" class="index-excerpt">
-        
-        
-          
-        
-        <div>08.提供者如何注册服务 如何延迟暴露provider的服务(机器ip、服务侦听端口等信息)如何让消费者找到，就是通过注册中心完成的。
-          +---------------+
-          |               |
-    +-----&gt;Register Center&lt;-----+
-    |     |               |     |
-  </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-28
           </div>
         
         

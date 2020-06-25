@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[dubbo]28.扩展支持HTTP协议 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-06-25 10:25">
+                    星期四, 六月 25日 2020, 10:25 上午
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.9k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    53
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="28-扩展支持HTTP协议"><a href="#28-扩展支持HTTP协议" class="headerlink" title="28.扩展支持HTTP协议"></a>28.扩展支持HTTP协议</h2><p>关于dubbo对http协议的支持，要分几个维度说：</p>
+<ol>
+<li>仅仅传输协议使用http，报文的组织方式没有要求，那么dubbo这个版本(2.5.3)原生提供的http协议就能满足。适当配置即可。此处报文指http请求体与响应体的报文。http协议本身规定了其报文规范，诸如method、url、content-type，header等等，但是其请求体与响应体中内容你可以随意放置。</li>
+<li>传输协议使用http，报文组织希望使用json/xml，那么可以使用当当的dubbox，dubbo在2.6.0之后合入了。<a href="https://dangdangdotcom.github.io/dubbox/rest.html" target="_blank" rel="noopener">使用入门文档</a>。这种形式还分三种：<ol>
+<li>非dubbo的消费端调用dubbo的REST服务（non-dubbo –&gt; dubbo）</li>
+<li>dubbo消费端调用dubbo的REST服务 （dubbo –&gt; dubbo）</li>
+<li>dubbo的消费端调用非dubbo的REST服务 （dubbo –&gt; non-dubbo） </li>
+</ol>
+</li>
+<li>其他的一些玩法：<a href="https://github.com/dangdangdotcom/dubbox/pull/107" target="_blank" rel="noopener">基于spring mvc的玩法</a>   <a href="https://github.com/xydonne/dubbo-extension/tree/master/dubbo-rpc-restexpress" target="_blank" rel="noopener">基于RestExpress的玩法</a>   <a href="https://github.com/dubboclub/dubbo-plus/tree/master/restful" target="_blank" rel="noopener">基于Servlet的玩法</a></li>
+</ol>
+<h3 id="dubbo原生支持的http协议"><a href="#dubbo原生支持的http协议" class="headerlink" title="dubbo原生支持的http协议"></a>dubbo原生支持的http协议</h3><h4 id="case配置"><a href="#case配置" class="headerlink" title="case配置"></a>case配置</h4><p>在META-INF目录下放置名为com.alibaba.dubbo.rpc.Protocol的文件，里面写上</p>
+<pre><code class="hljs properties"><span class="hljs-attr">http</span>=<span class="hljs-string">com.alibaba.dubbo.rpc.protocol.http.HttpProtocol</span></code></pre>
+
+<p>配置文件中声明协议使用http</p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:protocol</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"http"</span> <span class="hljs-attr">port</span>=<span class="hljs-string">"10880"</span>/&gt;</span></code></pre>
+
+<p>pom中增加spring-web 3.x和jetty等依赖，如果用spring-web4.x的话会有个别类不能发现。  </p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-web<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.18.RELEASE<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>javax.servlet<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>javax.servlet-api<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">scope</span>&gt;</span>provided<span class="hljs-tag">&lt;/<span class="hljs-name">scope</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+	
+<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.mortbay.jetty<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>jetty<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>6.1.26<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre>
+
+
+
+<h4 id="简单分析其实现"><a href="#简单分析其实现" class="headerlink" title="简单分析其实现"></a>简单分析其实现</h4><p>默认的http协议支持，仅仅是传输走http协议的方式，报文的组织方式是用的spring-web中的java序列化的方式。  </p>
+<p>实现主要依赖<code>spring-web</code> 3.x版本加<code>jetty</code>实现。</p>
+<p>用wireshark抓到的请求报文如下：  </p>
+<pre><code class="hljs plain">POST &#x2F;com.code260.ss.dubbo.demov.facade.service.HelloService HTTP&#x2F;1.1
+Content-Type: application&#x2F;x-java-serialized-object
+Accept-Encoding: gzip
+User-Agent: Java&#x2F;1.8.0_121
+Host: 172.17.0.224:10880
+Accept: text&#x2F;html, image&#x2F;gif, image&#x2F;jpeg, *; q&#x3D;.2, *&#x2F;*; q&#x3D;.2
+Connection: keep-alive
+Content-Length: 343
+
+....sr.5org.springframework.remoting.support.RemoteInvocation_l...
+.
+...[.	argumentst..[Ljava&#x2F;lang&#x2F;Object;L.
+attributest..Ljava&#x2F;util&#x2F;Map;L.
+methodNamet..Ljava&#x2F;lang&#x2F;String;[..parameterTypest..[Ljava&#x2F;lang&#x2F;Class;xpur..[Ljava.lang.Object;..X..s)l...xp....t..Simonpt..sayHellour..[Ljava.lang.Class;......Z....xp....vr..java.lang.String...8z;.B...xpHTTP&#x2F;1.1 200 OK
+Content-Type: application&#x2F;x-java-serialized-object
+Transfer-Encoding: chunked
+Server: Jetty(6.1.26)
+
+....sr.;org.springframework.remoting.support.RemoteInvocationResult.....IJm...L.	exceptiont..Ljava&#x2F;lang&#x2F;Throwable;L..valuet..Ljava&#x2F;lang&#x2F;Object;xppp</code></pre>
+
+<p>provider端解码请求的堆栈：  </p>
+<pre><code class="hljs java">HttpInvokerServiceExporter(RemoteInvocationSerializingExporter).doReadRemoteInvocation(ObjectInputStream) line: <span class="hljs-number">142</span>	
+HttpInvokerServiceExporter.readRemoteInvocation(HttpServletRequest, InputStream) line: <span class="hljs-number">121</span>	
+HttpInvokerServiceExporter.readRemoteInvocation(HttpServletRequest) line: <span class="hljs-number">100</span>	
+HttpInvokerServiceExporter.handleRequest(HttpServletRequest, HttpServletResponse) line: <span class="hljs-number">77</span>	
+HttpProtocol$InternalHandler.handle(HttpServletRequest, HttpServletResponse) line: <span class="hljs-number">81</span>	
+DispatcherServlet.service(HttpServletRequest, HttpServletResponse) line: <span class="hljs-number">64</span>	
+DispatcherServlet(HttpServlet).service(ServletRequest, ServletResponse) line: <span class="hljs-number">770</span>	
+ServletHolder.handle(ServletRequest, ServletResponse) line: <span class="hljs-number">511</span>	
+ServletHandler.handle(String, HttpServletRequest, HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">401</span>	
+Server(HandlerWrapper).handle(String, HttpServletRequest, HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">152</span>	
+Server.handle(HttpConnection) line: <span class="hljs-number">322</span>	
+HttpConnection.handleRequest() line: <span class="hljs-number">542</span>	
+HttpConnection$RequestHandler.content(Buffer) line: <span class="hljs-number">945</span>	
+HttpParser.parseNext() line: <span class="hljs-number">756</span>	
+HttpParser.parseAvailable() line: <span class="hljs-number">218</span>	
+HttpConnection.handle() line: <span class="hljs-number">404</span>	
+SelectChannelConnector$ConnectorEndPoint(SelectChannelEndPoint).run() line: <span class="hljs-number">410</span>	
+QueuedThreadPool$PoolThread.run() line: <span class="hljs-number">582</span></code></pre>
+
+<p>解码的代码由spring-web完成，代码如下：  </p>
+<pre><code class="hljs java">	<span class="hljs-function"><span class="hljs-keyword">protected</span> RemoteInvocation <span class="hljs-title">doReadRemoteInvocation</span><span class="hljs-params">(ObjectInputStream ois)</span></span>
+<span class="hljs-function">			<span class="hljs-keyword">throws</span> IOException, ClassNotFoundException </span>&#123;
+
+<span class="hljs-number">141</span>		Object obj = ois.readObject();
+<span class="hljs-number">142</span>		<span class="hljs-keyword">if</span> (!(obj <span class="hljs-keyword">instanceof</span> RemoteInvocation)) &#123;
+<span class="hljs-number">143</span>			<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RemoteException(<span class="hljs-string">"Deserialized object needs to be assignable to type ["</span> +
+					RemoteInvocation.class.getName() + "]: " + obj);
+		&#125;
+		<span class="hljs-keyword">return</span> (RemoteInvocation) obj;
+	&#125;</code></pre>
+
+<p>141行从流中读出来的这个obj(反序列化出来)就是RemoteInvocation。这个RemoteInvocation中有方法名、参数类型、参数值等，调试其看到其信息如下：  </p>
+<pre><code class="hljs java">[Simon]
+sayHello
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">java</span>.<span class="hljs-title">lang</span>.<span class="hljs-title">String</span></span></code></pre>
+
+<p>141行的ois是org.springframework.remoting.rmi.CodebaseAwareObjectInputStream。</p>
+<h3 id="dubbo合入dubbox之后http-rest的支持"><a href="#dubbo合入dubbox之后http-rest的支持" class="headerlink" title="dubbo合入dubbox之后http rest的支持"></a>dubbo合入dubbox之后http rest的支持</h3><h4 id="case配置-1"><a href="#case配置-1" class="headerlink" title="case配置"></a>case配置</h4><p>dubbo2.5.3在此处用不了了，我们换成2.6.8。</p>
+<p>pom依赖  </p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">project</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://maven.apache.org/POM/4.0.0"</span></span>
+<span class="hljs-tag">	<span class="hljs-attr">xmlns:xsi</span>=<span class="hljs-string">"http://www.w3.org/2001/XMLSchema-instance"</span></span>
+<span class="hljs-tag">	<span class="hljs-attr">xsi:schemaLocation</span>=<span class="hljs-string">"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">modelVersion</span>&gt;</span>4.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">modelVersion</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.code260.ss<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>dubbox-demo<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>0.0.1-SNAPSHOT<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">packaging</span>&gt;</span>pom<span class="hljs-tag">&lt;/<span class="hljs-name">packaging</span>&gt;</span>
+
+	<span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.curator<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>curator-client<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.12.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.curator<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>curator-framework<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.12.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>dubbo<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.6.8<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-test<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.18.RELEASE<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">scope</span>&gt;</span>test<span class="hljs-tag">&lt;/<span class="hljs-name">scope</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>junit<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>junit<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>4.12<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">scope</span>&gt;</span>test<span class="hljs-tag">&lt;/<span class="hljs-name">scope</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-context<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.18.RELEASE<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-web<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.2.18.RELEASE<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.101tec<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>zkclient<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>0.10<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>javax.servlet<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>javax.servlet-api<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">scope</span>&gt;</span>provided<span class="hljs-tag">&lt;/<span class="hljs-name">scope</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.mortbay.jetty<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>jetty<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>6.1.26<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-jaxrs<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-client<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>javax.validation<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>validation-api<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.0.0.GA<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-comment">&lt;!-- 如果要使用json序列化 --&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-jackson-provider<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-comment">&lt;!-- 如果要使用xml序列化 --&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-jaxb-provider<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-comment">&lt;!-- 如果要使用netty server --&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-netty<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-comment">&lt;!-- 如果要使用Sun HTTP server --&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.jboss.resteasy<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>resteasy-jdk-http<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.7.Final<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-comment">&lt;!-- 如果要使用tomcat server --&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.tomcat.embed<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>tomcat-embed-core<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>8.0.11<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.tomcat.embed<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>tomcat-embed-logging-juli<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>8.0.11<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+
+		<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.httpcomponents<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>httpclient<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>4.5.3<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+	<span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span>
+
+	<span class="hljs-tag">&lt;<span class="hljs-name">build</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">pluginManagement</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">plugins</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span>
+						<span class="hljs-tag">&lt;<span class="hljs-name">source</span>&gt;</span>1.8<span class="hljs-tag">&lt;/<span class="hljs-name">source</span>&gt;</span>
+						<span class="hljs-tag">&lt;<span class="hljs-name">target</span>&gt;</span>1.8<span class="hljs-tag">&lt;/<span class="hljs-name">target</span>&gt;</span>
+					<span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span>
+				<span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span>
+			<span class="hljs-tag">&lt;/<span class="hljs-name">plugins</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">pluginManagement</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">plugins</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-resources-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">delimiters</span>&gt;</span>
+						<span class="hljs-tag">&lt;<span class="hljs-name">delimiter</span>&gt;</span>@<span class="hljs-tag">&lt;/<span class="hljs-name">delimiter</span>&gt;</span>
+					<span class="hljs-tag">&lt;/<span class="hljs-name">delimiters</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">useDefaultDelimiters</span>&gt;</span>false<span class="hljs-tag">&lt;/<span class="hljs-name">useDefaultDelimiters</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">encoding</span>&gt;</span>UTF-8<span class="hljs-tag">&lt;/<span class="hljs-name">encoding</span>&gt;</span>
+				<span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span>
+			<span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">plugins</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">resources</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">resource</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">directory</span>&gt;</span>src/main/resources<span class="hljs-tag">&lt;/<span class="hljs-name">directory</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">filtering</span>&gt;</span>true<span class="hljs-tag">&lt;/<span class="hljs-name">filtering</span>&gt;</span>
+			<span class="hljs-tag">&lt;/<span class="hljs-name">resource</span>&gt;</span>
+			<span class="hljs-tag">&lt;<span class="hljs-name">resource</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">directory</span>&gt;</span>src/main/java<span class="hljs-tag">&lt;/<span class="hljs-name">directory</span>&gt;</span>
+				<span class="hljs-tag">&lt;<span class="hljs-name">includes</span>&gt;</span>
+					<span class="hljs-tag">&lt;<span class="hljs-name">include</span>&gt;</span>**/*.xml<span class="hljs-tag">&lt;/<span class="hljs-name">include</span>&gt;</span>
+				<span class="hljs-tag">&lt;/<span class="hljs-name">includes</span>&gt;</span>
+			<span class="hljs-tag">&lt;/<span class="hljs-name">resource</span>&gt;</span>
+		<span class="hljs-tag">&lt;/<span class="hljs-name">resources</span>&gt;</span>
+	<span class="hljs-tag">&lt;/<span class="hljs-name">build</span>&gt;</span>
+
+	<span class="hljs-tag">&lt;<span class="hljs-name">modules</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">module</span>&gt;</span>dubbox-demo-v-facade<span class="hljs-tag">&lt;/<span class="hljs-name">module</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">module</span>&gt;</span>dubbox-demo-v-server<span class="hljs-tag">&lt;/<span class="hljs-name">module</span>&gt;</span>
+		<span class="hljs-tag">&lt;<span class="hljs-name">module</span>&gt;</span>dubbox-demo-v-client<span class="hljs-tag">&lt;/<span class="hljs-name">module</span>&gt;</span>
+	<span class="hljs-tag">&lt;/<span class="hljs-name">modules</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span></code></pre>
+
+<p>接口配置  </p>
+<pre><code class="hljs java"><span class="hljs-meta">@Path</span>(<span class="hljs-string">"hello"</span>)
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">HelloService</span></span>
+<span class="hljs-class"></span>&#123;
+	<span class="hljs-meta">@POST</span>
+    <span class="hljs-meta">@Path</span>(<span class="hljs-string">"sayHello"</span>)
+    <span class="hljs-meta">@Consumes</span>(&#123;MediaType.APPLICATION_JSON&#125;)
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">sayHello</span><span class="hljs-params">(HelloReq req)</span></span>;
+
+&#125;</code></pre>
+
+<p>协议配置  </p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dubbo:protocol</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"rest"</span> <span class="hljs-attr">port</span>=<span class="hljs-string">"8090"</span>/&gt;</span></code></pre>
+
+<h4 id="简单分析其实现-1"><a href="#简单分析其实现-1" class="headerlink" title="简单分析其实现"></a>简单分析其实现</h4><p>wireshark抓到的报文</p>
+<pre><code class="hljs plain">POST &#x2F;hello&#x2F;sayHello HTTP&#x2F;1.1
+Accept-Encoding: gzip, deflate
+Content-Type: application&#x2F;json
+Content-Length: 16
+Host: 172.17.0.224:8090
+Connection: Keep-Alive
+User-Agent: Apache-HttpClient&#x2F;4.5.3 (Java&#x2F;1.8.0_121)
+
+&#123;&quot;name&quot;:&quot;simon&quot;&#125;HTTP&#x2F;1.1 204 No Content
+Server: Jetty(6.1.26)</code></pre>
+
+<p>入口协议：  </p>
+<pre><code class="hljs properties"><span class="hljs-attr">rest</span>=<span class="hljs-string">com.alibaba.dubbo.rpc.protocol.rest.RestProtocol</span></code></pre>
+
+<p>handler： com.alibaba.dubbo.rpc.protocol.rest.DubboHttpServer$RestHandler  </p>
+<p>实现了dubbo的com.alibaba.dubbo.remoting.http.HttpHandler  </p>
+<p>接口约定行为如下：  </p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">handle</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> IOException, ServletException</span>;</code></pre>
+
+<p>到handler的调用堆栈  </p>
+<pre><code class="hljs java">com.alibaba.dubbo.rpc.protocol.rest.DubboHttpServer$RestHandler.handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) line: <span class="hljs-number">88</span>	
+com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet.service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) line: <span class="hljs-number">61</span>	
+com.alibaba.dubbo.remoting.http.servlet.DispatcherServlet(javax.servlet.http.HttpServlet).service(javax.servlet.ServletRequest, javax.servlet.ServletResponse) line: <span class="hljs-number">770</span>	
+org.mortbay.jetty.servlet.ServletHolder.handle(javax.servlet.ServletRequest, javax.servlet.ServletResponse) line: <span class="hljs-number">511</span>	
+org.mortbay.jetty.servlet.ServletHandler.handle(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">401</span>	
+org.mortbay.jetty.servlet.SessionHandler.handle(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">182</span>	
+org.mortbay.jetty.servlet.Context(org.mortbay.jetty.handler.ContextHandler).handle(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">766</span>	
+org.mortbay.jetty.Server(org.mortbay.jetty.handler.HandlerWrapper).handle(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, <span class="hljs-keyword">int</span>) line: <span class="hljs-number">152</span>	
+org.mortbay.jetty.Server.handle(org.mortbay.jetty.HttpConnection) line: <span class="hljs-number">326</span>	
+org.mortbay.jetty.HttpConnection.handleRequest() line: <span class="hljs-number">542</span>	
+org.mortbay.jetty.HttpConnection$RequestHandler.content(org.mortbay.io.Buffer) line: <span class="hljs-number">945</span>	
+org.mortbay.jetty.HttpParser.parseNext() line: <span class="hljs-number">756</span>	
+org.mortbay.jetty.HttpParser.parseAvailable() line: <span class="hljs-number">218</span>	
+org.mortbay.jetty.HttpConnection.handle() line: <span class="hljs-number">404</span>	
+org.mortbay.jetty.nio.SelectChannelConnector$ConnectorEndPoint(org.mortbay.io.nio.SelectChannelEndPoint).run() line: <span class="hljs-number">410</span>	
+org.mortbay.thread.QueuedThreadPool$PoolThread.run() line: <span class="hljs-number">582</span></code></pre>
+
+<p>com.alibaba.dubbo.rpc.protocol.rest.DubboHttpServer$RestHandler 中的HttpServletDispatcher<br>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher@6e62b305</p>
+<p>调用到业务方法的堆栈：  </p>
+<pre><code class="hljs java">com.code260.ss.dubbo.demov.server.service.impl.HelloServiceImpl.sayHello(com.code260.ss.dubbo.demov.facade.bean.HelloReq) line: <span class="hljs-number">37</span>	
+com.alibaba.dubbo.common.bytecode.Wrapper1.invokeMethod(java.lang.Object, java.lang.String, java.lang.Class[], java.lang.Object[]) line: not available	
+com.alibaba.dubbo.rpc.proxy.javassist.JavassistProxyFactory$<span class="hljs-number">1</span>.doInvoke(T, java.lang.String, java.lang.Class&lt;?&gt;[], java.lang.Object[]) line: <span class="hljs-number">47</span>	
+com.alibaba.dubbo.rpc.proxy.javassist.JavassistProxyFactory$<span class="hljs-number">1</span>(com.alibaba.dubbo.rpc.proxy.AbstractProxyInvoker&lt;T&gt;).invoke(com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">76</span>	
+com.alibaba.dubbo.config.invoker.DelegateProviderMetaDataInvoker&lt;T&gt;.invoke(com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">52</span>	
+com.alibaba.dubbo.registry.integration.RegistryProtocol$InvokerDelegete&lt;T&gt;(com.alibaba.dubbo.rpc.protocol.InvokerWrapper&lt;T&gt;).invoke(com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">56</span>	
+com.alibaba.dubbo.rpc.filter.ExceptionFilter.invoke(com.alibaba.dubbo.rpc.Invoker&lt;?&gt;, com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">62</span>	
+com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">72</span>	
+<span class="hljs-comment">// ......</span>
+com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper$<span class="hljs-number">1</span>.invoke(com.alibaba.dubbo.rpc.Invocation) line: <span class="hljs-number">72</span>	
+com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler.invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[]) line: <span class="hljs-number">52</span>	
+com.alibaba.dubbo.common.bytecode.proxy0.sayHello(com.code260.ss.dubbo.demov.facade.bean.HelloReq) line: not available	
+sun.reflect.NativeMethodAccessorImpl.invoke0(java.lang.reflect.Method, java.lang.Object, java.lang.Object[]) line: not available [<span class="hljs-keyword">native</span> method]	
+sun.reflect.NativeMethodAccessorImpl.invoke(java.lang.Object, java.lang.Object[]) line: <span class="hljs-number">62</span>	
+sun.reflect.DelegatingMethodAccessorImpl.invoke(java.lang.Object, java.lang.Object[]) line: <span class="hljs-number">43</span>	
+java.lang.reflect.Method.invoke(java.lang.Object, java.lang.Object...) line: <span class="hljs-number">498</span>	
+org.jboss.resteasy.core.MethodInjectorImpl.invoke(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse, java.lang.Object) line: <span class="hljs-number">137</span>	
+org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTarget(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse, java.lang.Object) line: <span class="hljs-number">288</span>	
+org.jboss.resteasy.core.ResourceMethodInvoker.invoke(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse, java.lang.Object) line: <span class="hljs-number">242</span>	
+org.jboss.resteasy.core.ResourceMethodInvoker.invoke(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse) line: <span class="hljs-number">229</span>	
+org.jboss.resteasy.core.SynchronousDispatcher.invoke(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse, org.jboss.resteasy.core.ResourceInvoker) line: <span class="hljs-number">356</span>	
+org.jboss.resteasy.core.SynchronousDispatcher.invoke(org.jboss.resteasy.spi.HttpRequest, org.jboss.resteasy.spi.HttpResponse) line: <span class="hljs-number">179</span>	
+org.jboss.resteasy.plugins.server.servlet.ServletContainerDispatcher.service(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">220</span>	
+org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher.service(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) line: <span class="hljs-number">56</span>	
+org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher.service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) line: <span class="hljs-number">51</span>	
+org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher(javax.servlet.http.HttpServlet).service(javax.servlet.ServletRequest, javax.servlet.ServletResponse) line: <span class="hljs-number">770</span>	
+com.alibaba.dubbo.rpc.protocol.rest.DubboHttpServer$RestHandler.handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) line: <span class="hljs-number">89</span></code></pre>
+
+<p>总体上看，默认情况下 http server由jetty实现。rest部分由resteasy实现。当然，也可以配置成其他方式。  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/06/13/dubbo-27.filters-impl/">
+                        <span class="hidden-mobile">[dubbo]27.各个filter分析以及和spring cloud对比</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[dubbo]28.扩展支持HTTP协议&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

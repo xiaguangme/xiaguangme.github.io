@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/06/25/dubbo-28.support-http/">[dubbo]28.扩展支持HTTP协议</a>
+
+      <a href="/2020/06/25/dubbo-28.support-http/" class="index-excerpt">
+        
+        
+          
+        
+        <div>28.扩展支持HTTP协议关于dubbo对http协议的支持，要分几个维度说：
+
+仅仅传输协议使用http，报文的组织方式没有要求，那么dubbo这个版本(2.5.3)原生提供的http协议就能满足。适当配置即可。此处报文指http请求体与响应体的报文。http协议本身规定了其报文规范，诸如method、url、content-type，header等等，但是其请求体与响应体中内容你可以随意放置。</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-25
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/13/dubbo-27.filters-impl/">[dubbo]27.各个filter分析以及和spring cloud对比</a>
 
       <a href="/2020/06/13/dubbo-27.filters-impl/" class="index-excerpt">
@@ -542,49 +586,6 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
         <div>19.被consumer端调用时的线程模型与链路provider侧  
 线程模型       +-----------------+         +-----------------+         +-----------------+
 +------&gt;   boss&#x2F;         +--------&gt;+  worker&#x2F;        +-------</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-18.retry-offline/">[dubbo]18.重试、provider下线、网络断开等容错怎么实现</a>
-
-      <a href="/2020/06/13/dubbo-18.retry-offline/" class="index-excerpt">
-        
-        
-          
-        
-        <div>18.重试、provider下线、网络断开等容错怎么实现case构造的方式可以在DubboInvoker.doInvoke打断点，然后让provider下线，然后再继续执行刚才断点停住的地方等等构造异常场景。  
-如果有provider服务停掉， consumer端如何感知？再次启动刚停掉的provider呢provider停掉会触发zk客户端的监听，监听对客户端的invoker列表进行刷新。再次</div>
       </a>
 
       <div class="index-btm post-metas">
