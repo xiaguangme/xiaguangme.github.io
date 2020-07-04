@@ -175,6 +175,53 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/07/04/cve-2020-1948/">[CVE]重现dubbo安全漏洞cve-2020-1948</a>
+
+      <a href="/2020/07/04/cve-2020-1948/" class="index-excerpt">
+        
+        
+          
+        
+        <div>重现dubbo安全漏洞cve-2020-1948准备provider服务直接用官方的demo，clone之后做少许改动，主要改动点是添加一个jar包依赖
+git clone https://github.com/apache/dubbo-spring-boot-project
+cd dubbo-spring-boot-project
+git checkout 2.7.1 -b b2.7.1
+
+然后</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-07-04
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/CVE/">CVE</a>
+            
+              <a href="/tags/dubbo%EF%BC%8Csecurity/">dubbo，security</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/25/dubbo-28.support-http/">[dubbo]28.扩展支持HTTP协议</a>
 
       <a href="/2020/06/25/dubbo-28.support-http/" class="index-excerpt">
@@ -542,50 +589,6 @@ provider端的节点1服务配置上加上group：
         <div>20.反射调用是如何优化的？Wrapper的作用是什么？反编译生成的代码对于动态代码生成的class可以写出到本地，办法是：  
 在com.alibaba.dubbo.common.bytecode.ClassGenerator.mCtc这个实例有
 javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.bytecode.</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-19.provider-thread-model-chain/">[dubbo]19.被consumer端调用时的线程模型与链路</a>
-
-      <a href="/2020/06/13/dubbo-19.provider-thread-model-chain/" class="index-excerpt">
-        
-        
-          
-        
-        <div>19.被consumer端调用时的线程模型与链路provider侧  
-线程模型       +-----------------+         +-----------------+         +-----------------+
-+------&gt;   boss&#x2F;         +--------&gt;+  worker&#x2F;        +-------</div>
       </a>
 
       <div class="index-btm post-metas">
