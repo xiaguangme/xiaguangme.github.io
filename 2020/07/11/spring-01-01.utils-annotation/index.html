@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[spring-utils]01-02.工具类-注解相关 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2020-07-11 18:46">
+                    星期六, 七月 11日 2020, 6:46 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.5k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    19
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="01-01-工具类-注解相关"><a href="#01-01-工具类-注解相关" class="headerlink" title="01-01.工具类-注解相关"></a>01-01.工具类-注解相关</h2><h3 id="AnnotationUtils"><a href="#AnnotationUtils" class="headerlink" title="AnnotationUtils"></a>AnnotationUtils</h3><p>org.springframework.core.annotation.AnnotationUtils  </p>
+<h4 id="findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclaringClass、findAnnotationDeclaringClassForTypes区别"><a href="#findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclaringClass、findAnnotationDeclaringClassForTypes区别" class="headerlink" title="findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclaringClass、findAnnotationDeclaringClassForTypes区别"></a>findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclaringClass、findAnnotationDeclaringClassForTypes区别</h4><p>getAnnotation只找本类的  </p>
+<p>findAnnotation 会查本类(包括重复注解(注解上加注解那种))、父接口、父类、父类的父接口(<strong>这个顺序也很重要，能保证你先找到本级的</strong>)，参见570行，572行，577行，590行。 支持对class找注解(708行)，也支持对method找注解，也对于泛型化时的bridge方法上的注解也做了良好支持，还支持对注解上加的注解进行查找(参见case findClassAnnotationOnMetaCycleAnnotatedClassWithMissingTargetMetaAnnotation)，且测试了对循环注解进行查找 不错的case 注解3上有注解2 注解2上有注解1 注解1上有注解3…    </p>
+<p>findAnnotation查找顺序问题可以参见findClassAnnotationFavorsMoreLocallyDeclaredComposedAnnotationsOverAnnotationsOnInterfaces 这个case  </p>
+<p>getRepeatableAnnotations 这个能查出所有的，findAnnotation是找到一个即退出不找了。getRepeatableAnnotations能找到所有的，包括注解中的使用了目标注解字段的。具体可以参见下面的<strong>重复注解获取</strong>一节</p>
+<p>findAnnotationDeclaringClass 支持查找出注解加在哪个class上，因为上面这些API支持往父层级搜索。  </p>
+<p>findAnnotationDeclaringClassForTypes支持查找多个注解中其中一个声明在哪个class上。  </p>
+<h4 id="isAnnotationDeclaredLocally与isAnnotationInherited区别"><a href="#isAnnotationDeclaredLocally与isAnnotationInherited区别" class="headerlink" title="isAnnotationDeclaredLocally与isAnnotationInherited区别"></a>isAnnotationDeclaredLocally与isAnnotationInherited区别</h4><p>isAnnotationDeclaredLocally  判断注解<strong>是否在当前class上</strong>。对于注解在父类或者父接口上但不在当前class上的，此方法返回false</p>
+<p>isAnnotationInherited 判断<strong>注解是否在父类或者父接口上</strong>。对于注解在当前class上的，此方法返回false。具体可以参加case isAnnotationInheritedForAllScenarios</p>
+<h4 id="重复注解获取"><a href="#重复注解获取" class="headerlink" title="重复注解获取"></a>重复注解获取</h4><p>方法getRepeatableAnnotations  </p>
+<p>重复注解的获取方法 送入 被注解的元素，比如method，送入需要查找的注解，需要查找的注解容器等，最后返回-需要查找的注解-的列表 例子参见AnnotationUtilsTests.InterfaceWithRepeated的foo方法   </p>
+<p>测试case getRepeatableAnnotationsDeclaredOnMethod  </p>
+<p>重复注解的重复包括：</p>
+<ol>
+<li>注解上面有注解的，比如MyRepeatableMeta1</li>
+<li>注解里面有注解的，比如MyRepeatableContainer</li>
+<li>java元素自身的注解，比如foo方法</li>
+</ol>
+<p>例子可以参见 org.springframework.core.annotation.AnnotationUtilsTests.InterfaceWithRepeated的foo方法  </p>
+<pre><code class="hljs java"><span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">InterfaceWithRepeated</span> </span>&#123;
+
+  <span class="hljs-comment">// 对应上面情况3</span>
+<span class="hljs-number">1796</span>		<span class="hljs-meta">@MyRepeatable</span>(<span class="hljs-string">"A"</span>)
+<span class="hljs-number">1797</span>		<span class="hljs-meta">@MyRepeatableContainer</span>(&#123;<span class="hljs-meta">@MyRepeatable</span>(<span class="hljs-string">"B"</span>), <span class="hljs-meta">@MyRepeatable</span>(<span class="hljs-string">"C"</span>)&#125;)
+<span class="hljs-number">1798</span>		<span class="hljs-meta">@MyRepeatableMeta</span>1
+		<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span></span>;
+	&#125;
+
+<span class="hljs-comment">// MyRepeatableMeta1对应上面重复情况1</span>
+<span class="hljs-meta">@Retention</span>(RetentionPolicy.RUNTIME)
+	<span class="hljs-meta">@Inherited</span>
+	<span class="hljs-meta">@MyRepeatable</span>(<span class="hljs-string">"meta1"</span>)
+	<span class="hljs-meta">@interface</span> MyRepeatableMeta1 &#123;
+	&#125;
+
+<span class="hljs-comment">// MyRepeatableContainer对应上面重复情况2</span>
+<span class="hljs-meta">@Retention</span>(RetentionPolicy.RUNTIME)
+	<span class="hljs-meta">@Inherited</span>
+	<span class="hljs-meta">@interface</span> MyRepeatableContainer &#123;
+
+		MyRepeatable[] value();
+	&#125;
+
+<span class="hljs-meta">@Retention</span>(RetentionPolicy.RUNTIME)
+	<span class="hljs-meta">@Inherited</span>
+	<span class="hljs-meta">@Repeatable</span>(MyRepeatableContainer<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>
+<span class="hljs-class">	@<span class="hljs-title">interface</span> <span class="hljs-title">MyRepeatable</span> </span>&#123;
+
+		<span class="hljs-function">String <span class="hljs-title">value</span><span class="hljs-params">()</span></span>;
+	&#125;</code></pre>
+
+<p>通过java.lang.reflect.AnnotatedElement的getDeclaredAnnotations方法能获取到的注解就是foo方法上加的3个,即1796-1798三行的三个注解；</p>
+<h5 id="synthesizeAnnotation的问题"><a href="#synthesizeAnnotation的问题" class="headerlink" title="synthesizeAnnotation的问题"></a>synthesizeAnnotation的问题</h5><p>synthesizeAnnotation 是复合注解的意思，怎样的算复合注解？  </p>
+<p>参见org.springframework.core.annotation.AnnotationUtils.isSynthesizable(Class&lt;? extends Annotation&gt;) 方法  </p>
+<p>大致是：  </p>
+<ol>
+<li>如果存在标志了AliasFor注解的属性，那么是synthesizable。下面会讲AliasFor。</li>
+<li>如果注解的属性的get方法的返回值是Annotation数组(含其子类)，那么是synthesizable</li>
+<li>如果注解的属性的get方法的返回值是Annotation(含其子类)，那么是synthesizable</li>
+</ol>
+<h5 id="关联的AnnotationUtils-getValue"><a href="#关联的AnnotationUtils-getValue" class="headerlink" title="关联的AnnotationUtils.getValue"></a>关联的AnnotationUtils.getValue</h5><p>org.springframework.core.annotation.AnnotationUtils.getValue(Annotation)  </p>
+<p>从容器类的注解中获取其内部注解，比如我们对org.springframework.core.annotation.AnnotationUtilsTests.MyRepeatableContainer获取其内部的MyRepeatable。  </p>
+<h5 id="关联的AnnotationCollector分析"><a href="#关联的AnnotationCollector分析" class="headerlink" title="关联的AnnotationCollector分析"></a>关联的AnnotationCollector分析</h5><p>主要是getResult  process 方法，不复杂  </p>
+<p>根据是否是寻找的annotationType和寻找的containerAnnotationType和其他类型进行区分查找。  </p>
+<p>如果是其他这种情况的，会把这个注解当成java element进行递归。</p>
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">process</span><span class="hljs-params">(AnnotatedElement element)</span> </span>&#123;
+			<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.visited.add(element)) &#123;
+				<span class="hljs-keyword">try</span> &#123;
+					Annotation[] annotations = (<span class="hljs-keyword">this</span>.declaredMode ? element.getDeclaredAnnotations() : element.getAnnotations());
+					<span class="hljs-keyword">for</span> (Annotation ann : annotations) &#123;
+						Class&lt;? extends Annotation&gt; currentAnnotationType = ann.annotationType();
+						<span class="hljs-keyword">if</span> (ObjectUtils.nullSafeEquals(<span class="hljs-keyword">this</span>.annotationType, currentAnnotationType)) &#123;
+							<span class="hljs-keyword">this</span>.result.add(synthesizeAnnotation((A) ann, element));
+						&#125;
+						<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ObjectUtils.nullSafeEquals(<span class="hljs-keyword">this</span>.containerAnnotationType, currentAnnotationType)) &#123;
+							<span class="hljs-keyword">this</span>.result.addAll(getValue(element, ann));
+						&#125;
+						<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!isInJavaLangAnnotationPackage(currentAnnotationType)) &#123;
+							process(currentAnnotationType); <span class="hljs-comment">// 如果是其他这种情况的，会把这个注解当成java element进行递归。</span>
+						&#125;
+					&#125;
+				&#125;
+				<span class="hljs-keyword">catch</span> (Throwable ex) &#123;
+					handleIntrospectionFailure(element, ex);
+				&#125;
+			&#125;
+		&#125;</code></pre>
+
+<h4 id="bridge方法上的注解获取"><a href="#bridge方法上的注解获取" class="headerlink" title="bridge方法上的注解获取"></a>bridge方法上的注解获取</h4><p>参见org.springframework.core.annotation.AnnotationUtilsTests.SimpleFoo  </p>
+<p>和org.springframework.core.annotation.AnnotationUtilsTests.findMethodAnnotationOnBridgedMethod()和findMethodAnnotationOnBridgedMethod 这个case  </p>
+<p>SimpleFoo   重写了父类Foo的something方法，Foo的something方法是个类泛型方法，在子类SimpleFoo中指定了String作为其泛型化参数。代码如下：  </p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">abstract</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Foo</span>&lt;<span class="hljs-title">T</span>&gt; </span>&#123;
+
+		<span class="hljs-meta">@Order</span>(<span class="hljs-number">1</span>)
+		<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title">something</span><span class="hljs-params">(T arg)</span></span>;
+	&#125;
+
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SimpleFoo</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Foo</span>&lt;<span class="hljs-title">String</span>&gt; </span>&#123;
+
+		<span class="hljs-meta">@Override</span>
+		<span class="hljs-meta">@Transactional</span>
+		<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">something</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String arg)</span> </span>&#123;
+		&#125;
+	&#125;</code></pre>
+
+<p>此时我们用这种方式：  </p>
+<pre><code class="hljs java">SimpleFoo.class.getMethod("something", Object.class).getAnnotation(Order.class)</code></pre>
+
+<p>是不能拿到Order这个注解的，注意此时<strong>Object.class</strong>  </p>
+<p>用这种方式2</p>
+<pre><code class="hljs java">SimpleFoo.class.getMethod("something", String.class).getAnnotation(Order.class)</code></pre>
+
+<p>也是不能拿到Order这个注解的，注意此时<strong>String.class</strong></p>
+<p>在spring中用AnnotationUtils 的getAnnotation方式对上述<strong>两个method对象</strong>也是<strong>不能</strong>拿到Order这个注解。  </p>
+<p>怎么能拿到Order注解？<b style="color:red;"> spring的AnnotationUtils的findAnnotation对其做了支持，<strong>对方式1中的method</strong>(<strong>bridge方法</strong>)用AnnotationUtils.findAnnotation能拿到。</b>  </p>
+<p>对于Transactional注解，不论是spring AnnotationUtils的getAnnotation还是findAnnotation，不论是方式1的method(<strong>bridge方法</strong>)还是方式2(<strong>bridged方法</strong>)的，都能拿到。  </p>
+<p>对于Transactional注解，用JDK的method对象的getAnnotation方法，对于方式2的method(<strong>bridged方法</strong>)可以拿到，对于方式1的method要看用哪个编译器，javac跟ejc的行为不一样。  </p>
+<p>有点绕，注意区分bridge和bridged方法，总结一下：  </p>
+<p><strong>1. 对于父类泛型方法上的注解，用子类class的bridge方法(Object作为参数那种)，通过spring的AnnotationUtils的findAnnotation能拿到；其他方式诸如JDK的method对象的getAnnotation都不行</strong></p>
+<p><strong>2. 对于子类泛型方法上的注解，用JDK的method对象的getAnnotation方法针对bridged方法能拿到；用spring AnnotationUtils的getAnnotation还是findAnnotation对bridge和bridged方法(具体类型作为参数那种)都能拿到</strong></p>
+<h4 id="注解属性的获取"><a href="#注解属性的获取" class="headerlink" title="注解属性的获取"></a>注解属性的获取</h4><p>该工具类对注解属性的获取做了封装 getAnnotationAttributes  </p>
+<p>将获取到的注解属性结果封装到<code>AnnotationAttributes</code>中，并提供了对一些Class类型的属性做了是否转成字符串的可选支持  </p>
+<p>获取的细节参见 retrieveAnnotationAttributes 和 adaptValue</p>
+<h4 id="AliasFor的支持"><a href="#AliasFor的支持" class="headerlink" title="AliasFor的支持"></a>AliasFor的支持</h4><p>可以参见 org.springframework.core.annotation.AnnotationUtilsTests.ImplicitAliasesWithImpliedAliasNamesOmittedContextConfig  </p>
+<pre><code class="hljs java"><span class="hljs-meta">@AliasFor</span>(annotation = ContextConfig<span class="hljs-class">.<span class="hljs-keyword">class</span>, <span class="hljs-title">attribute</span> </span>= <span class="hljs-string">"location"</span>)
+<span class="hljs-function">String <span class="hljs-title">xmlFile</span><span class="hljs-params">()</span> <span class="hljs-keyword">default</span> ""</span>;</code></pre>
+
+<p>在一个注解中定义一个属性，对另一个注解的属性做别名。有点<strong>软链接</strong>的意思。  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/spring/">spring</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/04/cve-2020-1948/">
+                        <span class="hidden-mobile">[CVE]重现dubbo安全漏洞cve-2020-1948</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[spring-utils]01-02.工具类-注解相关&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
