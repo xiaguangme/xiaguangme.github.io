@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/06/13/dubbo-21.how-to-implement-group/">[dubbo]21.服务分组实现</a>
+
+      <a href="/2020/06/13/dubbo-21.how-to-implement-group/" class="index-excerpt">
+        
+        
+          
+        
+        <div>21.服务分组实现分析服务分组的test case我们假设的场景是，多idc机房，一个zk注册中心，我们通过分组设置达到，本机房的consumer调用本机房的provider。为了分析，我们假设了两个idc机房idc001和idc002
+provider端的节点1服务配置上加上group：  
+&lt;dubbo:service interface="com.code260.ss.dubbo.de</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/13/dubbo-20.how-improve-reflect/">[dubbo]20.反射调用是如何优化的？Wrapper的作用是什么？</a>
 
       <a href="/2020/06/13/dubbo-20.how-improve-reflect/" class="index-excerpt">
@@ -542,52 +586,6 @@ import org.junit</div>
 不细细分析了，列出主要代码，直接看代码就可以了。  
 com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec.decode(Channel, ChannelBuffer)// 读取定长heder
 com.alibaba.dubbo.rpc.pro</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-11.how-to-enode-request/">[dubbo]11.如何编码请求</a>
-
-      <a href="/2020/05/30/dubbo-11.how-to-enode-request/" class="index-excerpt">
-        
-        
-          
-        
-        <div>11.如何编码请求关于请求的编码，如果你熟悉过dubbo代码，直接看其DubboCodec类即可。  
-如果不熟悉，属于刚开始看那种，也没关系。我们用下面的办法探索一下就能发现。
-探索出编码器在哪里是什么我们先从上篇文章的服务调用继续往下跟，可以发现请求要通过过Channel发送出去。调用栈如下：  
-NettyChannel.send(Object, boolean) line: 95	
-Net</div>
       </a>
 
       <div class="index-btm post-metas">

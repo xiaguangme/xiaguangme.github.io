@@ -175,6 +175,51 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/02/14/read-of-robust-java-benchmarking/">健壮的(robust)Java benchmarking 阅读笔记</a>
+
+      <a href="/2021/02/14/read-of-robust-java-benchmarking/" class="index-excerpt">
+        
+        
+          
+        
+        <div>健壮的(robust)Java benchmarking 阅读笔记理解Java代码编写的benchmarking的陷阱(pitfalls)  
+采样与计时
+对目标方法多次后计算平均耗时。
+使用System.nanoTime,而不是System.currentTimeMillis（毫秒 由于一些操作系统差异，导致其精度有问题）。  
+
+代码预热大多数JVM实现有一个复杂难懂的性能生命周期，一般来讲，</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-02-14
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/07/11/spring-01-01.utils-annotation/">[spring-utils]01-02.工具类-注解相关</a>
 
       <a href="/2020/07/11/spring-01-01.utils-annotation/" class="index-excerpt">
@@ -542,50 +587,6 @@ ProtocolFilterWrapper$1的构建。此步骤是将每个filter用Invoker实例�
 一个节点上io线程与server handler线程的隔离。即下图的1与4(或者2和5，3和6)是否在同一个线程上执行。
 
               I&#x2F;O                  </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-21.how-to-implement-group/">[dubbo]21.服务分组实现</a>
-
-      <a href="/2020/06/13/dubbo-21.how-to-implement-group/" class="index-excerpt">
-        
-        
-          
-        
-        <div>21.服务分组实现分析服务分组的test case我们假设的场景是，多idc机房，一个zk注册中心，我们通过分组设置达到，本机房的consumer调用本机房的provider。为了分析，我们假设了两个idc机房idc001和idc002
-provider端的节点1服务配置上加上group：  
-&lt;dubbo:service interface="com.code260.ss.dubbo.de</div>
       </a>
 
       <div class="index-btm post-metas">
