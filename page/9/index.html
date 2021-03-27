@@ -175,6 +175,52 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
+
+      <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
+        
+        
+          
+        
+        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
+使用
+设置日志级别：  ServerBootstrap b =new ServerBootstrap();
+b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
+.option(ChannelOption.SO_BACK</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
 
       <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
@@ -569,48 +615,6 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/GC/">GC</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/netty4-fastthhreadlocal/">Netty4 FastThreadLocal及CPU cacheline padding补齐</a>
-
-      <a href="/2020/04/19/netty4-fastthhreadlocal/" class="index-excerpt">
-        
-        
-          
-        
-        <div>FastThreadLocal概述： ThreadLocal的一个特定变种改善，有更好的存取性能。内部采用一个数组来代替ThreadLocal内部的hash表来存放变量。虽然这看起来是微不足道的，但是他确实比hash表性能好那么一点，在频繁存取时会更明显。 如果用DefaultThreadFactory创建线程，那么默认创建出来的就是FastThreadLocalThread，就会用FastThr</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
             
           </div>
         

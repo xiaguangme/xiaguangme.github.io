@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>arthas进阶使用-1</title>
+    <link href="/2021/03/27/arthas-advance-use-1/"/>
+    <url>/2021/03/27/arthas-advance-use-1/</url>
+    
+    <content type="html"><![CDATA[<h2 id="arthas进阶使用-1"><a href="#arthas进阶使用-1" class="headerlink" title="arthas进阶使用-1"></a>arthas进阶使用-1</h2><p>本篇主要记录arthas除了watch、trace、stack、sc、thread等常用命令之外的用法。  </p><p>为什么琢磨这些“高级”用法，源于我在阅读一些其他代码(或者定位问题时)，我要分析诊断初始化过程，包括main方法刚刚启动时，如果是传统的attach玩法，main方法早已跑了多远下去了。好在arthas本身就支持agent模式，我改了两行代码加挖掘了他一些用法达成了我的目的，现记录如下。 </p><h3 id="使用指定本地版本的arthas"><a href="#使用指定本地版本的arthas" class="headerlink" title="使用指定本地版本的arthas"></a>使用指定本地版本的arthas</h3><p>通常我们在用java -jar arthas-boot.jar时，他会自动从远程他的仓库下载他新的版本，那么此时如果自己有些修改编译后的版本，就不能一直使用。  此问题可以指定version搞定：</p><pre><code class="hljs shell">java -jar arthas-boot.jar --use-version 3.5.0</code></pre><p>此种方式可以指定使用特定的arthas版本，避免其自动从远程服务器下载，覆盖你自己定制的arthas，版本对应的lib在如下路径查找<br>~/.arthas/lib/3.5.0/arthas<br>同时该路径下的arthas.properties文件 可以配置http port等,http port也可以配置成0，这样http port监听在随机端口，具体可以在日志中找到。这样可以达成一个机器上跑多个的目的。  </p><h3 id="java-agent模式"><a href="#java-agent模式" class="headerlink" title="java agent模式"></a>java agent模式</h3><p>arthas天生支持，-javaagent:/Users/simon/.arthas/lib/3.5.0/arthas/arthas-agent.jar,这种模式用到的配置文件(properties)跟agent lib在一个目录下。 </p><h3 id="如何在执行main方法前停住"><a href="#如何在执行main方法前停住" class="headerlink" title="如何在执行main方法前停住"></a>如何在执行main方法前停住</h3><p>我希望在执行main方法前停住，因为我想在执行main方法前注入一些我的诊断操作。  </p><p>修改com.taobao.arthas.agent334.AgentBootstrap.main(String, Instrumentation)代码实现：  </p><pre><code class="hljs java">System.out.println(<span class="hljs-string">"wait init diag operation..."</span>);System.in.read();</code></pre><p>这样在你要诊断的程序的控制台出现wait init diag operation…时，你就去准备诊断操作，然后在控制台输入任意字符回车即可。当然这个办法有点粗糙。 打包编译，替换arthas-agent.jar。注意打出来的包是target下的arthas-agent-jar-with-dependencies.jar。 </p><h3 id="执行main方法前停住了，但是main方法所在类没加载watch不了怎么办"><a href="#执行main方法前停住了，但是main方法所在类没加载watch不了怎么办" class="headerlink" title="执行main方法前停住了，但是main方法所在类没加载watch不了怎么办"></a>执行main方法前停住了，但是main方法所在类没加载watch不了怎么办</h3><p>使用他的classloader指令把你需要的class先行load起来再去准备诊断操作</p><pre><code class="hljs shell"><span class="hljs-meta">[arthas@26835]$</span><span class="bash"> classloader -l</span> name                                                loadedCount  hash      parent BootstrapClassLoader                                2274         null      null com.taobao.arthas.agent.ArthasClassloader@4dfcc858  1995         4dfcc858  sun.misc.Launcher$ExtClassLoader@617e76e0 sun.misc.Launcher$AppClassLoader@18b4aac2           3            18b4aac2  sun.misc.Launcher$ExtClassLoader@617e76e0 sun.misc.Launcher$ExtClassLoader@617e76e0           45           617e76e0  null classloader -c 18b4aac2 --load com.code260.ss.demo.ArthasTestMainwatch -f com.code260.ss.demo.ArthasTestMain test &#123;params,returnObj&#125; -x 2</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>program-language-practice</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>健壮的(robust)Java benchmarking 阅读笔记</title>
     <link href="/2021/02/14/read-of-robust-java-benchmarking/"/>
     <url>/2021/02/14/read-of-robust-java-benchmarking/</url>

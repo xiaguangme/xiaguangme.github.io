@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>健壮的(robust)Java benchmarking 阅读笔记 - Code to 60 码到60岁</title>
+  <title>arthas进阶使用-1 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -150,8 +150,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2021-02-14 11:39">
-                    星期日, 二月 14日 2021, 11:39 中午
+                  <time datetime="2021-03-27 23:04">
+                    星期六, 三月 27日 2021, 11:04 晚上
                   </time>
                 </div>
               
@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    822 字
+                    647 字
                   </span>
                 
 
@@ -200,32 +200,33 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="健壮的-robust-Java-benchmarking-阅读笔记"><a href="#健壮的-robust-Java-benchmarking-阅读笔记" class="headerlink" title="健壮的(robust)Java benchmarking 阅读笔记"></a>健壮的(robust)Java benchmarking 阅读笔记</h2><p>理解Java代码编写的benchmarking的陷阱(pitfalls)  </p>
-<h3 id="采样与计时"><a href="#采样与计时" class="headerlink" title="采样与计时"></a>采样与计时</h3><ol>
-<li>对目标方法多次后计算平均耗时。</li>
-<li>使用System.nanoTime,而不是System.currentTimeMillis（毫秒 由于一些操作系统差异，导致其精度有问题）。  </li>
-</ol>
-<h3 id="代码预热"><a href="#代码预热" class="headerlink" title="代码预热"></a>代码预热</h3><p>大多数JVM实现有一个复杂难懂的性能生命周期，一般来讲，初始的性能通常是慢的，然后他不断提升，直至到一个稳定状态。 </p>
-<h4 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h4><p>JVM针对类加载的典型做法是在其第一次使用时。所以第一次执行任务的时间包括了类加载的时间，这次包括磁盘io、解析、验证等等。<br>可以通过ClassLoadingMXbean的getTotalLoadedClassCount和getUnloadedClassCount方法在benchmark执行的前后确定类的加载与卸载。</p>
-<h4 id="混合模式"><a href="#混合模式" class="headerlink" title="混合模式"></a>混合模式</h4><p>先执行task一次加载所有的class。<br>执行task足够多次，以确保性能达到稳定状态。<br>继续执行task一些次数，计算总耗时并除以次数后得到结果。  </p>
-<h3 id="动态优化"><a href="#动态优化" class="headerlink" title="动态优化"></a>动态优化</h3><h4 id="逆优化"><a href="#逆优化" class="headerlink" title="逆优化"></a>逆优化</h4><p>JVM有时会停止使用编译的方式退化到解释模式。有两个例子如下：  </p>
-<ol>
-<li>class loading会使一些单一的调用转换过期作废。  </li>
-<li>一些不正常的路径被执行到，比如异常分支，如果执行了很多次则会触发重新编译。</li>
-</ol>
-<h4 id="OSR问题"><a href="#OSR问题" class="headerlink" title="OSR问题"></a>OSR问题</h4><p>OSR(On-stack replacement)可以用在单一方法调用的内部的多次循环上，但是OSR有时不能做循环提升，数组范围检查消除和循环展开，进而影响性能数据。<br>唯一的解决办法是识别出它能发生在哪里，且重新结构化你的代码。一般的做法是，将关键的代码循环放入到单独的方法中。<br>文中的case，阻止OSR后，性能提升一倍。<br>但是OSR也不是那么脆弱，不要过于对此焦虑(anxious)，除非你确定你的代码是因OSR造成了issue。  </p>
-<h4 id="DCE问题"><a href="#DCE问题" class="headerlink" title="DCE问题"></a>DCE问题</h4><p>DCE(Dead-code elimination)的典型例子有个是jjavac在编译期静态的进行消除。动态编译器也可以做DCE，但是我们暂时没有一个好的描述关于怎样的代码就算是dead code。虽说不可达代码是显而易见的一种，但是JVM有更多的激进的DCE策略。比如文中的case：</p>
-<ol>
-<li>计算result</li>
-<li>最后输出result<br>对于步骤2是否执行，会极大的影响程序的性能，如果不输出result，JVM会认为是DCE，则不再对result进行计算，那么将得到一个错误的性能数据。所以你如果要得到正确的计算result的性能数据，那么需要在最后将result输出(或者其他手段阻止DCE发生)。 </li>
-</ol>
-<p><strong>比较阻止OSR和阻止DCE：</strong>  </p>
-<ol>
-<li>未阻止OSR，最多导致一个不精确的结果。  </li>
-<li>未阻止DCE，将导致一个完全错误的结果。  </li>
-</ol>
-<h4 id="资源回收"><a href="#资源回收" class="headerlink" title="资源回收"></a>资源回收</h4><p>主要讲了GC/OF对测试的影响，并给出了错误的统计GC/OF影响的方式。<br>使用System.gc时可能会得到一个错误的失真的结果，注意jvm的参数-XX:+ExplicitGCInvokesConcurrent -XX:+DisableExplicitGC。</p>
-<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>系统缓存、电源、其他程序、JVM选项对benchmark的影响</p>
+              <h2 id="arthas进阶使用-1"><a href="#arthas进阶使用-1" class="headerlink" title="arthas进阶使用-1"></a>arthas进阶使用-1</h2><p>本篇主要记录arthas除了watch、trace、stack、sc、thread等常用命令之外的用法。  </p>
+<p>为什么琢磨这些“高级”用法，源于我在阅读一些其他代码(或者定位问题时)，我要分析诊断初始化过程，包括main方法刚刚启动时，如果是传统的attach玩法，main方法早已跑了多远下去了。好在arthas本身就支持agent模式，我改了两行代码加挖掘了他一些用法达成了我的目的，现记录如下。 </p>
+<h3 id="使用指定本地版本的arthas"><a href="#使用指定本地版本的arthas" class="headerlink" title="使用指定本地版本的arthas"></a>使用指定本地版本的arthas</h3><p>通常我们在用java -jar arthas-boot.jar时，他会自动从远程他的仓库下载他新的版本，那么此时如果自己有些修改编译后的版本，就不能一直使用。  此问题可以指定version搞定：</p>
+<pre><code class="hljs shell">java -jar arthas-boot.jar --use-version 3.5.0</code></pre>
+
+<p>此种方式可以指定使用特定的arthas版本，避免其自动从远程服务器下载，覆盖你自己定制的arthas，版本对应的lib在如下路径查找<br>~/.arthas/lib/3.5.0/arthas<br>同时该路径下的arthas.properties文件 可以配置http port等,http port也可以配置成0，这样http port监听在随机端口，具体可以在日志中找到。这样可以达成一个机器上跑多个的目的。  </p>
+<h3 id="java-agent模式"><a href="#java-agent模式" class="headerlink" title="java agent模式"></a>java agent模式</h3><p>arthas天生支持，-javaagent:/Users/simon/.arthas/lib/3.5.0/arthas/arthas-agent.jar,这种模式用到的配置文件(properties)跟agent lib在一个目录下。 </p>
+<h3 id="如何在执行main方法前停住"><a href="#如何在执行main方法前停住" class="headerlink" title="如何在执行main方法前停住"></a>如何在执行main方法前停住</h3><p>我希望在执行main方法前停住，因为我想在执行main方法前注入一些我的诊断操作。  </p>
+<p>修改com.taobao.arthas.agent334.AgentBootstrap.main(String, Instrumentation)代码实现：  </p>
+<pre><code class="hljs java">System.out.println(<span class="hljs-string">"wait init diag operation..."</span>);
+System.in.read();</code></pre>
+
+<p>这样在你要诊断的程序的控制台出现wait init diag operation…时，你就去准备诊断操作，然后在控制台输入任意字符回车即可。当然这个办法有点粗糙。 打包编译，替换arthas-agent.jar。注意打出来的包是target下的arthas-agent-jar-with-dependencies.jar。 </p>
+<h3 id="执行main方法前停住了，但是main方法所在类没加载watch不了怎么办"><a href="#执行main方法前停住了，但是main方法所在类没加载watch不了怎么办" class="headerlink" title="执行main方法前停住了，但是main方法所在类没加载watch不了怎么办"></a>执行main方法前停住了，但是main方法所在类没加载watch不了怎么办</h3><p>使用他的classloader指令把你需要的class先行load起来再去准备诊断操作</p>
+<pre><code class="hljs shell"><span class="hljs-meta">[arthas@26835]$</span><span class="bash"> classloader -l</span>
+ name                                                loadedCount  hash      parent
+ BootstrapClassLoader                                2274         null      null
+ com.taobao.arthas.agent.ArthasClassloader@4dfcc858  1995         4dfcc858  sun.misc.Launcher$ExtClassLoader@617e76e0
+ sun.misc.Launcher$AppClassLoader@18b4aac2           3            18b4aac2  sun.misc.Launcher$ExtClassLoader@617e76e0
+ sun.misc.Launcher$ExtClassLoader@617e76e0           45           617e76e0  null
+ 
+classloader -c 18b4aac2 --load com.code260.ss.demo.ArthasTestMain
+
+watch -f com.code260.ss.demo.ArthasTestMain test &#123;params,returnObj&#125; -x 2</code></pre>
+
+
+
 
             </article>
             <hr>
@@ -256,18 +257,12 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2021/03/27/arthas-advance-use-1/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">arthas进阶使用-1</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/07/11/spring-01-01.utils-annotation/">
-                        <span class="hidden-mobile">[spring-utils]01-02.工具类-注解相关</span>
+                      <a href="/2021/02/14/read-of-robust-java-benchmarking/">
+                        <span class="hidden-mobile">健壮的(robust)Java benchmarking 阅读笔记</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -407,7 +402,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "健壮的(robust)Java benchmarking 阅读笔记&nbsp;",
+        "arthas进阶使用-1&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
