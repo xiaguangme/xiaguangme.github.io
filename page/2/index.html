@@ -175,6 +175,96 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/19/kafka-08-replica-protocol/">[kafka]08.副本复制协议</a>
+
+      <a href="/2021/05/19/kafka-08-replica-protocol/" class="index-excerpt">
+        
+        
+          
+        
+        <div>副本复制协议kafka的副本复制协议与目前公开的算法最相似的是PacificA。注意是相似。青老师跟我讲因为PacificA本身是push的模式，而kafka的消息复制是拉的模式。
+
+There are a rich variety of algorithms in this family including ZooKeeper’s Zab, Raft, and Viewstamped Repli</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-19
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/18/kafka-07-data-write-disk/">[kafka]07.数据写盘</a>
+
+      <a href="/2021/05/18/kafka-07-data-write-disk/" class="index-excerpt">
+        
+        
+          
+        
+        <div>数据写盘broker端消息正常写盘写盘Log.appendLogSegment.appendFileRecords.appendMemoryRecords.java.writeFullyTo  
+通过FileRecords的channel(FileChannel)字段完成写入
+打开FileChannel打开过程  
+LogSegment.openFileRecords.open  
+public </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-18
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/">[kafka]06.强制写盘与JDK对其的支持、mmp、零拷贝等</a>
 
       <a href="/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/" class="index-excerpt">
@@ -405,52 +495,6 @@ gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/12/kafka-01-read-guide/">[kafka]01.导读提示</a>
-
-      <a href="/2021/05/12/kafka-01-read-guide/" class="index-excerpt">
-        
-        
-          
-        
-        <div>目录结构 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。
-
-01.导读提示
-
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-12
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/03/27/arthas-advance-use-1/">arthas进阶使用-1</a>
 
       <a href="/2021/03/27/arthas-advance-use-1/" class="index-excerpt">
@@ -567,53 +611,6 @@ findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclar
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/spring/">spring</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/07/04/cve-2020-1948/">[CVE]重现dubbo安全漏洞cve-2020-1948</a>
-
-      <a href="/2020/07/04/cve-2020-1948/" class="index-excerpt">
-        
-        
-          
-        
-        <div>[CVE]重现dubbo安全漏洞cve-2020-1948环境信息➜  ~ java -version
-java version "1.8.0_121"
-Java(TM) SE Runtime Environment (build 1.8.0_121-b13)
-Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
-
-➜  </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-07-04
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/CVE/">CVE</a>
-            
-              <a href="/tags/dubbo%EF%BC%8Csecurity/">dubbo，security</a>
             
           </div>
         

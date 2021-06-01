@@ -175,15 +175,198 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/25/kafka-16-inner-rpc-doc/">[kafka]16.内部rpc接口文档</a>
+      <a class="index-header" href="/2099/05/12/kafka-01-read-guide/">[kafka]01.导读提示</a>
 
-      <a href="/2021/05/25/kafka-16-inner-rpc-doc/" class="index-excerpt">
+      <a href="/2099/05/12/kafka-01-read-guide/" class="index-excerpt">
+        
+        
+          
+        
+        <div>目录结构 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。
+
+01.导读提示
+
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2099-05-12
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2099/04/02/dubbo-02.article-outline/">[dubbo]02.导读提示</a>
+
+      <a href="/2099/04/02/dubbo-02.article-outline/" class="index-excerpt">
+        
+        
+          
+        
+        <div>导读提示
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2099-04-02
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/27/kafka-16-inner-rpc-doc/">[kafka]16.内部rpc接口文档</a>
+
+      <a href="/2021/05/27/kafka-16-inner-rpc-doc/" class="index-excerpt">
         
         
           
         
         <div>内部rpc接口文档AddOffsetsToTxnRequestversion:0nametypedefaultValuedocStringtransactional_idSTRINGnullThe transactional id corresponding to the transaction.
 producer_idINT64nullCurrent producer id in use by </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-27
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/26/kafka-15-replica-exp-case/">[kafka]15.副本复制异常场景及样例case分析</a>
+
+      <a href="/2021/05/26/kafka-15-replica-exp-case/" class="index-excerpt">
+        
+        
+          
+        
+        <div>副本复制异常场景及样例case分析crash时机列表(下面简称C)前提都是leader节点写盘成功
+
+L(leader)还没给R(replica)返回第一个请求 //  参见 关键环节与注入点整理要点2
+R没有收到第一个请求的响应体(或者是收到了但是还没来得及处理)  1 2 是不是可以合并掉？(可以合并)有个问题要考虑消息落盘后 到 给R回复第一次请求的响应这个时间段内leader做了哪些逻辑，</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-26
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/">[kafka]14.LEADER_AND_ISR和UPDATE_METADATA请求分析</a>
+
+      <a href="/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/" class="index-excerpt">
+        
+        
+          
+        
+        <div>LEADER_AND_ISR和UPDATE_METADATA请求分析节点常规启动时每个节点收到的请求的列表梳理node0
+启动0：  
+apiKey=UPDATE_METADATA    
+apiKey=LEADER_AND_ISR  
+apiKey=UPDATE_METADATA    
+启动1：   
+apiKey=UPDATE_METADATA    
+apiKey=UPDATE_METAD</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -218,17 +401,20 @@ producer_idINT64nullCurrent producer id in use by </div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/24/kafka-15-replica-exp-case/">[kafka]15.副本复制异常场景及样例case分析</a>
+      <a class="index-header" href="/2021/05/24/kafka-13-partition-stm/">[kafka]13.分区状态机定义与变换逻辑</a>
 
-      <a href="/2021/05/24/kafka-15-replica-exp-case/" class="index-excerpt">
+      <a href="/2021/05/24/kafka-13-partition-stm/" class="index-excerpt">
         
         
           
         
-        <div>副本复制异常场景及样例case分析crash时机列表(下面简称C)前提都是leader节点写盘成功
+        <div>分区状态机定义与变换逻辑分区状态机启动kafka.controller.PartitionStateMachine.startup()    
 
-L(leader)还没给R(replica)返回第一个请求 //  参见 关键环节与注入点整理要点2
-R没有收到第一个请求的响应体(或者是收到了但是还没来得及处理)  1 2 是不是可以合并掉？(可以合并)有个问题要考虑消息落盘后 到 给R回复第一次请求的响应这个时间段内leader做了哪些逻辑，</div>
+初始化分区状态，按online offline new分类。  
+触发分区上线事件。事件的处理的逻辑主要是给partition选leader。  
+
+给分区选举leader关于分区的leader是如何选取的，涉及的情况比较多，现在大概列举几个要点
+Con</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -263,21 +449,21 @@ R没有收到第一个请求的响应体(或者是收到了但是还没来得及
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/23/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/">[kafka]14.LEADER_AND_ISR和UPDATE_METADATA请求分析</a>
+      <a class="index-header" href="/2021/05/23/kafka-12-replica-stm/">[kafka]12.副本状态机状态定义与变换逻辑</a>
 
-      <a href="/2021/05/23/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/" class="index-excerpt">
+      <a href="/2021/05/23/kafka-12-replica-stm/" class="index-excerpt">
         
         
           
         
-        <div>LEADER_AND_ISR和UPDATE_METADATA请求分析节点常规启动时每个节点收到的请求的列表梳理node0
-启动0：  
-apiKey=UPDATE_METADATA    
-apiKey=LEADER_AND_ISR  
-apiKey=UPDATE_METADATA    
-启动1：   
-apiKey=UPDATE_METADATA    
-apiKey=UPDATE_METAD</div>
+        <div>副本状态机状态定义与变换逻辑副本状态机启动kafka.controller.ReplicaStateMachine.startup()  
+主要两个逻辑：  
+
+初始化副本状态  initializeReplicaState   
+处理副本状态改变事件  handleStateChanges  
+
+初始化副本状态
+根据controllerContext.partitionReplicaAssign</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -322,103 +508,6 @@ apiKey=UPDATE_METAD</div>
         <div>controller如何选主及其启动过程分析broker启动
 kafka.controller.KafkaController.startup()   // controller启动  注册了启动Startup事件用于选择controller，即controller选主(KafkaController.scala 1141行)  以及RegisterBrokerAndReelec
 kafka.se</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/22/kafka-13-partition-stm/">[kafka]13.分区状态机定义与变换逻辑</a>
-
-      <a href="/2021/05/22/kafka-13-partition-stm/" class="index-excerpt">
-        
-        
-          
-        
-        <div>分区状态机定义与变换逻辑分区状态机启动kafka.controller.PartitionStateMachine.startup()    
-
-初始化分区状态，按online offline new分类。  
-触发分区上线事件。事件的处理的逻辑主要是给partition选leader。  
-
-给分区选举leader关于分区的leader是如何选取的，涉及的情况比较多，现在大概列举几个要点
-Con</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/22/kafka-12-replica-stm/">[kafka]12.副本状态机状态定义与变换逻辑</a>
-
-      <a href="/2021/05/22/kafka-12-replica-stm/" class="index-excerpt">
-        
-        
-          
-        
-        <div>副本状态机状态定义与变换逻辑副本状态机启动kafka.controller.ReplicaStateMachine.startup()  
-主要两个逻辑：  
-
-初始化副本状态  initializeReplicaState   
-处理副本状态改变事件  handleStateChanges  
-
-初始化副本状态
-根据controllerContext.partitionReplicaAssign</div>
       </a>
 
       <div class="index-btm post-metas">
@@ -514,96 +603,6 @@ Con</div>
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>&nbsp;2021-05-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/19/kafka-08-replica-protocol/">[kafka]08.副本复制协议</a>
-
-      <a href="/2021/05/19/kafka-08-replica-protocol/" class="index-excerpt">
-        
-        
-          
-        
-        <div>副本复制协议kafka的副本复制协议与目前公开的算法最相似的是PacificA。注意是相似。青老师跟我讲因为PacificA本身是push的模式，而kafka的消息复制是拉的模式。
-
-There are a rich variety of algorithms in this family including ZooKeeper’s Zab, Raft, and Viewstamped Repli</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-19
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/18/kafka-07-data-write-disk/">[kafka]07.数据写盘</a>
-
-      <a href="/2021/05/18/kafka-07-data-write-disk/" class="index-excerpt">
-        
-        
-          
-        
-        <div>数据写盘broker端消息正常写盘写盘Log.appendLogSegment.appendFileRecords.appendMemoryRecords.java.writeFullyTo  
-通过FileRecords的channel(FileChannel)字段完成写入
-打开FileChannel打开过程  
-LogSegment.openFileRecords.open  
-public </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-18
           </div>
         
         
