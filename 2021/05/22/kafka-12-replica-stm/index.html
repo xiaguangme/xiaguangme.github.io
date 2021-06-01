@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[kafka]12.副本状态机状态定义与变换逻辑 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-05-22 23:39">
+                    星期六, 五月 22日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.2k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    18
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="副本状态机状态定义与变换逻辑"><a href="#副本状态机状态定义与变换逻辑" class="headerlink" title="副本状态机状态定义与变换逻辑"></a>副本状态机状态定义与变换逻辑</h2><h3 id="副本状态机启动"><a href="#副本状态机启动" class="headerlink" title="副本状态机启动"></a>副本状态机启动</h3><p>kafka.controller.ReplicaStateMachine.startup()  </p>
+<p>主要两个逻辑：  </p>
+<ol>
+<li>初始化副本状态  initializeReplicaState   </li>
+<li>处理副本状态改变事件  handleStateChanges  </li>
+</ol>
+<h4 id="初始化副本状态"><a href="#初始化副本状态" class="headerlink" title="初始化副本状态"></a>初始化副本状态</h4><ul>
+<li>根据controllerContext.partitionReplicaAssignment(partition的replica 的broker id编号列表)依次迭代每个topic，再依次迭代每个replica，通过判断其是否在线(isReplicaOnline)来筛选出是OnlineReplica还是ReplicaDeletionIneligible，筛选出的数据维护在ReplicaStateMachine.replicaState。  </li>
+<li>ReplicaStateMachine.replicaState结构kv。k是(partition(即TopicPartition), replicaId)的复合体，v是OnlineReplica或者ReplicaDeletionIneligible这个标志类。</li>
+<li>kafka.controller.ControllerContext.isReplicaOnline的判断逻辑是replica是否在线且此分区不是要离线的。  replica是否在线，controller是知道的，controller维护了所有live的broker ids。  </li>
+</ul>
+<h4 id="处理副本状态改变事件"><a href="#处理副本状态改变事件" class="headerlink" title="处理副本状态改变事件"></a>处理副本状态改变事件</h4><ul>
+<li><p>此处的副本指所有在线的副本  </p>
+</li>
+<li><p><strong>准备leaderAndIsrRequestMap数据</strong>。 通过ControllerBrokerRequestBatch处理，batch处理时有几个前提，可以参见其new方法中的校验限制。</p>
+<p>addLeaderAndIsrRequestForBrokers 调用栈</p>
+<pre><code class="hljs scala"><span class="hljs-type">Thread</span> [controller-event-thread] (<span class="hljs-type">Suspended</span> (breakpoint at line <span class="hljs-number">321</span> in <span class="hljs-type">ControllerBrokerRequestBatch</span>))	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>.addLeaderAndIsrRequestForBrokers(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">Object</span>&gt;, <span class="hljs-type">TopicPartition</span>, <span class="hljs-type">LeaderIsrAndControllerEpoch</span>, <span class="hljs-type">Seq</span>&lt;<span class="hljs-type">Object</span>&gt;, boolean) line: <span class="hljs-number">321</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>$$anonfun$kafka$controller$<span class="hljs-type">ReplicaStateMachine</span>$$doHandleStateChanges$<span class="hljs-number">4.</span>apply(<span class="hljs-type">PartitionAndReplica</span>) line: <span class="hljs-number">189</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>$$anonfun$kafka$controller$<span class="hljs-type">ReplicaStateMachine</span>$$doHandleStateChanges$<span class="hljs-number">4.</span>apply(<span class="hljs-type">Object</span>) line: <span class="hljs-number">178</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.kafka$controller$<span class="hljs-type">ReplicaStateMachine</span>$$doHandleStateChanges(int, <span class="hljs-type">Seq</span>&lt;<span class="hljs-type">TopicPartition</span>&gt;, <span class="hljs-type">ReplicaState</span>, <span class="hljs-type">Callbacks</span>) line: <span class="hljs-number">178</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>$$anonfun$handleStateChanges$<span class="hljs-number">2.</span>apply(<span class="hljs-type">Tuple2</span>&lt;<span class="hljs-type">Object</span>,<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">PartitionAndReplica</span>&gt;&gt;) line: <span class="hljs-number">104</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>$$anonfun$handleStateChanges$<span class="hljs-number">2.</span>apply(<span class="hljs-type">Object</span>) line: <span class="hljs-number">102</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.handleStateChanges(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">PartitionAndReplica</span>&gt;, <span class="hljs-type">ReplicaState</span>, <span class="hljs-type">Callbacks</span>) line: <span class="hljs-number">102</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.startup() line: <span class="hljs-number">66</span>	
+	<span class="hljs-type">KafkaController</span>.onControllerFailover() line: <span class="hljs-number">248</span>	
+	<span class="hljs-type">KafkaController</span>.kafka$controller$<span class="hljs-type">KafkaController</span>$$elect() line: <span class="hljs-number">1206</span>	
+	<span class="hljs-type">KafkaController</span>$<span class="hljs-type">Startup</span>$.process() line: <span class="hljs-number">1141</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>$$anonfun$doWork$<span class="hljs-number">1.</span>apply$mcV$sp() line: <span class="hljs-number">69</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>$$anonfun$doWork$<span class="hljs-number">1.</span>apply() line: <span class="hljs-number">69</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>$$anonfun$doWork$<span class="hljs-number">1.</span>apply() line: <span class="hljs-number">69</span>	
+	<span class="hljs-type">KafkaTimer</span>.time(<span class="hljs-type">Function0</span>&lt;<span class="hljs-type">A</span>&gt;) line: <span class="hljs-number">31</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>.doWork() line: <span class="hljs-number">68</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>(<span class="hljs-type">ShutdownableThread</span>).run() line: <span class="hljs-number">82</span></code></pre>
+
+<p>注意kafka.controller.ControllerBrokerRequestBatch.addLeaderAndIsrRequestForBrokers中会准备leaderAndIsrRequestMap的数据。</p>
+<p><strong>leaderAndIsrRequestMap数据结构</strong>：brokerid–&gt;(topicpartition–&gt;partitionstate)  <strong>partitionstate 数据包括：controllerEpoch=97, leader=0, leaderEpoch=53, isr=0, zkVersion=53, replicas=0, isNew=false</strong>。</p>
+<p>这些数据来自于controllerContext.partitionLeadershipInfo。<strong>partitionLeadershipInfo又来自于哪里呢</strong>？  <strong>来自于zk记录的</strong>。  在ControllerContext初始化和IsrChangeNotification时触发。 </p>
+<pre><code class="hljs scala">kafka.controller.<span class="hljs-type">KafkaController</span>.updateLeaderAndIsrCache(partitions: <span class="hljs-type">Seq</span>[<span class="hljs-type">TopicPartition</span>])
+  <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">updateLeaderAndIsrCache</span></span>(partitions: <span class="hljs-type">Seq</span>[<span class="hljs-type">TopicPartition</span>] = controllerContext.partitionReplicaAssignment.keys.toSeq) &#123;
+    <span class="hljs-keyword">val</span> leaderIsrAndControllerEpochs = zkClient.getTopicPartitionStates(partitions)
+    leaderIsrAndControllerEpochs.foreach &#123; <span class="hljs-keyword">case</span> (partition, leaderIsrAndControllerEpoch) =&gt;
+      controllerContext.partitionLeadershipInfo.put(partition, leaderIsrAndControllerEpoch)
+    &#125;
+  &#125;</code></pre>
+
+
+
+</li>
+</ul>
+<ul>
+<li><p><strong>给每个副本发送<code>LEADER_AND_ISR</code>请求</strong>，发送以副本为单位。谁发送？contoller。发送的数据基础是leaderAndIsrRequestMap(迭代这个map)。leaderAndIsrRequestMap的数据来自于上面步骤准备的。</p>
+<pre><code class="hljs scala">kafka.controller.<span class="hljs-type">ControllerBrokerRequestBatch</span>.sendRequestsToBrokers(controllerEpoch: <span class="hljs-type">Int</span>)<span class="hljs-comment">// 414行</span>
+controller.sendRequest(broker, <span class="hljs-type">ApiKeys</span>.<span class="hljs-type">LEADER_AND_ISR</span>, leaderAndIsrRequestBuilder,
+          (r: <span class="hljs-type">AbstractResponse</span>) =&gt; controller.eventManager.put(controller.<span class="hljs-type">LeaderAndIsrResponseReceived</span>(r, broker)))</code></pre>
+
+<p>调用堆栈： </p>
+<pre><code class="hljs scala"><span class="hljs-type">Thread</span> [controller-event-thread] (<span class="hljs-type">Suspended</span> (breakpoint at line <span class="hljs-number">414</span> in <span class="hljs-type">ControllerBrokerRequestBatch</span>$$anonfun$sendRequestsToBrokers$<span class="hljs-number">2</span>))	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>$$anonfun$sendRequestsToBrokers$<span class="hljs-number">2.</span>apply(<span class="hljs-type">Tuple2</span>&lt;<span class="hljs-type">Object</span>,<span class="hljs-type">Map</span>&lt;<span class="hljs-type">TopicPartition</span>,<span class="hljs-type">PartitionState</span>&gt;&gt;) line: <span class="hljs-number">414</span>	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>$$anonfun$sendRequestsToBrokers$<span class="hljs-number">2.</span>apply(<span class="hljs-type">Object</span>) line: <span class="hljs-number">401</span>	
+	...
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>.sendRequestsToBrokers(int) line: <span class="hljs-number">401</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.handleStateChanges(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">PartitionAndReplica</span>&gt;, <span class="hljs-type">ReplicaState</span>, <span class="hljs-type">Callbacks</span>) line: <span class="hljs-number">106</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.startup() line: <span class="hljs-number">66</span>	
+	<span class="hljs-type">KafkaController</span>.onControllerFailover() line: <span class="hljs-number">248</span>	
+	<span class="hljs-type">KafkaController</span>.kafka$controller$<span class="hljs-type">KafkaController</span>$$elect() line: <span class="hljs-number">1206</span>	
+	<span class="hljs-type">KafkaController</span>$<span class="hljs-type">Startup</span>$.process() line: <span class="hljs-number">1141</span>	
+	<span class="hljs-type">ControllerEventManager</span>$<span class="hljs-type">ControllerEventThread</span>$$anonfun$doWork$<span class="hljs-number">1.</span>apply$mcV$sp() line: <span class="hljs-number">69</span></code></pre>
+</li>
+<li><p><strong>controller给需要的每个副本发送<code>UPDATE_METADATA</code>请求</strong>,updateMetadataRequest。</p>
+<p>需要的每个副本怎么来的？如下解释：</p>
+<pre><code class="hljs scala">addLeaderAndIsrRequestForBrokers--&gt;addUpdateMetadataRequestForBrokers
+
+addUpdateMetadataRequestForBrokers(controllerContext.liveOrShuttingDownBrokerIds.toSeq, <span class="hljs-type">Set</span>(topicPartition)) <span class="hljs-comment">// ControllerChannelManager.scala 333行</span>
+updateMetadataRequestBrokerSet ++= brokerIds.filter(_ &gt;= <span class="hljs-number">0</span>)  <span class="hljs-comment">// ControllerChannelManager.scala 388行</span>
+
+可以看出来是live的或者即将的关闭的且id&gt;=<span class="hljs-number">0</span>的的broker</code></pre>
+
+<p>发送的地方： </p>
+<pre><code class="hljs scala">updateMetadataRequestBrokerSet.foreach &#123; broker =&gt;   <span class="hljs-comment">// ControllerChannelManager.scala 454行</span>
+  controller.sendRequest(broker, <span class="hljs-type">ApiKeys</span>.<span class="hljs-type">UPDATE_METADATA</span>, updateMetadataRequest, <span class="hljs-literal">null</span>)
+&#125;</code></pre>
+</li>
+<li><p>controller给需要的broker发送<code>STOP_REPLICA</code>请求。  </p>
+</li>
+</ul>
+<h3 id="副本状态机梳理"><a href="#副本状态机梳理" class="headerlink" title="副本状态机梳理"></a>副本状态机梳理</h3><h4 id="状态定义"><a href="#状态定义" class="headerlink" title="状态定义"></a>状态定义</h4><p>状态以及触发时机梳理  </p>
+<table>
+<thead>
+<tr>
+<th>目标状态</th>
+<th>触发时机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NewReplica</td>
+<td>1. startNewReplicasForReassignedPartition; 2. onNewPartitionCreation</td>
+</tr>
+<tr>
+<td>OnlineReplica</td>
+<td>1. onPartitionReassignment //5. replicas in RAR -&gt; OnlineReplica;  2. onNewPartitionCreation; 3.onBrokerLogDirFailure; 4.onBrokerStartup;  5.ReplicaStateMachine.startup()</td>
+</tr>
+<tr>
+<td>OfflineReplica</td>
+<td>1. stopOldReplicasOfReassignedPartition; 2.doControlledShutdown</td>
+</tr>
+<tr>
+<td>ReplicaDeletionStarted</td>
+<td>1. stopOldReplicasOfReassignedPartition;</td>
+</tr>
+<tr>
+<td>ReplicaDeletionIneligible</td>
+<td></td>
+</tr>
+<tr>
+<td>ReplicaDeletionSuccessful</td>
+<td>1. stopOldReplicasOfReassignedPartition; 2.onReplicasBecomeOffline</td>
+</tr>
+<tr>
+<td>NonExistentReplica</td>
+<td>1. stopOldReplicasOfReassignedPartition;</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>除了OnlineReplica中的5.ReplicaStateMachine.startup()是在副本状态机中触发的，其余的都是在KafkaController中触发的。  </p>
+<p>按<code>ReplicaStateMachine</code>类的注释梳理下状态机图：  </p>
+<pre><code class="hljs mermaid">stateDiagram-v2
+    [*]--&gt;NonExistentReplica
+    NonExistentReplica --&gt; NewReplica 
+    NewReplica--&gt;OnlineReplica
+    OnlineReplica--&gt;OnlineReplica
+    OfflineReplica--&gt;OnlineReplica
+    NewReplica--&gt;OfflineReplica
+    OnlineReplica--&gt;OfflineReplica
+    OfflineReplica--&gt;ReplicaDeletionStarted
+    ReplicaDeletionStarted--&gt;ReplicaDeletionSuccessful
+    ReplicaDeletionStarted--&gt;ReplicaDeletionIneligible
+    ReplicaDeletionSuccessful--&gt;NonExistentReplica</code></pre>
+
+<p>整个状态的定义及前序合法状态的定义在kafka.controller.ReplicaState(ReplicaStateMachine.scala396行)的子类中。  </p>
+<h4 id="状态处理逻辑"><a href="#状态处理逻辑" class="headerlink" title="状态处理逻辑"></a>状态处理逻辑</h4><p>作者在注释中给出了详细的说明，摘录如下：  </p>
+<ul>
+<li>NonExistentReplica –&gt; NewReplica<br>send LeaderAndIsr request with current leader and isr to the new replica and UpdateMetadata request for the partition to every live broker</li>
+<li>NewReplica -&gt; OnlineReplica<br>add the new replica to the assigned replica list if needed  </li>
+<li>OnlineReplica,OfflineReplica -&gt; OnlineReplica<br>send LeaderAndIsr request with current leader and isr to the new replica and UpdateMetadata request for the partition to every live broker</li>
+<li>NewReplica,OnlineReplica,OfflineReplica,ReplicaDeletionIneligible -&gt; OfflineReplica<br>send StopReplicaRequest to the replica (w/o deletion)<br>remove this replica from the isr and send LeaderAndIsr request (with new isr) to the leader replica and<br>UpdateMetadata request for the partition to every live broker.  </li>
+<li>OfflineReplica -&gt; ReplicaDeletionStarted<br>send StopReplicaRequest to the replica (with deletion)    </li>
+<li>ReplicaDeletionStarted -&gt; ReplicaDeletionSuccessful<br>mark the state of the replica in the state machine  </li>
+<li>ReplicaDeletionStarted -&gt; ReplicaDeletionIneligible<br>mark the state of the replica in the state machine  </li>
+<li>ReplicaDeletionSuccessful -&gt; NonExistentReplica<br>remove the replica from the in memory partition replica assignment cache  </li>
+</ul>
+<p>我比较关心的是OnlineReplica的状态处理：  </p>
+<ul>
+<li>由NewReplica切换到OnlineReplica的处理逻辑是：更新partitionReplicaAssignment数据，partitionReplicaAssignment中存放的是partition与replica ids的编号的映射</li>
+<li>由OnlineReplica or OfflineReplica切换到OnlineReplica的处理逻辑是：准备给replicaId发送LEAD_AND_ISR请求 (副本状态机启动时 一般就是OnlineReplica–&gt;OnlineReplica)</li>
+</ul>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/scala/">scala</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/22/kafka-13-partition-stm/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[kafka]13.分区状态机定义与变换逻辑</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/21/kafka-10-HW-update/">
+                        <span class="hidden-mobile">[kafka]10.HW更新</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[kafka]12.副本状态机状态定义与变换逻辑&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

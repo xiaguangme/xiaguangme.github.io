@@ -175,24 +175,28 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-resource-leak-detector-impl/">netty之ResourceLeakDetector的使用与实现</a>
+      <a class="index-header" href="/2020/04/22/kafka1-0-generate-rpc-doc/">生成kafka内部请求与响应的接口文档</a>
 
-      <a href="/2020/04/20/netty4-resource-leak-detector-impl/" class="index-excerpt">
+      <a href="/2020/04/22/kafka1-0-generate-rpc-doc/" class="index-excerpt">
         
         
           
         
-        <div>通过WeakReference和ReferenceQueue做针对需要手动释放的资源的侦测  
-使用
-设置日志级别：  ServerBootstrap b =new ServerBootstrap();
-b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
-.option(ChannelOption.SO_BACK</div>
+        <div>生成kafka内部请求与响应的接口文档/**
+ */
+package com.code260.ss.kafka10demo;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.ne</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
@@ -209,7 +213,7 @@ b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
             
           </div>
         
@@ -221,22 +225,33 @@ b.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class)
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/netty4-idle-handler/">netty之idle handler处理</a>
+      <a class="index-header" href="/2020/04/22/c-cpp-call-simple-fun/">简单的main方法调用一个加减法函数背后的细节</a>
 
-      <a href="/2020/04/20/netty4-idle-handler/" class="index-excerpt">
+      <a href="/2020/04/22/c-cpp-call-simple-fun/" class="index-excerpt">
         
         
           
         
-        <div>
-初始化时记录idle时间，并启动一个延时任务，延时时间为idle时间，延时任务是io.netty.handler.timeout.IdleStateHandler.AllIdleTimeoutTask  
-channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回的ChannelFuture实例上挂上listener监听operati</div>
+        <div>测试程序/*
+ * AddTest.c
+ *
+ *  Created on: 2019年10月13日
+ *      Author: appweb
+ */
+#include &lt;stdio.h&gt;
+
+int add(int a, int b) &#123;
+	int c = addAgain(a, b);
+	return c;
+&#125;
+
+int addAgain(int a, int</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
@@ -253,7 +268,7 @@ channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/netty4%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">netty4源码分析</a>
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -265,115 +280,24 @@ channelReadComplete 会更新lastReadTime，lastWriteTime是在write操作返回
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/">可以用命令行控制eclipse断点增加删除、远程调试创建与启动的插件</a>
+      <a class="index-header" href="/2020/04/22/hotspot-object-model/">JVM中对象模型及相应名词概念</a>
 
-      <a href="/2020/04/20/use-curl-to-manage-breakpoint-on-eclipse/" class="index-excerpt">
+      <a href="/2020/04/22/hotspot-object-model/" class="index-excerpt">
         
         
           
         
-        <div>java
-# 创建断点(支持条件断点)
-curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java","condition":"i == 1","charStart":283,"charEnd":307,"lineNumber":16,"typeName":"com.code260.tools.red</div>
+        <div>JVM中对象模型及相应名词概念java对象在jvm中的模型是OOP-Klass 模型；
+klassklass对应元数据，包括常量池、字段、方法等。是在加载class阶段创建instanceKlass。存放在方法区。
+oopoop对应java中的实例。oop是指向oopDesc的指针。  
+// share/vm/oops/oopsHierarchy.hpp
+typedef class oopDes</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/eclipse/">eclipse</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
-
-      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
-        
-        
-          
-        
-        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
-
-sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
-
-subl 1.txt   sublime比自带</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/ubutnu/">ubutnu</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/about-dubbo-extension-loader/">关于dubbo扩展点的一点分析</a>
-
-      <a href="/2020/04/20/about-dubbo-extension-loader/" class="index-excerpt">
-        
-        
-          
-        
-        <div>扩展点能力
-能load class，这个class除了顶层接口class（在ExtensionLoader中对应type字段），还能load各实现类的class。
-能创建instance。
-能指定这个顶层接口的默认实现类的beanName。做法参见SPI注解部分。
-能把创建出来的instance的字段注入。set开头的且有一个参数且是public的，注入。  
-能adaptive。根据url上对该</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
@@ -390,7 +314,7 @@ subl 1.txt   sublime比自带</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -402,34 +326,37 @@ subl 1.txt   sublime比自带</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/guice-features-brief-introducting/">guice的能力简述</a>
+      <a class="index-header" href="/2020/04/22/c-cpp-point-function/">函数指针与指针函数，直接向内存区域写入操作码并转成函数指针并调用</a>
 
-      <a href="/2020/04/20/guice-features-brief-introducting/" class="index-excerpt">
+      <a href="/2020/04/22/c-cpp-point-function/" class="index-excerpt">
         
         
           
         
-        <div>guice这个google出的bean容器框架，ES有用到他。  
-能干什么
-是一个bean容器
-能AOPa
+        <div>函数指针与指针函数阅读hotspot的代码，需要先弄清楚这两个很容易混淆的概念。最近我想到一个办法去区分折扣两个，就是在中间加个“的”：  
 
-能力细分与使用方式
-以module创建injector。可以看成是一个容器。Module需要自定义且继承自他的AbstractModule。覆写config方法完成装配关系的确定。详细参见这里  
-绑定顶层接口到具体实现类。bind(TransactionLog.class).to(Da</div>
+函数的指针
+指针的函数  
+
+这样就很容易区分了。  
+
+函数指针，实际上是指针，是指向函数的指针  
+指针函数，实际上函数，是指返回指针的函数  
+
+其实在C语言中，指针数组和数组指针也是一样的区分办法。  加个“的”便可以解决。为什么会有这样的问题？老</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -439,7 +366,7 @@ subl 1.txt   sublime比自带</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/guice/">guice</a>
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -451,28 +378,30 @@ subl 1.txt   sublime比自带</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/not-include-but-why-successfully/">使用部分函数时并未include其所在头文件，但是能编译成功且能运行，为什么？</a>
+      <a class="index-header" href="/2020/04/22/c-cpp-point-convert/">指针转换</a>
 
-      <a href="/2020/04/20/not-include-but-why-successfully/" class="index-excerpt">
+      <a href="/2020/04/22/c-cpp-point-convert/" class="index-excerpt">
         
         
           
         
-        <div>最近在看APUE，试了上面的一些例子，其中有个例子是使用getpid函数获取进程id，但是在我写demo时，并未引入其所在的头文件unistd.h，结果也能编译成功，也能运行，于是就琢磨下为啥。Environment info: Ubuntu 18.04.2 LTS, gcc (Ubuntu 4.8.5-4ubuntu8) 4.8.5示意代码如下：  
-int main (int argc, ch</div>
+        <div>指针转换今天在看hotspot代码时，有处没能看明白，于是请教青老师，给出了解答是指针转换的语法
+share/vm/memory/defNewGeneration.cpp DefNewGeneration::collect
+share/vm/memory/genOopClosures.inline.hpp FastScanClosure::do_oop_work
+share/vm/memory/d</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -480,7 +409,9 @@ int main (int argc, ch</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/cpp/">cpp</a>
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -492,30 +423,33 @@ int main (int argc, ch</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/20/cpp-programming-scraps/">c cpp编程用到的系统边角与其拾遗</a>
+      <a class="index-header" href="/2020/04/22/hotspot-callstub/">CallStub相关</a>
 
-      <a href="/2020/04/20/cpp-programming-scraps/" class="index-excerpt">
+      <a href="/2020/04/22/hotspot-callstub/" class="index-excerpt">
         
         
           
         
-        <div>拾遗Q：unix编程怎么查一个函数在哪个头文件中A: 可以用诸如 man 3 printf  
-Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的引用
-
-下表显示了手册的 章节 号及其包含的手册页类型。1   可执行程序或 shell 命令2   系统调用(内核提供的函数)3   库调用(程序库中的函数)4   特殊文件(通常位于 /dev)5   文件格式和</div>
+        <div>CallStub相关调用入口share/vm/runtime/stubRoutines.hpp  
+// Calls to Java SimonNote: 函数指针结合typedef类型定义
+typedef void (*CallStub)(
+  address   link,
+  intptr_t* result,
+  BasicType result_type,
+  Method* metho</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -523,7 +457,9 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/cpp/">cpp</a>
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
             
           </div>
         
@@ -535,29 +471,29 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/cabbage-residue/">白菜油渣</a>
+      <a class="index-header" href="/2020/04/22/kafka1-0-offset-range-query/">offset range 查询</a>
 
-      <a href="/2020/04/19/cabbage-residue/" class="index-excerpt">
+      <a href="/2020/04/22/kafka1-0-offset-range-query/" class="index-excerpt">
         
         
           
         
-        <div>白菜炒猪油渣，朴素的美食
-
-</div>
+        <div>offset range 查询我们在实际使用过程中经常需要查询某个topic的某分区的offset的range命令行：  
+kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -2      
+kafka-run-class.sh kafka.tools.GetOf</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/life/">life</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -565,7 +501,9 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/food/">food</a>
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
             
           </div>
         
@@ -577,36 +515,28 @@ Q: man后面接个数字什么意思，如man 3 printfA：如下 man man中的�
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/19/jvm-g1-gc-book/">《JVM G1源码分析和调优》读书笔记</a>
+      <a class="index-header" href="/2020/04/22/kafka1-0-message-write/">消息写入</a>
 
-      <a href="/2020/04/19/jvm-g1-gc-book/" class="index-excerpt">
+      <a href="/2020/04/22/kafka1-0-message-write/" class="index-excerpt">
         
         
           
         
-        <div>GC的相关算法与JVM的垃圾收集器GC的相关算法
-分代管理
-复制算法
-标记清除
-标记压缩
-
-JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较  
-
-串行收集器 Serial。  Serial GC用于新生代，用了复制算法；Serial Old GC作用于老年代，用的是标记-压缩算法。STW
-并行收集器 Parallel。Parallel new作用于新生代，使用了复制算法；Parall</div>
+        <div>消息写入生产消息时的rpc请求日志leader节点  
+[2019-09-25 19:40:22,266] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=5, clientId=broker-0-fetcher-0, correlationId=8855) -- &#123;replica_id=0,max_wait_ti</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-19
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/book-paper-study/">book-paper-study</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -614,7 +544,98 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/GC/">GC</a>
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-metadata-update/">MetadataCache更新</a>
+
+      <a href="/2020/04/22/kafka1-0-metadata-update/" class="index-excerpt">
+        
+        
+          
+        
+        <div>MetadataCache什么时候更新updateCache方法用来更新缓存的。   
+发起线程  controller-event-threadcontroller选举的时候
+CLASS_NAME     METHOD_NAME    LINE_NUM  
+kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
+
+      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
+        
+        
+          
+        
+        <div>几个概念的解释
+LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
+HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
             
           </div>
         
@@ -626,7 +647,7 @@ JVM垃圾收集器P242 表11-1 不同类型垃圾回收期比较
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/8/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/10/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/8/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/10/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

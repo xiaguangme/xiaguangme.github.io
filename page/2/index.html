@@ -175,25 +175,24 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-22.shared-thread-pool/">[dubbo]22.业务侧共享线程池还是隔离线程池区别与实现分析</a>
+      <a class="index-header" href="/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/">[kafka]06.强制写盘与JDK对其的支持、mmp、零拷贝等</a>
 
-      <a href="/2020/06/13/dubbo-22.shared-thread-pool/" class="index-excerpt">
+      <a href="/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/" class="index-excerpt">
         
         
           
         
-        <div>22.业务侧共享线程池还是隔离线程池区别与实现分析接下来两篇文章要讨论下线程隔离的问题，有两个维度：
+        <div>强制写盘与JDK对其的支持、mmp、零拷贝等系统层面系统调用fsync、fdatasync、sendfile、mmap
+fsync、fdatasync
 
-一个节点上多个provider之间的隔离。即下图的4 5 6线程是否要隔离在不同的线程池。
-一个节点上io线程与server handler线程的隔离。即下图的1与4(或者2和5，3和6)是否在同一个线程上执行。
-
-              I&#x2F;O                  </div>
+fsync, fdatasync - synchronize a file’s in-core state with storage device
+fsync()  transfers  (“flushes”) all modified in-c</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-17
           </div>
         
         
@@ -208,9 +207,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -222,22 +221,22 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-21.how-to-implement-group/">[dubbo]21.服务分组实现</a>
+      <a class="index-header" href="/2021/05/16/kafka-05-offset-range-query-impl/">[kafka]05.offset range查询的实现</a>
 
-      <a href="/2020/06/13/dubbo-21.how-to-implement-group/" class="index-excerpt">
+      <a href="/2021/05/16/kafka-05-offset-range-query-impl/" class="index-excerpt">
         
         
           
         
-        <div>21.服务分组实现分析服务分组的test case我们假设的场景是，多idc机房，一个zk注册中心，我们通过分组设置达到，本机房的consumer调用本机房的provider。为了分析，我们假设了两个idc机房idc001和idc002
-provider端的节点1服务配置上加上group：  
-&lt;dubbo:service interface="com.code260.ss.dubbo.de</div>
+        <div>offset range查询的实现我们在实际使用过程中经常需要查询某个topic的某分区的offset的range命令行：  
+kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -2      
+kafka-run-class.sh kafka.tools.Get</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-16
           </div>
         
         
@@ -252,9 +251,9 @@ provider端的节点1服务配置上加上group：
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -266,22 +265,24 @@ provider端的节点1服务配置上加上group：
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-20.how-improve-reflect/">[dubbo]20.反射调用是如何优化的？Wrapper的作用是什么？</a>
+      <a class="index-header" href="/2021/05/15/kafka-04-consumer-group-impl/">[kafka]04.消费者组机制实现</a>
 
-      <a href="/2020/06/13/dubbo-20.how-improve-reflect/" class="index-excerpt">
+      <a href="/2021/05/15/kafka-04-consumer-group-impl/" class="index-excerpt">
         
         
           
         
-        <div>20.反射调用是如何优化的？Wrapper的作用是什么？反编译生成的代码对于动态代码生成的class可以写出到本地，办法是：  
-在com.alibaba.dubbo.common.bytecode.ClassGenerator.mCtc这个实例有
-javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.bytecode.</div>
+        <div>消费者组机制实现消费分组如何完成通过分组相关的rpc请求完成。以一个3分区的topic为例子，指定消费组消费后梳理请求日志如下：  
+先加入第一个消费者后节点0的请求处理日志：
+apiKey=FIND_COORDINATOR  // coordinator_key=ss-t01-group,coordinator_type=0
+apiKey=JOIN_GROUP // member_id=,
+ap</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-15
           </div>
         
         
@@ -296,9 +297,9 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -310,22 +311,21 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-19.provider-thread-model-chain/">[dubbo]19.被consumer端调用时的线程模型与链路</a>
+      <a class="index-header" href="/2021/05/14/kafka-03-producer-batch-send-impl/">[kafka]03.生产者批量发送机制实现</a>
 
-      <a href="/2020/06/13/dubbo-19.provider-thread-model-chain/" class="index-excerpt">
+      <a href="/2021/05/14/kafka-03-producer-batch-send-impl/" class="index-excerpt">
         
         
           
         
-        <div>19.被consumer端调用时的线程模型与链路provider侧  
-线程模型       +-----------------+         +-----------------+         +-----------------+
-+------&gt;   boss&#x2F;         +--------&gt;+  worker&#x2F;        +-------</div>
+        <div>生产者批量发送机制实现
+</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-14
           </div>
         
         
@@ -340,9 +340,9 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -354,21 +354,29 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-18.retry-offline/">[dubbo]18.重试、provider下线、网络断开等容错怎么实现</a>
+      <a class="index-header" href="/2021/05/13/kafka-02-code-version-compile-cmd/">[kafka]02.代码版本、编译与常用命令</a>
 
-      <a href="/2020/06/13/dubbo-18.retry-offline/" class="index-excerpt">
+      <a href="/2021/05/13/kafka-02-code-version-compile-cmd/" class="index-excerpt">
         
         
           
         
-        <div>18.重试、provider下线、网络断开等容错怎么实现case构造的方式可以在DubboInvoker.doInvoke打断点，然后让provider下线，然后再继续执行刚才断点停住的地方等等构造异常场景。  
-如果有provider服务停掉， consumer端如何感知？再次启动刚停掉的provider呢provider停掉会触发zk客户端的监听，监听对客户端的invoker列表进行刷新。再次</div>
+        <div>代码版本、编译与常用命令编译
+下载sbt  
+
+下载scalaIDE  
+
+下载gradle 选择4版本，可以跳过一些问题    设置对应环境变量  
+
+gradle -b build.gradle jar  编译kafka代码
+
+gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中, 导入后个别配置问题导致的报错fix一下就能没有错</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-13
           </div>
         
         
@@ -383,9 +391,9 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -397,23 +405,24 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-17.consumer-how-to-implement-load-blance/">[dubbo]17.负载均衡如何实现</a>
+      <a class="index-header" href="/2021/05/12/kafka-01-read-guide/">[kafka]01.导读提示</a>
 
-      <a href="/2020/06/13/dubbo-17.consumer-how-to-implement-load-blance/" class="index-excerpt">
+      <a href="/2021/05/12/kafka-01-read-guide/" class="index-excerpt">
         
         
           
         
-        <div>17.负载均衡如何实现分析负载均衡的test case起两个provider，前面文章中有现成的provider，起来就好。  
-用HelloClientTest testSayHello调用几次，观察落在哪个provider上。  
-分析负载均衡对于客户端调用过程中的逻辑，比如上篇的路由，这一篇的负载均衡等等机制，都可以通过观察调用前的调用栈来分析发现。  
-在 com.alibaba.dubb</div>
+        <div>目录结构 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。
+
+01.导读提示
+
+</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-12
           </div>
         
         
@@ -428,9 +437,9 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/scala/">scala</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
             
           </div>
         
@@ -442,31 +451,28 @@ javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.by
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/01/dubbo-16.how-to-implements-route-client-sdie/">[dubbo]16.路由如何实现</a>
+      <a class="index-header" href="/2021/03/27/arthas-advance-use-1/">arthas进阶使用-1</a>
 
-      <a href="/2020/06/01/dubbo-16.how-to-implements-route-client-sdie/" class="index-excerpt">
+      <a href="/2021/03/27/arthas-advance-use-1/" class="index-excerpt">
         
         
           
         
-        <div>16.路由如何实现com.alibaba.dubbo.rpc.cluster.directory.AbstractDirectory.list(Invocation) 中织入了路由的逻辑；
-使用路由的test casepackage com.code260.ss.dubbo.demov.client.routeruler;
-
-import org.junit.BeforeClass;
-import</div>
+        <div>arthas进阶使用-1本篇主要记录arthas除了watch、trace、stack、sc、thread等常用命令之外的用法。  
+为什么琢磨这些“高级”用法，源于我在阅读一些其他代码(或者定位问题时)，我要分析诊断初始化过程，包括main方法刚刚启动时，如果是传统的attach玩法，main方法早已跑了多远下去了。好在arthas本身就支持agent模式，我改了两行代码加挖掘了他一些用法达成了</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-01
+            <i class="iconfont icon-date"></i>&nbsp;2021-03-27
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -475,8 +481,6 @@ import</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -488,32 +492,32 @@ import</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/01/dubbo-15.how-to-implements-cluster-client-side/">[dubbo]15.多个provider如何在客户端体现，即集群如何实现</a>
+      <a class="index-header" href="/2021/02/14/read-of-robust-java-benchmarking/">健壮的(robust)Java benchmarking 阅读笔记</a>
 
-      <a href="/2020/06/01/dubbo-15.how-to-implements-cluster-client-side/" class="index-excerpt">
+      <a href="/2021/02/14/read-of-robust-java-benchmarking/" class="index-excerpt">
         
         
           
         
-        <div>15.多个provider如何在客户端体现，即集群如何实现多provider的test case为了分析多个provider，我们在demo中再加一个node，代码如下：
-package com.code260.ss.dubbo.demov.server.registercenter.zookeeper;
+        <div>健壮的(robust)Java benchmarking 阅读笔记理解Java代码编写的benchmarking的陷阱(pitfalls)  
+采样与计时
+对目标方法多次后计算平均耗时。
+使用System.nanoTime,而不是System.currentTimeMillis（毫秒 由于一些操作系统差异，导致其精度有问题）。  
 
-import java.io.IOException;
-
-import org.junit</div>
+代码预热大多数JVM实现有一个复杂难懂的性能生命周期，一般来讲，</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-01
+            <i class="iconfont icon-date"></i>&nbsp;2021-02-14
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -522,8 +526,6 @@ import org.junit</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -535,22 +537,21 @@ import org.junit</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-14.consumer-invoke-chain/">[dubbo]14.consumer端调用链</a>
+      <a class="index-header" href="/2020/07/11/spring-01-01.utils-annotation/">[spring-utils]01-02.工具类-注解相关</a>
 
-      <a href="/2020/05/30/dubbo-14.consumer-invoke-chain/" class="index-excerpt">
+      <a href="/2020/07/11/spring-01-01.utils-annotation/" class="index-excerpt">
         
         
           
         
-        <div>14.consumer端调用链示意图 +----------------------+     +----------------+      +---------------------------+
- | helloService         |     |      proxy     |      |  InvokerInvocationHandler |
- | sayHello   </div>
+        <div>01-01.工具类-注解相关AnnotationUtilsorg.springframework.core.annotation.AnnotationUtils  
+findAnnotation与getAnnotation、getRepeatableAnnotations、findAnnotationDeclaringClass、findAnnotationDeclaringClassForTyp</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-07-11
           </div>
         
         
@@ -565,9 +566,7 @@ import org.junit</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/spring/">spring</a>
             
           </div>
         
@@ -579,21 +578,25 @@ import org.junit</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-13.how-to-implements-sync-and-timeout/">[dubbo]13.调用端如何同步等待网络返回结果以及如何实现调用端超时</a>
+      <a class="index-header" href="/2020/07/04/cve-2020-1948/">[CVE]重现dubbo安全漏洞cve-2020-1948</a>
 
-      <a href="/2020/05/30/dubbo-13.how-to-implements-sync-and-timeout/" class="index-excerpt">
+      <a href="/2020/07/04/cve-2020-1948/" class="index-excerpt">
         
         
           
         
-        <div>13.调用端如何同步等待网络返回结果以及如何实现调用端超时rpc的调用不同于我们那种简单的在本地的同步调用，当一个调用发出去之后，要经过编解码，发送到provider端，等provider端处理完回来再接收到响应结果。这个过程是”异步的“，那么我们再调用时如何让异步转同步，能等到结果的？  
-在前面讲 发现到服务之后如何玩转调用的最简过程 部分时，当consumer端发送调用请求时要过Header</div>
+        <div>[CVE]重现dubbo安全漏洞cve-2020-1948环境信息➜  ~ java -version
+java version "1.8.0_121"
+Java(TM) SE Runtime Environment (build 1.8.0_121-b13)
+Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
+
+➜  </div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-07-04
           </div>
         
         
@@ -608,9 +611,9 @@ import org.junit</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/java/">java</a>
+              <a href="/tags/CVE/">CVE</a>
             
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+              <a href="/tags/dubbo%EF%BC%8Csecurity/">dubbo，security</a>
             
           </div>
         
@@ -622,7 +625,7 @@ import org.junit</div>
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/3/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/3/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

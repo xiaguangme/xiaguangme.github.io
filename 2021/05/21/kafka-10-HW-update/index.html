@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[kafka]10.HW更新 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-05-21 23:39">
+                    星期五, 五月 21日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.9k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    30
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="HW更新"><a href="#HW更新" class="headerlink" title="HW更新"></a>HW更新</h2><h3 id="leader节点"><a href="#leader节点" class="headerlink" title="leader节点"></a>leader节点</h3><h4 id="更新过程"><a href="#更新过程" class="headerlink" title="更新过程"></a>更新过程</h4><p>kafka.cluster.Partition.maybeIncrementLeaderHW(leaderReplica: Replica, curTime: Long)    // Partition.scala 462行</p>
+<p>这个方法的注释作者清楚的解释了HW增加的相关逻辑与背景  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * Check and maybe increment the high watermark of the partition;</span>
+<span class="hljs-comment"> * this function can be triggered when</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * 1. Partition ISR changed</span>
+<span class="hljs-comment"> * 2. Any replica's LEO changed</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * The HW is determined by the smallest log end offset among all replicas that are in sync or are considered caught-up.</span>
+<span class="hljs-comment"> * This way, if a replica is considered caught-up, but its log end offset is smaller than HW, we will wait for this</span>
+<span class="hljs-comment"> * replica to catch up to the HW before advancing the HW. This helps the situation when the ISR only includes the</span>
+<span class="hljs-comment"> * leader replica and a follower tries to catch up. If we don't wait for the follower when advancing the HW, the</span>
+<span class="hljs-comment"> * follower's log end offset may keep falling behind the HW (determined by the leader's log end offset) and therefore</span>
+<span class="hljs-comment"> * will never be added to ISR.</span>
+<span class="hljs-comment"> *</span>
+<span class="hljs-comment"> * Returns true if the HW was incremented, and false otherwise.</span>
+<span class="hljs-comment"> * Note There is no need to acquire the leaderIsrUpdate lock here</span>
+<span class="hljs-comment"> * since all callers of this private API acquire that lock</span>
+<span class="hljs-comment"> */</span></code></pre>
+
+<p>按其注释可以清晰地发现，触发leader HW增加的两个时机：  </p>
+<ol>
+<li>分区ISR发生改变时，expand  or shrink</li>
+<li>任意副本LEO发生变化时</li>
+</ol>
+<p>上面这两点通过搜索maybeIncrementLeaderHW方法被谁调用时也能发现。除上述两点之外还有个leader选举的时候。  </p>
+<p>增长leader节点的HW逻辑是：  </p>
+<ol>
+<li>过滤出当前符合要求的副本。符合要求的判断标准是：<strong>副本在ISR中，或者，当前时间减去上次同步追上(catch-up)的时间的结果小于配置的最大lag时间（replicaLagTimeMaxMs）</strong> Partition.scala line 464。</li>
+<li>取上述符合要求的所有副本的LEO的最小值作为算出来的新的HW</li>
+<li>当符合条件时将这个算出来的新的HW赋值给leader的HW，即leaderReplica.highWatermark。那么怎么是符合条件？又有两点，满足任意之一即可，分别是：<ol>
+<li>旧的HW小于当前算出来的新的HW。如其注释所说，要保持HW单调递增。Ensure that the high watermark increases monotonically</li>
+<li>旧的HW等于当前算出来的新的HW，且此时发生了segment切换。&amp;&amp; oldHighWatermark.onOlderSegment(newHighWatermark)。确认segment切换的办法就是比较baseOffset。</li>
+</ol>
+</li>
+</ol>
+<p><strong>注意，HW是指当前能消费的消息对应的offset的下一个offset，而不是指当前能消费的消息对应的offset</strong></p>
+<h4 id="初始化过程"><a href="#初始化过程" class="headerlink" title="初始化过程"></a>初始化过程</h4><p>kafka.cluster.Partition.getOrCreateReplica(replicaId: Int, isNew: Boolean)  创建Replica实例  </p>
+<p>初步看了下就是<strong>拿replication-offset-checkpoint  文件(此文件下面有详细解释)中记录的和log的LEO比较，小的一个作为初始的HW</strong>。 </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// Partition.scala  172行</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getOrCreateReplica</span></span>(replicaId: <span class="hljs-type">Int</span> = localBrokerId, isNew: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">false</span>): <span class="hljs-type">Replica</span> = &#123;
+    allReplicasMap.getAndMaybePut(replicaId, &#123;
+      <span class="hljs-keyword">if</span> (isReplicaLocal(replicaId)) &#123;
+        <span class="hljs-keyword">val</span> adminZkClient = <span class="hljs-keyword">new</span> <span class="hljs-type">AdminZkClient</span>(zkClient)
+        <span class="hljs-keyword">val</span> props = adminZkClient.fetchEntityConfig(<span class="hljs-type">ConfigType</span>.<span class="hljs-type">Topic</span>, topic)
+        <span class="hljs-keyword">val</span> config = <span class="hljs-type">LogConfig</span>.fromProps(logManager.currentDefaultConfig.originals, props)
+        <span class="hljs-keyword">val</span> log = logManager.getOrCreateLog(topicPartition, config, isNew, replicaId == <span class="hljs-type">Request</span>.<span class="hljs-type">FutureLocalReplicaId</span>)
+        <span class="hljs-keyword">val</span> checkpoint = replicaManager.highWatermarkCheckpoints(log.dir.getParent) <span class="hljs-comment">// 看下面的highWatermarkCheckpoints声明，不难发现hw记录在哪里的</span>
+        <span class="hljs-keyword">val</span> offsetMap = checkpoint.read()
+        <span class="hljs-keyword">if</span> (!offsetMap.contains(topicPartition))
+          info(<span class="hljs-string">s"No checkpointed highwatermark is found for partition <span class="hljs-subst">$topicPartition</span>"</span>)
+        <span class="hljs-keyword">val</span> offset = math.min(offsetMap.getOrElse(topicPartition, <span class="hljs-number">0</span>L), log.logEndOffset)
+        <span class="hljs-keyword">new</span> <span class="hljs-type">Replica</span>(replicaId, topicPartition, time, offset, <span class="hljs-type">Some</span>(log))
+      &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Replica</span>(replicaId, topicPartition, time)
+    &#125;)
+  &#125; 
+
+<span class="hljs-meta">@volatile</span> <span class="hljs-keyword">var</span> highWatermarkCheckpoints = logManager.liveLogDirs.map(dir =&gt;
+    (dir.getAbsolutePath, <span class="hljs-keyword">new</span> <span class="hljs-type">OffsetCheckpointFile</span>(<span class="hljs-keyword">new</span> <span class="hljs-type">File</span>(dir, <span class="hljs-type">ReplicaManager</span>.<span class="hljs-type">HighWatermarkFilename</span>), logDirFailureChannel))).toMap
+<span class="hljs-comment">// ReplicaManager.HighWatermarkFilename  replication-offset-checkpoint</span></code></pre>
+
+<p>不难发现，<strong>HW是记录在 replication-offset-checkpoint  文件中的</strong>。   </p>
+<p>文件内容大致如下：  </p>
+<pre><code class="hljs java"><span class="hljs-number">0</span>  <span class="hljs-comment">// version</span>
+<span class="hljs-number">17</span> <span class="hljs-comment">// size 一个topic+partition算一行，一共17行</span>
+__consumer_offsets <span class="hljs-number">8</span> <span class="hljs-number">7143</span>
+__consumer_offsets <span class="hljs-number">35</span> <span class="hljs-number">5594</span>
+__consumer_offsets <span class="hljs-number">41</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">23</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">47</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">38</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">17</span> <span class="hljs-number">1444</span>
+__consumer_offsets <span class="hljs-number">11</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">2</span> <span class="hljs-number">0</span>
+__consumer_offsets <span class="hljs-number">14</span> <span class="hljs-number">0</span>
+simon.test01.p1r2 <span class="hljs-number">0</span> <span class="hljs-number">55</span>
+    <span class="hljs-comment">// ... 省略一部分</span></code></pre>
+
+<p>内容格式的解析与组装在：  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// OffsetCheckpointFile  object Formatter extends CheckpointFileFormatter    </span>
+<span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">fromLine</span></span>(line: <span class="hljs-type">String</span>): <span class="hljs-type">Option</span>[(<span class="hljs-type">TopicPartition</span>, <span class="hljs-type">Long</span>)] = &#123;
+      <span class="hljs-type">WhiteSpacesPattern</span>.split(line) <span class="hljs-keyword">match</span> &#123;
+        <span class="hljs-keyword">case</span> <span class="hljs-type">Array</span>(topic, partition, offset) =&gt; <span class="hljs-comment">// 说明是三个空格连接</span>
+          <span class="hljs-type">Some</span>(<span class="hljs-keyword">new</span> <span class="hljs-type">TopicPartition</span>(topic, partition.toInt), offset.toLong)
+        <span class="hljs-keyword">case</span> _ =&gt; <span class="hljs-type">None</span>
+      &#125;
+    &#125;</code></pre>
+
+<h4 id="持久化过程"><a href="#持久化过程" class="headerlink" title="持久化过程"></a>持久化过程</h4><p>分析 OffsetCheckpointFile.write(Map&lt;TopicPartition,Object&gt;) line: 59    这个写入被调用的时机逻辑等等  </p>
+<p>kafka.server.ReplicaManager.checkpointHighWatermarks()  </p>
+<p>其注释是：  // Flushes the highwatermark value for all partitions to the highwatermark file   </p>
+<p>明确的说了这就是将高水位新刷入磁盘文件的地方，逻辑也很简单，迭代 每一个副本，然后写入，此处不得不体现了scala语法的强大  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ReplicaManager.scala 1373行</span>
+  <span class="hljs-comment">// Flushes the highwatermark value for all partitions to the highwatermark file</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">checkpointHighWatermarks</span></span>() &#123;
+      <span class="hljs-comment">// ......</span>
+<span class="hljs-keyword">val</span> replicasByDir = replicas.groupBy(_.log.get.dir.getParent)
+    <span class="hljs-keyword">for</span> ((dir, reps) &lt;- replicasByDir) &#123;
+      <span class="hljs-keyword">val</span> hwms = reps.map(r =&gt; r.topicPartition -&gt; r.highWatermark.messageOffset).toMap
+      <span class="hljs-keyword">try</span> &#123;
+        highWatermarkCheckpoints.get(dir).foreach(_.write(hwms))
+      &#125; <span class="hljs-keyword">catch</span> &#123;
+        <span class="hljs-keyword">case</span> e: <span class="hljs-type">KafkaStorageException</span> =&gt;
+          error(<span class="hljs-string">s"Error while writing to highwatermark file in directory <span class="hljs-subst">$dir</span>"</span>, e)
+      &#125;
+    &#125;</code></pre>
+
+<p>高水位刷盘定时任务启动的地方：  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ReplicaManager.scala  240行  </span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">startHighWaterMarksCheckPointThread</span></span>() = &#123;
+    <span class="hljs-keyword">if</span>(highWatermarkCheckPointThreadStarted.compareAndSet(<span class="hljs-literal">false</span>, <span class="hljs-literal">true</span>))
+      scheduler.schedule(<span class="hljs-string">"highwatermark-checkpoint"</span>, checkpointHighWatermarks _, period = config.replicaHighWatermarkCheckpointIntervalMs, unit = <span class="hljs-type">TimeUnit</span>.<span class="hljs-type">MILLISECONDS</span>)
+  &#125;<span class="hljs-comment">//    checkpointHighWatermarks _  这个语法也比较奇怪</span></code></pre>
+
+<p>配置项信息如下，5s刷盘一次</p>
+<table>
+<thead>
+<tr>
+<th>replica.high.watermark.checkpoint.interval.ms</th>
+<th>The frequency with which the high watermark is saved out to disk</th>
+<th>long</th>
+<th>5000</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>问题</strong>：HW如果在内存中更新，但是没来得及落盘，此时机器重启了，重启后会怎样处理？</p>
+<h3 id="replica节点"><a href="#replica节点" class="headerlink" title="replica节点"></a>replica节点</h3><p>TODO: 继续分析副本节点hw更新步骤 1127</p>
+<p>kafka.server.ReplicaFetcherThread.processPartitionData(topicPartition: TopicPartition, fetchOffset: Long, partitionData: ReplicaFetcherThread.PartitionData)  </p>
+<p>通过arthas观察发现 副本更新HW的地方如上，还有组协调也会不时更新，但这个我们先忽略。  </p>
+<pre><code class="hljs shell">stack  kafka.cluster.Replica  highWatermark_$eq</code></pre>
+
+<p>scala的函数名编译后有些奇怪哈，上面这个函数就是更新副本HW的函数，位于这里 </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// Replica.scala 139行 </span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">highWatermark_=</span></span>(newHighWatermark: <span class="hljs-type">LogOffsetMetadata</span>) &#123;
+      <span class="hljs-comment">//......</span>
+  &#125;</code></pre>
+
+<p>用上面的stack命令追踪并发消息时不难发现其堆栈如下：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2020</span>-<span class="hljs-number">11</span>-<span class="hljs-number">28</span> <span class="hljs-number">11</span>:<span class="hljs-number">15</span>:<span class="hljs-number">48</span>;thread_name=ReplicaFetcherThread-<span class="hljs-number">0</span>-<span class="hljs-number">0</span>;id=<span class="hljs-number">3</span>d;is_daemon=<span class="hljs-keyword">false</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@kafka</span>.cluster.Replica.highWatermark_$eq()
+        at kafka.server.ReplicaFetcherThread.processPartitionData(ReplicaFetcherThread.scala:<span class="hljs-number">122</span>)
+        at kafka.server.ReplicaFetcherThread.processPartitionData(ReplicaFetcherThread.scala:<span class="hljs-number">43</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>$$anonfun$apply$<span class="hljs-number">2</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">183</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>$$anonfun$apply$<span class="hljs-number">2</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">169</span>)
+        at scala.Option.foreach(Option.scala:<span class="hljs-number">257</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">169</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>$$anonfun$apply$mcV$sp$<span class="hljs-number">1</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">166</span>)
+        at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)
+        at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:<span class="hljs-number">48</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply$mcV$sp(AbstractFetcherThread.scala:<span class="hljs-number">166</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">166</span>)
+        at kafka.server.AbstractFetcherThread$$anonfun$processFetchRequest$<span class="hljs-number">2</span>.apply(AbstractFetcherThread.scala:<span class="hljs-number">166</span>)
+        at kafka.utils.CoreUtils$.inLock(CoreUtils.scala:<span class="hljs-number">250</span>)
+        at kafka.server.AbstractFetcherThread.processFetchRequest(AbstractFetcherThread.scala:<span class="hljs-number">164</span>)
+        at kafka.server.AbstractFetcherThread.doWork(AbstractFetcherThread.scala:<span class="hljs-number">111</span>)
+        at kafka.utils.ShutdownableThread.run(ShutdownableThread.scala:<span class="hljs-number">82</span>)</code></pre>
+
+<p>关键代码：  </p>
+<p>副本会比较自己当前的LEO和leader回过来的HW的大小，取其小的作为副本自己的HW并更新  </p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ReplicaFetcherThread.scala 96行</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">processPartitionData</span></span>(topicPartition: <span class="hljs-type">TopicPartition</span>, fetchOffset: <span class="hljs-type">Long</span>, partitionData: <span class="hljs-type">PartitionData</span>) &#123;
+    <span class="hljs-comment">// ......</span>
+    <span class="hljs-comment">// Append the leader's messages to the log</span>
+    partition.appendRecordsToFollowerOrFutureReplica(records, isFuture = <span class="hljs-literal">false</span>) <span class="hljs-comment">// 将从leader拿到的数据append到本地</span>
+    <span class="hljs-comment">// ......</span>
+<span class="hljs-keyword">val</span> followerHighWatermark = replica.logEndOffset.messageOffset.min(partitionData.highWatermark)
+    <span class="hljs-comment">// ......</span>
+    replica.highWatermark = <span class="hljs-keyword">new</span> <span class="hljs-type">LogOffsetMetadata</span>(followerHighWatermark)
+    <span class="hljs-comment">// ......</span>
+&#125;</code></pre>
+
+<p>看下面这个信息 就能对副本更新HW一目了然,两次fetch，第一次写数据，第二次更新HW（64–&gt;65）  </p>
+<pre><code class="hljs scala">[arthas@<span class="hljs-number">19538</span>]$ watch -f  kafka.server.<span class="hljs-type">ReplicaFetcherThread</span> processPartitionData params -x <span class="hljs-number">3</span>
+<span class="hljs-type">Press</span> <span class="hljs-type">Q</span> or <span class="hljs-type">Ctrl</span>+<span class="hljs-type">C</span> to abort.
+<span class="hljs-type">Affect</span>(<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">count</span></span>: <span class="hljs-number">1</span> , method count: <span class="hljs-number">2</span>) cost in <span class="hljs-number">51</span> ms, listenerId: <span class="hljs-number">12</span>
+ts=<span class="hljs-number">2020</span><span class="hljs-number">-11</span><span class="hljs-number">-28</span> <span class="hljs-number">12</span>:<span class="hljs-number">36</span>:<span class="hljs-number">46</span>; [cost=<span class="hljs-number">0.768568</span>ms] result=<span class="hljs-meta">@Object</span>[][
+    <span class="hljs-meta">@TopicPartition</span>[
+        hash=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">-1747502779</span>],
+        partition=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">0</span>],
+        topic=<span class="hljs-meta">@String</span>[simon.test01.p1r2],
+    ],
+    <span class="hljs-meta">@Long</span>[<span class="hljs-number">64</span>],
+    <span class="hljs-meta">@PartitionData</span>[
+        underlying=<span class="hljs-meta">@PartitionData</span>[
+            error=<span class="hljs-meta">@Errors</span>[<span class="hljs-type">NONE</span>],
+            highWatermark=<span class="hljs-meta">@Long</span>[<span class="hljs-number">64</span>],
+            lastStableOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">-1</span>],
+            logStartOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">55</span>],
+            abortedTransactions=<span class="hljs-literal">null</span>,
+            records=<span class="hljs-meta">@MemoryRecords</span>[[(record=<span class="hljs-type">DefaultRecord</span>(offset=<span class="hljs-number">64</span>, timestamp=<span class="hljs-number">1606538205275</span>, key=<span class="hljs-number">0</span> bytes, value=<span class="hljs-number">14</span> bytes))]],
+        ],
+    ],
+]
+ts=<span class="hljs-number">2020</span><span class="hljs-number">-11</span><span class="hljs-number">-28</span> <span class="hljs-number">12</span>:<span class="hljs-number">36</span>:<span class="hljs-number">46</span>; [cost=<span class="hljs-number">5.366692</span>ms] result=<span class="hljs-meta">@Object</span>[][
+    <span class="hljs-meta">@TopicPartition</span>[
+        hash=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">-1747502779</span>],
+        partition=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">0</span>],
+        topic=<span class="hljs-meta">@String</span>[simon.test01.p1r2],
+    ],
+    <span class="hljs-meta">@Long</span>[<span class="hljs-number">64</span>],
+    <span class="hljs-meta">@PartitionData</span>[
+        underlying=<span class="hljs-meta">@PartitionData</span>[
+            error=<span class="hljs-meta">@Errors</span>[<span class="hljs-type">NONE</span>],
+            highWatermark=<span class="hljs-meta">@Long</span>[<span class="hljs-number">64</span>],
+            lastStableOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">-1</span>],
+            logStartOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">55</span>],
+            abortedTransactions=<span class="hljs-literal">null</span>,
+            records=<span class="hljs-meta">@MemoryRecords</span>[[(record=<span class="hljs-type">DefaultRecord</span>(offset=<span class="hljs-number">64</span>, timestamp=<span class="hljs-number">1606538205275</span>, key=<span class="hljs-number">0</span> bytes, value=<span class="hljs-number">14</span> bytes))]],
+        ],
+    ],
+]
+ts=<span class="hljs-number">2020</span><span class="hljs-number">-11</span><span class="hljs-number">-28</span> <span class="hljs-number">12</span>:<span class="hljs-number">36</span>:<span class="hljs-number">46</span>; [cost=<span class="hljs-number">0.144628</span>ms] result=<span class="hljs-meta">@Object</span>[][
+    <span class="hljs-meta">@TopicPartition</span>[
+        hash=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">-1747502779</span>],
+        partition=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">0</span>],
+        topic=<span class="hljs-meta">@String</span>[simon.test01.p1r2],
+    ],
+    <span class="hljs-meta">@Long</span>[<span class="hljs-number">65</span>],
+    <span class="hljs-meta">@PartitionData</span>[
+        underlying=<span class="hljs-meta">@PartitionData</span>[
+            error=<span class="hljs-meta">@Errors</span>[<span class="hljs-type">NONE</span>],
+            highWatermark=<span class="hljs-meta">@Long</span>[<span class="hljs-number">65</span>],
+            lastStableOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">-1</span>],
+            logStartOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">55</span>],
+            abortedTransactions=<span class="hljs-literal">null</span>,
+            records=<span class="hljs-meta">@MemoryRecords</span>[[]],
+        ],
+    ],
+]
+ts=<span class="hljs-number">2020</span><span class="hljs-number">-11</span><span class="hljs-number">-28</span> <span class="hljs-number">12</span>:<span class="hljs-number">36</span>:<span class="hljs-number">46</span>; [cost=<span class="hljs-number">1.274486</span>ms] result=<span class="hljs-meta">@Object</span>[][
+    <span class="hljs-meta">@TopicPartition</span>[
+        hash=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">-1747502779</span>],
+        partition=<span class="hljs-meta">@Integer</span>[<span class="hljs-number">0</span>],
+        topic=<span class="hljs-meta">@String</span>[simon.test01.p1r2],
+    ],
+    <span class="hljs-meta">@Long</span>[<span class="hljs-number">65</span>],
+    <span class="hljs-meta">@PartitionData</span>[
+        underlying=<span class="hljs-meta">@PartitionData</span>[
+            error=<span class="hljs-meta">@Errors</span>[<span class="hljs-type">NONE</span>],
+            highWatermark=<span class="hljs-meta">@Long</span>[<span class="hljs-number">65</span>],
+            lastStableOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">-1</span>],
+            logStartOffset=<span class="hljs-meta">@Long</span>[<span class="hljs-number">55</span>],
+            abortedTransactions=<span class="hljs-literal">null</span>,
+            records=<span class="hljs-meta">@MemoryRecords</span>[[]],
+        ],
+    ],
+]</code></pre>
+
+
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/scala/">scala</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/22/kafka-12-replica-stm/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[kafka]12.副本状态机状态定义与变换逻辑</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/20/kafka-09-LEO-update/">
+                        <span class="hidden-mobile">[kafka]09.LEO更新</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[kafka]10.HW更新&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

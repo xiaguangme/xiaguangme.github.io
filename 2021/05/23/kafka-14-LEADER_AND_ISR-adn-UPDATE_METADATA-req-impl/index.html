@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[kafka]14.LEADER_AND_ISR和UPDATE_METADATA请求分析 - Code to 60 码到60岁</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60 码到60岁</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-05-23 23:39">
+                    星期日, 五月 23日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.8k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    24
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="LEADER-AND-ISR和UPDATE-METADATA请求分析"><a href="#LEADER-AND-ISR和UPDATE-METADATA请求分析" class="headerlink" title="LEADER_AND_ISR和UPDATE_METADATA请求分析"></a>LEADER_AND_ISR和UPDATE_METADATA请求分析</h2><h3 id="节点常规启动时每个节点收到的请求的列表梳理"><a href="#节点常规启动时每个节点收到的请求的列表梳理" class="headerlink" title="节点常规启动时每个节点收到的请求的列表梳理"></a>节点常规启动时每个节点收到的请求的列表梳理</h3><p>node0</p>
+<p>启动0：  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=LEADER_AND_ISR  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>启动1：   </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>启动2：   </p>
+<p>apiKey=UPDATE_METADATA    clientId=0  </p>
+<p>apiKey=UPDATE_METADATA    clientId=0  </p>
+<p>apiKey=UPDATE_METADATA    clientId=0    </p>
+<p>apiKey=OFFSET_FOR_LEADER_EPOCH   clientId=broker-2-fetcher-0  </p>
+<p>apiKey=FETCH  clientId=broker-2-fetcher-0   </p>
+<p>…// 5次fetch</p>
+<p>apiKey=UPDATE_METADATA  clientId=0  </p>
+<p>…//  一直fetch  </p>
+<p>node1 : </p>
+<p>启动1：  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=LEADER_AND_ISR  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=LEADER_AND_ISR   </p>
+<p>apiKey=UPDATE_METADATA  </p>
+<p>启动2：   </p>
+<p>apiKey=UPDATE_METADATA    clientId=0    </p>
+<p>apiKey=UPDATE_METADATA    clientId=0    </p>
+<p>apiKey=UPDATE_METADATA    clientId=0    </p>
+<p>apiKey=UPDATE_METADATA    clientId=0    </p>
+<p>node2 : </p>
+<p>启动2：  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=LEADER_AND_ISR  </p>
+<p>apiKey=UPDATE_METADATA    </p>
+<p>apiKey=LEADER_AND_ISR   </p>
+<p>apiKey=UPDATE_METADATA  </p>
+<p>apiKey=UPDATE_METADATA    clientId=0   // 这个fetch请求之后 又一次update_meta。 </p>
+<p>// 观察node1 2，也可以发现，一个非controller节点起来加入之后要处理5个请求(U,L,U,L,U),controller的节点起来加入之后要处理3个请求(U,L,U)。    </p>
+<p>// 这些个多次UPDATE_METADATA，更新的topic不一样。  </p>
+<p>node0端在常规启动node0时的调用栈：  </p>
+<pre><code class="hljs scala"><span class="hljs-type">Thread</span> [controller-event-thread] (<span class="hljs-type">Suspended</span> (breakpoint at line <span class="hljs-number">395</span> in <span class="hljs-type">ControllerBrokerRequestBatch</span>))	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>.sendRequestsToBrokers(int) line: <span class="hljs-number">395</span>	
+	<span class="hljs-type">KafkaController</span>.sendUpdateMetadataRequest(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">Object</span>&gt;, <span class="hljs-type">Set</span>&lt;<span class="hljs-type">TopicPartition</span>&gt;) line: <span class="hljs-number">925</span>	
+	<span class="hljs-type">KafkaController</span>.onControllerFailover() line: <span class="hljs-number">246</span>	
+	<span class="hljs-type">KafkaController</span>.kafka$controller$<span class="hljs-type">KafkaController</span>$$elect() line: <span class="hljs-number">1206</span>	
+...
+
+<span class="hljs-type">Thread</span> [controller-event-thread] (<span class="hljs-type">Suspended</span> (breakpoint at line <span class="hljs-number">395</span> in <span class="hljs-type">ControllerBrokerRequestBatch</span>))	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>.sendRequestsToBrokers(int) line: <span class="hljs-number">395</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.handleStateChanges(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">PartitionAndReplica</span>&gt;, <span class="hljs-type">ReplicaState</span>, <span class="hljs-type">Callbacks</span>) line: <span class="hljs-number">106</span>	
+	<span class="hljs-type">ReplicaStateMachine</span>.startup() line: <span class="hljs-number">66</span>	
+	<span class="hljs-type">KafkaController</span>.onControllerFailover() line: <span class="hljs-number">248</span>	
+	<span class="hljs-type">KafkaController</span>.kafka$controller$<span class="hljs-type">KafkaController</span>$$elect() line: <span class="hljs-number">1206</span>	
+...
+
+<span class="hljs-type">Thread</span> [controller-event-thread] (<span class="hljs-type">Suspended</span> (breakpoint at line <span class="hljs-number">395</span> in <span class="hljs-type">ControllerBrokerRequestBatch</span>))	
+	<span class="hljs-type">ControllerBrokerRequestBatch</span>.sendRequestsToBrokers(int) line: <span class="hljs-number">395</span>	
+	<span class="hljs-type">PartitionStateMachine</span>.handleStateChanges(<span class="hljs-type">Seq</span>&lt;<span class="hljs-type">TopicPartition</span>&gt;, <span class="hljs-type">PartitionState</span>, <span class="hljs-type">Option</span>&lt;<span class="hljs-type">PartitionLeaderElectionStrategy</span>&gt;) line: <span class="hljs-number">117</span>	
+	<span class="hljs-type">PartitionStateMachine</span>.triggerOnlinePartitionStateChange() line: <span class="hljs-number">106</span>	
+	<span class="hljs-type">PartitionStateMachine</span>.startup() line: <span class="hljs-number">62</span>	
+	<span class="hljs-type">KafkaController</span>.onControllerFailover() line: <span class="hljs-number">249</span>	
+	<span class="hljs-type">KafkaController</span>.kafka$controller$<span class="hljs-type">KafkaController</span>$$elect() line: <span class="hljs-number">1206</span>	
+...</code></pre>
+
+<p>三次调用 ControllerBrokerRequestBatch.sendRequestsToBrokers，但请求只有3个，按理说每个里面应该有两个请求，看来是选择性发送的   </p>
+<p>第一次UPDATE_METADATA， 第二次UPDATE_METADATA和LEADER_AND_ISR(此时是副本状态机启动)，第三次没有(此时是分区状态机启动)。 </p>
+<h3 id="启动时LEADER-AND-ISR和UPDATE-METADATA请求梳理"><a href="#启动时LEADER-AND-ISR和UPDATE-METADATA请求梳理" class="headerlink" title="启动时LEADER_AND_ISR和UPDATE_METADATA请求梳理"></a>启动时LEADER_AND_ISR和UPDATE_METADATA请求梳理</h3><p><strong>是否发送对应的请求，取决于相关变量中是否有数据</strong>。  </p>
+<p>LEADER_AND_ISR对应的变量是<code>leaderAndIsrRequestMap</code>，UPDATE_METADATA对应的变量是<code>updateMetadataRequestBrokerSet</code>。   </p>
+<ul>
+<li><p>ControllerBrokerRequestBatch.leaderAndIsrRequestMap数据的变化封装在addLeaderAndIsrRequestForBrokers方法中。</p>
+</li>
+<li><p>ControllerBrokerRequestBatch.updateMetadataRequestBrokerSet数据的变化封装在addUpdateMetadataRequestForBrokers方法中。</p>
+</li>
+<li><p>同时addLeaderAndIsrRequestForBrokers中也会调用addUpdateMetadataRequestForBrokers，也就是说<strong>有LEADER_AND_ISR请求时通常也会有UPDATE_METADATA请求</strong>。</p>
+<pre><code class="hljs scala"><span class="hljs-comment">// ControllerChannelManager.scala   317行  </span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">addLeaderAndIsrRequestForBrokers</span></span>(brokerIds: <span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>], topicPartition: <span class="hljs-type">TopicPartition</span>,
+                                       leaderIsrAndControllerEpoch: <span class="hljs-type">LeaderIsrAndControllerEpoch</span>,
+                                       replicas: <span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>], isNew: <span class="hljs-type">Boolean</span>) &#123;
+
+    brokerIds.filter(_ &gt;= <span class="hljs-number">0</span>).foreach &#123; brokerId =&gt;
+      <span class="hljs-keyword">val</span> result = leaderAndIsrRequestMap.getOrElseUpdate(brokerId, mutable.<span class="hljs-type">Map</span>.empty)
+      <span class="hljs-keyword">val</span> alreadyNew = result.get(topicPartition).exists(_.isNew)
+      result.put(topicPartition, <span class="hljs-keyword">new</span> <span class="hljs-type">LeaderAndIsrRequest</span>.<span class="hljs-type">PartitionState</span>(leaderIsrAndControllerEpoch.controllerEpoch,
+        leaderIsrAndControllerEpoch.leaderAndIsr.leader,
+        leaderIsrAndControllerEpoch.leaderAndIsr.leaderEpoch,
+        leaderIsrAndControllerEpoch.leaderAndIsr.isr.map(<span class="hljs-type">Integer</span>.valueOf).asJava,
+        leaderIsrAndControllerEpoch.leaderAndIsr.zkVersion,
+        replicas.map(<span class="hljs-type">Integer</span>.valueOf).asJava,
+        isNew || alreadyNew))
+    &#125;
+<span class="hljs-comment">// **同时发送UPDATE_METADATA请求**</span>
+    addUpdateMetadataRequestForBrokers(controllerContext.liveOrShuttingDownBrokerIds.toSeq, <span class="hljs-type">Set</span>(topicPartition))
+  &#125;</code></pre>
+
+
+
+
+</li>
+</ul>
+<p>现在梳理三个环节中对应的变量的数据的变化逻辑：  </p>
+<ul>
+<li><p>onControllerFailover中的初次sendUpdateMetadataRequest调用</p>
+<p>KafkaController.sendUpdateMetadataRequest(brokers: Seq[Int], partitions: Set[TopicPartition])封装了单独(仅仅UPDATE_METADATA请求，不含有LEADER_AND_ISR请求)发送UPDATE_METADATA请求，在KafkaController中有多出调用sendUpdateMetadataRequest，onControllerFailover是其中之一。送进来的参数就是liveOrShuttingDownBrokerIds。可以粗略的理解为，在必要的时候(一些节点状态发生改变时等等，包括onBrokerStartup，onControllerFailover，onPartitionReassignment,onBrokerUpdate,onReplicasBecomeOffline,IsrChangeNotification)就给所有活着的和正在关闭的broker发送更新元数据的请求。  </p>
+<p> 此次没有调用addLeaderAndIsrRequestForBrokers，所以只有UPDATE_METADATA请求。  </p>
+</li>
+<li><p>副本状态机启动时handleStateChanges中的controllerBrokerRequestBatch.sendRequestsToBrokers  </p>
+<p>对于<code>NewReplica</code>,<code>OnlineReplica</code>,<code>OfflineReplica</code><strong>三种状态都有可能触发LEADER_AND_ISR请求</strong>。从代码不难看出来，副本状态机启动时，对应目标状态是<code>OnlineReplica</code>。 上面也讲述了，<strong>触发LEADER_AND_ISR请求就会级联触发UPDATE_METADATA请求</strong>。    </p>
+</li>
+<li><p>分区状态机启动时的handleStateChanges中的controllerBrokerRequestBatch.sendRequestsToBrokers</p>
+</li>
+</ul>
+<h3 id="broker端处理LEADER-AND-ISR请求"><a href="#broker端处理LEADER-AND-ISR请求" class="headerlink" title="broker端处理LEADER_AND_ISR请求"></a>broker端处理LEADER_AND_ISR请求</h3><p>入口：  </p>
+<p>KafkaApis.handleLeaderAndIsrRequest // KafkaApis.scala 156行    </p>
+<p>ReplicaManager.becomeLeaderOrFollower // ReplicaManager.scala 1018行    </p>
+<h4 id="becomeLeaderOrFollower"><a href="#becomeLeaderOrFollower" class="headerlink" title="becomeLeaderOrFollower"></a>becomeLeaderOrFollower</h4><p>逻辑：  </p>
+<ul>
+<li>通过controller的epoch的值 来确定是否有新controller出现过(controller发生转移)，已确定这个请求是否合法(是否来自于老的controller上) // ReplicaManager.scala 1027行    </li>
+<li>检查分区leader的当前epoch是否正确(当前的小于请求中epoch就不正确，请求中的来自于从zk读取的)，不正确的话用leaderAndIsrRequest.partitionStates替换掉当前的stateInfo  // ReplicaManager.scala 1054行  </li>
+<li>根据当前broker id与请求中分区的leader的broker  id比较是否相同，来划分出是become leader(broker id相同)还是become follower(broker id不同)。  <ul>
+<li>become leader的执行 makeLeaders  // ReplicaManager.scala 1138行    </li>
+<li>become follower的执行makeFollowers // ReplicaManager.scala 1218行   </li>
+</ul>
+</li>
+<li>如果未启动HighWaterMarksCheckPointThread，则启动startHighWaterMarksCheckPointThread  </li>
+<li>其他一些后置和事件处理  </li>
+</ul>
+<h4 id="makeLeaders"><a href="#makeLeaders" class="headerlink" title="makeLeaders"></a>makeLeaders</h4><p>逻辑：  </p>
+<ul>
+<li>从Fetcher管理器中将LeaderAndIsrRequest中要成为leader的分区移除掉。  </li>
+<li>Partition.makeLeader逻辑 <ul>
+<li>用LeaderAndIsrRequest.PartitionState.basePartitionState.isr更新分区的inSyncReplicas字段</li>
+<li>用LeaderAndIsrRequest.PartitionState.basePartitionState.leaderEpoch更新分区的leaderEpoch字段</li>
+<li>用LeaderAndIsrRequest.PartitionState.basePartitionState.zkVersion更新分区的zkVersion字段</li>
+<li>通过分区的leaderReplicaIdOpt字段判断是否是新leader，如果是新leader则更新leader副本实例的HW，即Replica.highWatermarkMetadata字段。更新leader副本实例的HW如下： // Partition.scala 289<ol>
+<li>尝试从Replica.highWatermarkMetadata处开始读取一个消息。并将这个highWatermarkMetadata和LSO LEO比较以判断是否合法</li>
+<li>主要依赖Log.readUncommitted方法，这里面主要逻辑还是针对事务消息做的处理</li>
+<li><strong>Replica.highWatermarkMetadata字段最初来自于哪里？来自于checkpoint文件与LEO的比较</strong>。<strong>checkpoint文件读取逻辑在Partition.getOrCreateReplica，ReplicaManager.highWatermarkCheckpoints方法中完成。文件名是<code>replication-offset-checkpoint</code></strong>，位置在数据目录下。该文件的数据由定时调度定时写入，在ReplicaManager.checkpointHighWatermarks()处，刷的周期由<code>replica.high.watermark.checkpoint.interval.ms</code>配置项决定，默认5s。LEO是靠Log load文件算出来的，靠Log.nextOffsetMetadata字段，nextOffsetMetadata又来自于log加载时和每次append之后的+1。参见locally部分**。</li>
+</ol>
+</li>
+<li>触发是否要增加hw的逻辑，是否增加hw的逻辑有： // Partition.scala 462行 <ol>
+<li>取所有合法副本(isr中或者lag时间还没超标的副本)中的LEO的集合</li>
+<li>取LEO的集合中最小的LEO作为新的HW</li>
+<li>新的hw相比旧的hw增加了或者两者相同但是oldHighWatermark比newHighWatermark在更旧的segment上，那么更新hw。旧的hw是指Replica.highWatermarkMetadata字段</li>
+<li>正常启动时，并不会更新，因为旧的hw和新的hw一样大。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="makeFollowers"><a href="#makeFollowers" class="headerlink" title="makeFollowers"></a>makeFollowers</h4><p>逻辑： </p>
+<ul>
+<li><p>匹配到leader在alive brokers列表中时 做makeFollower切换，partition.makeFollower，切换成功后维护到partitionsToMakeFollower中</p>
+<ul>
+<li>partition.makeFollower主要是更新分区的controllerEpoch、inSyncReplicas、leaderEpoch、zkVersion、leaderReplicaIdOpt字段，更新的数据来源是LEADER_AND_ISR请求中带过来的。</li>
+</ul>
+</li>
+<li><p>将partitionsToMakeFollower中的分区从Fetcher管理器中移除</p>
+</li>
+<li><p>对将partitionsToMakeFollower中的分区tryCompleteDelayedProduce、tryCompleteDelayedFetch</p>
+</li>
+<li><p>梳理出partitionsToMakeFollowerWithLeaderAndOffset并准备做副本fetch </p>
+<ul>
+<li><p>创建并启动fetch线程kafka.server.AbstractFetcherManager.addFetcherForPartitions(partitionAndOffsets: Map[TopicPartition, BrokerAndInitialOffset]).addAndStartFetcherThread</p>
+<p>创建fetch线程代码，ReplicaFetcherManager.scala 29行：  </p>
+<pre><code class="hljs scala"><span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">createFetcherThread</span></span>(fetcherId: <span class="hljs-type">Int</span>, sourceBroker: <span class="hljs-type">BrokerEndPoint</span>): <span class="hljs-type">AbstractFetcherThread</span> = &#123;
+  <span class="hljs-keyword">val</span> prefix = threadNamePrefix.map(tp =&gt; <span class="hljs-string">s"<span class="hljs-subst">$&#123;tp&#125;</span>:"</span>).getOrElse(<span class="hljs-string">""</span>)
+  <span class="hljs-keyword">val</span> threadName = <span class="hljs-string">s"<span class="hljs-subst">$&#123;prefix&#125;</span>ReplicaFetcherThread-<span class="hljs-subst">$fetcherId</span>-<span class="hljs-subst">$&#123;sourceBroker.id&#125;</span>"</span>
+  <span class="hljs-keyword">new</span> <span class="hljs-type">ReplicaFetcherThread</span>(threadName, fetcherId, sourceBroker, brokerConfig, replicaManager, metrics, time, quotaManager)
+&#125;</code></pre>
+
+<p>启动fetch线程代码，AbstractFetcherManager.scala 120行：</p>
+<pre><code class="hljs scala"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">addAndStartFetcherThread</span></span>(brokerAndFetcherId: <span class="hljs-type">BrokerAndFetcherId</span>, brokerIdAndFetcherId: <span class="hljs-type">BrokerIdAndFetcherId</span>) &#123;
+  <span class="hljs-keyword">val</span> fetcherThread = createFetcherThread(brokerAndFetcherId.fetcherId, brokerAndFetcherId.broker)
+  fetcherThreadMap.put(brokerIdAndFetcherId, fetcherThread)
+  fetcherThread.start
+&#125;</code></pre>
+</li>
+<li><p>将分区加入fetcher管理器，并设置对应的offset，offset的值为分区副本的HW，<strong>后面trunct时的targetOffset就来自于这个地方</strong>。    </p>
+<pre><code class="hljs scala"><span class="hljs-type">BrokerAndInitialOffset</span>(
+            metadataCache.getAliveBrokers.find(_.id == partition.leaderReplicaIdOpt.get).get.brokerEndPoint(config.interBrokerListenerName),
+            partition.getReplica().get.highWatermark.messageOffset)	  <span class="hljs-comment">// ReplicaManager.scala 1301行</span></code></pre>
+
+
+
+</li>
+</ul>
+</li>
+</ul>
+<pre><code><pre><code class="hljs scala">fetcherThreadMap(brokerIdAndFetcherId).addPartitions(initialFetchOffsets.map &#123; <span class="hljs-keyword">case</span> (tp, brokerAndInitOffset) =&gt;
+  tp -&gt; brokerAndInitOffset.initOffset
+&#125;)  <span class="hljs-comment">// AbstractFetcherManager.scala  138行</span></code></pre></code></pre><ul>
+<li><strong>分区副本的HW的值来自于哪里？来自于checkpoint文件</strong>。跟leader的处理逻辑有一半相似，leader的还要选所有LEO中最小的，follower的不要，follower只要读checkpoint文件。读的细节部分可以参见makeLeaders章节的。   </li>
+</ul>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/scala/">scala</a>
+                    
+                      <a class="hover-with-bg" href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/24/kafka-15-replica-exp-case/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[kafka]15.副本复制异常场景及样例case分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/22/kafka-11-controller-elected-leader-boot/">
+                        <span class="hidden-mobile">[kafka]11.controller如何选主及其启动过程分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[kafka]14.LEADER_AND_ISR和UPDATE_METADATA请求分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

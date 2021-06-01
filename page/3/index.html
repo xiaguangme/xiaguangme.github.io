@@ -175,23 +175,22 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-12.how-to-decode-response/">[dubbo]12.如何解码响应结果</a>
+      <a class="index-header" href="/2020/06/25/dubbo-28.support-http/">[dubbo]28.扩展支持HTTP协议</a>
 
-      <a href="/2020/05/30/dubbo-12.how-to-decode-response/" class="index-excerpt">
+      <a href="/2020/06/25/dubbo-28.support-http/" class="index-excerpt">
         
         
           
         
-        <div>12.如何解码响应结果与编码请求类似，其实上篇文章中我们已经发现了对接DubboCodec。  
-不细细分析了，列出主要代码，直接看代码就可以了。  
-com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec.decode(Channel, ChannelBuffer)// 读取定长heder
-com.alibaba.dubbo.rpc.pro</div>
+        <div>28.扩展支持HTTP协议关于dubbo对http协议的支持，要分几个维度说：
+
+仅仅传输协议使用http，报文的组织方式没有要求，那么dubbo这个版本(2.5.3)原生提供的http协议就能满足。适当配置即可。此处报文指http请求体与响应体的报文。http协议本身规定了其报文规范，诸如method、url、content-type，header等等，但是其请求体与响应体中内容你可以随意放置。</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-25
           </div>
         
         
@@ -220,24 +219,21 @@ com.alibaba.dubbo.rpc.pro</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-11.how-to-enode-request/">[dubbo]11.如何编码请求</a>
+      <a class="index-header" href="/2020/06/13/dubbo-27.filters-impl/">[dubbo]27.各个filter分析以及和spring cloud对比</a>
 
-      <a href="/2020/05/30/dubbo-11.how-to-enode-request/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-27.filters-impl/" class="index-excerpt">
         
         
           
         
-        <div>11.如何编码请求关于请求的编码，如果你熟悉过dubbo代码，直接看其DubboCodec类即可。  
-如果不熟悉，属于刚开始看那种，也没关系。我们用下面的办法探索一下就能发现。
-探索出编码器在哪里是什么我们先从上篇文章的服务调用继续往下跟，可以发现请求要通过过Channel发送出去。调用栈如下：  
-NettyChannel.send(Object, boolean) line: 95	
-Net</div>
+        <div>27.各个filter分析以及和spring cloud对比主要阐述dubbo rpc的filter的实现，包括作用，用法，原理，与Spring Cloud在这些能力的对比。  
+共提供了多少个？是哪些?发布时默认装配了哪些给他自身的扩展点机制？从类与接口关系分析的结果文档中可以看到共20个：241 Filter–241.1 CacheFilter–241.2 MonitorFilter–241.</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -266,24 +262,21 @@ Net</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-10.how-invoke-service-after-found/">[dubbo]10.发现到服务之后如何玩转调用的最简过程</a>
+      <a class="index-header" href="/2020/06/13/dubbo-26.generic-invoke-impl/">[dubbo]26.泛化调用实现</a>
 
-      <a href="/2020/05/30/dubbo-10.how-invoke-service-after-found/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-26.generic-invoke-impl/" class="index-excerpt">
         
         
           
         
-        <div>10.发现到服务之后如何玩转调用的最简过程上一篇文章中讲述了消费这么找到服务，怎么为后面的调用准备client与invoker。  
-这篇我们探讨下，当一个rpc服务真正发起调用时是怎样的，经历那些过程。  
-我们先截取一段服务发起调用时的调用栈，在截取调用栈之前我们先准备一个用例，有返回值的rpc调用，后面文章也会用到。
-相关case代码facade端的接口:  
-package com.cod</div>
+        <div>26.泛化调用实现看两个filter即可，剩下的filter下篇文章讲  
+GenericFilter作用先讨论一个问题，rpc，最简单的场景是consumer端调用provider端的一个服务，这个服务双方都遵循一个接口实现，按最简单的dubbo的demo玩法，是需要consumer和provider两段都要有这个接口声明的（包括接口参数的类型的相关类），比如：org.simonme.dubbo</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -312,22 +305,21 @@ package com.cod</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-09.how-to-find-service-for-consumer/">[dubbo]09.消费者如何发现服务</a>
+      <a class="index-header" href="/2020/06/13/dubbo-25.tps-flow-contril/">[dubbo]25.TPS限流知识</a>
 
-      <a href="/2020/05/30/dubbo-09.how-to-find-service-for-consumer/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-25.tps-flow-contril/" class="index-excerpt">
         
         
           
         
-        <div>09.消费者如何发现服务到注册中心查找的堆栈上一篇文章已经讲到provider会把自己服务监听的ip和端口等信息注册到注册中心。那么，consumer想要调用provider则需要到注册中心查找provider的信息。查找的调用栈是怎么样的呢？  
-先看下查找zk上的path的子节点的调用栈：  
-ZkclientZookeeperClient.addTargetChildListener(Str</div>
+        <div>25.TPS限流知识各种限流算法的称呼网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。主要维度是：是正向计数还是反向计数。是定点(时间点)重置当前计数器还是每次接口调用时按量调整当前还剩的可用请求数。  
+通俗理解正向计数且定点(时间点)重置的流程                       +------------------</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -356,25 +348,26 @@ ZkclientZookeeperClient.addTargetChildListener(Str</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/28/dubbo-08.provider-how-to-register-and-open-server/">[dubbo]08.提供者如何注册服务 如何延迟暴露</a>
+      <a class="index-header" href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/">[dubbo]24.调用链如何构建的？ProtocolFilterWrapper分析</a>
 
-      <a href="/2020/05/28/dubbo-08.provider-how-to-register-and-open-server/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/" class="index-excerpt">
         
         
           
         
-        <div>08.提供者如何注册服务 如何延迟暴露provider的服务(机器ip、服务侦听端口等信息)如何让消费者找到，就是通过注册中心完成的。
-          +---------------+
-          |               |
-    +-----&gt;Register Center&lt;-----+
-    |     |               |     |
-  </div>
+        <div>24.调用链如何构建的？ProtocolFilterWrapper分析调用链的构建，可以理解成多个invoker实例组成链的构建。
+调用链构建在dubbo中分为两步骤：
+
+JavassistProxyFactory$1的构建。此步骤是将真正的业务方法同规避反射的手段包起来。
+ProtocolFilterWrapper$1的构建。此步骤是将每个filter用Invoker实例包起来并串起来链来。
+
+</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-28
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -403,24 +396,23 @@ ZkclientZookeeperClient.addTargetChildListener(Str</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/17/dubbo-07.build-provider/">[dubbo]07.提供者provider bean构建逻辑</a>
+      <a class="index-header" href="/2020/06/13/dubbo-23.io-thread-biz-thread/">[dubbo]23.IO线程与业务线程的合与分，以及提供的策略选择实现分析</a>
 
-      <a href="/2020/05/17/dubbo-07.build-provider/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-23.io-thread-biz-thread/" class="index-excerpt">
         
         
           
         
-        <div>07.提供者provider bean构建逻辑Server 侧demo
-启动类
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/com/code260/ss/dubbo/demov/server/conf/registercenter/zookeeper/applicationContextNode1.xml")
-pu</div>
+        <div>23.IO线程与业务线程的合与分，以及提供的策略选择实现分析io线程与业务线程合在一个线程上，还是把业务线程拆成单独的线程(线程池)去处理，一般来讲，取决于业务线程是否比较耗时。  
+如果业务线程比较耗时，就可以拆成单独的线程池处理，这样可以提升io吞吐。  
+如果业务线程不怎么耗时，处理非常快，那么就可以不拆成单独线程，因为这样可以降低上下文切换cs带来的开销。  
+这种方式在多个中间件都会有涉</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-17
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -449,23 +441,25 @@ pu</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/05/dubbo-06.build-consumer-proxy/">[dubbo]06.消费者consumer侧 reference bean生成逻辑</a>
+      <a class="index-header" href="/2020/06/13/dubbo-22.shared-thread-pool/">[dubbo]22.业务侧共享线程池还是隔离线程池区别与实现分析</a>
 
-      <a href="/2020/05/05/dubbo-06.build-consumer-proxy/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-22.shared-thread-pool/" class="index-excerpt">
         
         
           
         
-        <div>06.消费者consumer侧 reference bean生成逻辑client侧demo
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/com/code260/ss/dubbo/demov/client/conf/registercenter/zookeeper/applicationContext.xml")
-p</div>
+        <div>22.业务侧共享线程池还是隔离线程池区别与实现分析接下来两篇文章要讨论下线程隔离的问题，有两个维度：
+
+一个节点上多个provider之间的隔离。即下图的4 5 6线程是否要隔离在不同的线程池。
+一个节点上io线程与server handler线程的隔离。即下图的1与4(或者2和5，3和6)是否在同一个线程上执行。
+
+              I&#x2F;O                  </div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-05
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -494,21 +488,22 @@ p</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/04/dubbo-05.logger-mechanism/">[dubbo]05.dubbo日志机制</a>
+      <a class="index-header" href="/2020/06/13/dubbo-21.how-to-implement-group/">[dubbo]21.服务分组实现</a>
 
-      <a href="/2020/05/04/dubbo-05.logger-mechanism/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-21.how-to-implement-group/" class="index-excerpt">
         
         
           
         
-        <div>05.dubbo日志机制dubbo对于其日志机制，设计的还是比较灵活的，可以自由配置选用哪种日志框架。这样就能达成跟你的项目所采用的日志框架一致的目的。这是做中间件开发的同学一个值得学习的设计。tomcat是一直到8点几版本才开始能方便的支持不同日志框架的对接。早些版本都是要替换jar之类的办法，还是有一点麻烦的。有些开源框架只支持一种日志框架对接，这样就不是很好了。 
-入手处分析其日志机制，从哪</div>
+        <div>21.服务分组实现分析服务分组的test case我们假设的场景是，多idc机房，一个zk注册中心，我们通过分组设置达到，本机房的consumer调用本机房的provider。为了分析，我们假设了两个idc机房idc001和idc002
+provider端的节点1服务配置上加上group：  
+&lt;dubbo:service interface="com.code260.ss.dubbo.de</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-04
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -537,26 +532,22 @@ p</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/04/dubbo-04.extension-loader-impl/">[dubbo]04.dubbo扩展点实现</a>
+      <a class="index-header" href="/2020/06/13/dubbo-20.how-improve-reflect/">[dubbo]20.反射调用是如何优化的？Wrapper的作用是什么？</a>
 
-      <a href="/2020/05/04/dubbo-04.extension-loader-impl/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-20.how-improve-reflect/" class="index-excerpt">
         
         
           
         
-        <div>04.dubbo扩展点实现怎么入手分析与学习
-可以看官方的ExtensionLoaderTest 测试用例，以这些具体的case作为入口。
-也可以直接看ExtensionLoader代码。可以从getExtension,getAdaptiveExtension,getActivateExtension三个方法作为入口。
-
-扩展点的使用配置文件相关配置文件放在哪里？
-
-META-INF/dubbo/</div>
+        <div>20.反射调用是如何优化的？Wrapper的作用是什么？反编译生成的代码对于动态代码生成的class可以写出到本地，办法是：  
+在com.alibaba.dubbo.common.bytecode.ClassGenerator.mCtc这个实例有
+javassist.CtClass.writeFile(String)方法，可以在com.alibaba.dubbo.common.bytecode.</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-04
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
@@ -585,30 +576,29 @@ META-INF/dubbo/</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/04/config-default-jdk-version-for-maven/">maven项目导入后默认使用JDK版本问题</a>
+      <a class="index-header" href="/2020/06/13/dubbo-19.provider-thread-model-chain/">[dubbo]19.被consumer端调用时的线程模型与链路</a>
 
-      <a href="/2020/05/04/config-default-jdk-version-for-maven/" class="index-excerpt">
+      <a href="/2020/06/13/dubbo-19.provider-thread-model-chain/" class="index-excerpt">
         
         
           
         
-        <div>在我们导入maven项目后，有时候会发现默认依赖的JDK版本不是我们想要的。比如，我们导入xx项目到eclipse中，发现其默认依赖的JDK版本是1.5，但是会我们想要1.6的JDK，如何和解决？办法有两种：  
-1. 修改maven全局配置在maven的setting文件的profiles标签内加上这一段：  
-&lt;profile&gt;
-  &lt;id&gt;jdk16&lt;/id&g</div>
+        <div>19.被consumer端调用时的线程模型与链路provider侧  
+线程模型       +-----------------+         +-----------------+         +-----------------+
++------&gt;   boss&#x2F;         +--------&gt;+  worker&#x2F;        +-------</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-04
+            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
           </div>
         
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-category"></i>
             
-              <a href="/categories/program-language-practice/">program-language-practice</a>
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
             
           </div>
         
@@ -618,9 +608,7 @@ META-INF/dubbo/</div>
             
               <a href="/tags/java/">java</a>
             
-              <a href="/tags/dev-tools/">dev-tools</a>
-            
-              <a href="/tags/maven/">maven</a>
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
@@ -632,7 +620,7 @@ META-INF/dubbo/</div>
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/2/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/4/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/2/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/4/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   
