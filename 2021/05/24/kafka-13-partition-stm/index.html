@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>[kafka]13.分区状态机定义与变换逻辑 - Code to 60 码到60岁</title>
+  <title>[kafka]13.分区选主、分区状态机定义与变换逻辑 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -200,7 +200,7 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="分区状态机定义与变换逻辑"><a href="#分区状态机定义与变换逻辑" class="headerlink" title="分区状态机定义与变换逻辑"></a>分区状态机定义与变换逻辑</h2><h3 id="分区状态机启动"><a href="#分区状态机启动" class="headerlink" title="分区状态机启动"></a>分区状态机启动</h3><p>kafka.controller.PartitionStateMachine.startup()    </p>
+              <h2 id="分区选主、分区状态机定义与变换逻辑"><a href="#分区选主、分区状态机定义与变换逻辑" class="headerlink" title="分区选主、分区状态机定义与变换逻辑"></a>分区选主、分区状态机定义与变换逻辑</h2><h3 id="分区状态机启动"><a href="#分区状态机启动" class="headerlink" title="分区状态机启动"></a>分区状态机启动</h3><p>kafka.controller.PartitionStateMachine.startup()    </p>
 <ol>
 <li>初始化分区状态，按online offline new分类。  </li>
 <li>触发分区上线事件。事件的处理的逻辑主要是给partition选leader。  </li>
@@ -441,7 +441,7 @@ controllerContext.partitionReplicaAssignment ++= addedPartitionReplicaAssignment
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "[kafka]13.分区状态机定义与变换逻辑&nbsp;",
+        "[kafka]13.分区选主、分区状态机定义与变换逻辑&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,

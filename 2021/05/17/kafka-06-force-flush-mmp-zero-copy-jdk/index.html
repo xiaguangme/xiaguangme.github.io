@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>[kafka]06.强制写盘与JDK对其的支持、mmp、零拷贝等 - Code to 60 码到60岁</title>
+  <title>[kafka]06.强制写盘与JDK对其的支持、mmap、零拷贝等 - Code to 60 码到60岁</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -200,7 +200,7 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="强制写盘与JDK对其的支持、mmp、零拷贝等"><a href="#强制写盘与JDK对其的支持、mmp、零拷贝等" class="headerlink" title="强制写盘与JDK对其的支持、mmp、零拷贝等"></a>强制写盘与JDK对其的支持、mmp、零拷贝等</h2><h3 id="系统层面"><a href="#系统层面" class="headerlink" title="系统层面"></a>系统层面</h3><h4 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h4><p>fsync、fdatasync、sendfile、mmap</p>
+              <h2 id="强制写盘与JDK对其的支持、mmap、零拷贝等"><a href="#强制写盘与JDK对其的支持、mmap、零拷贝等" class="headerlink" title="强制写盘与JDK对其的支持、mmap、零拷贝等"></a>强制写盘与JDK对其的支持、mmap、零拷贝等</h2><h3 id="系统层面"><a href="#系统层面" class="headerlink" title="系统层面"></a>系统层面</h3><h4 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h4><p>fsync、fdatasync、sendfile、mmap</p>
 <p>fsync、fdatasync</p>
 <blockquote>
 <p>fsync, fdatasync - synchronize a file’s in-core state with storage device</p>
@@ -566,7 +566,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "[kafka]06.强制写盘与JDK对其的支持、mmp、零拷贝等&nbsp;",
+        "[kafka]06.强制写盘与JDK对其的支持、mmap、零拷贝等&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
