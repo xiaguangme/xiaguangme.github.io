@@ -367,7 +367,7 @@
           if ((i % 2) === 0) {
             res.push("<tr>");
           }
-          res.push('<td style="width:10em;padding-right:5em;">' + r2 + "&nbsp;" + op + "&nbsp;" + r3 + "&nbsp;" + "=" + "</td>");
+          res.push('<td style="width:6em;padding-right:1.5em;">' + r2 + "" + op + "" + r3 + "&nbsp;" + "=" + "</td>");
           if ((i % 2) === 1) {
             res.push("</tr>");
           }
@@ -381,23 +381,26 @@
         var res = [];
         res.push('<table style="font-size:2em;">');
         for (var i = 0; i < total; i++) {
-          var r1 = Math.ceil(Math.random()*10);
-          var r2 = Math.ceil(Math.random()*10);
-          var r3 = Math.ceil(Math.random()*10);
-          if (r2 == 10) {
-            r2 = 9;
+          var r1 = Math.ceil(Math.random()*100);
+          var r2 = Math.ceil(Math.random()*100);
+          var r3 = Math.ceil(Math.random()*100);
+          if (r2 == 100) {
+            r2 = 99;
           }
-          if (r3 == 10) {
-            r3 = 9;
+          if (r3 == 100) {
+            r3 = 99;
           }
           var op = (r1 % 2 == 0) ? '+' : '-';
-          if (op == '-' && r2 < r3) {
-            r2 = r2 + 10;
-          }
+
           if ((i % 2) === 0) {
             res.push("<tr>");
           }
-          res.push('<td style="width:10em;padding-right:5em;">' + r2 + "&nbsp;" + op + "&nbsp;" + r3 + "&nbsp;" + "=" + "</td>");
+          if (r2 > r3 ) {
+            res.push('<td style="width:6em;padding-right:1.5em;">' + r2 + "" + op + "" + r3 + "&nbsp;" + "=" + "</td>");
+          } else {
+            res.push('<td style="width:6em;padding-right:1.5em;">' + r3 + "" + op + "" + r2 + "&nbsp;" + "=" + "</td>");
+          }
+          
           if ((i % 2) === 1) {
             res.push("</tr>");
           }
