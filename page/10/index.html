@@ -175,50 +175,6 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
-
-      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
-        
-        
-          
-        
-        <div>几个概念的解释
-LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
-HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">kafka-clients 1.0 高阶API消费消息(未完)</a>
 
       <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/" class="index-excerpt">
@@ -606,6 +562,52 @@ curl  -X PUT -H "Content-Type:application/json" --data '&#123;"language":"java",
               <a href="/tags/dev-tools/">dev-tools</a>
             
               <a href="/tags/eclipse/">eclipse</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/20/dev-tools-on-ubuntu/">ubuntu开发机所需工具，做个记录，不断补充</a>
+
+      <a href="/2020/04/20/dev-tools-on-ubuntu/" class="index-excerpt">
+        
+        
+          
+        
+        <div>文件搜索FSearch 用了下可以， 类似windows下的Everything 或者mac的cmd+空格地址安装：  
+
+sudo add-apt-repository ppa:christian-boxdoerfer/fsearch-dailysudo apt-get updatesudo apt install fsearch-trunk  
+
+subl 1.txt   sublime比自带</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-20
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/dev-tools/">dev-tools</a>
+            
+              <a href="/tags/ubutnu/">ubutnu</a>
             
           </div>
         
