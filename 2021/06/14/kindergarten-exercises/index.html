@@ -144,7 +144,7 @@
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
           <div class="container text-center white-text fadeInUp">
             <span class="h2" id="subtitle">
-              
+              幼儿园练习题
             </span>
 
             
@@ -205,6 +205,22 @@
             </article>
             <hr>
             <div>
+
+                <p>
+                  随机生成20以内加减法32条：<button id="gen_30_add_b20_btn">开始生成</button>
+                </p>
+                <p>
+                  <div id="gen_30_add_b20_result">
+                    
+                  </div>
+
+                </p>
+                <p>
+                  <a href="http://gshqd2.c8xh.com/?a=&b=&c=" target="_blank" rel="noopener">汉语拼音读法</a>
+                </p>
+                <p>
+                  <a href="https://mp.weixin.qq.com/s/5uoOMoyAPCopT5sn8W09mg" target="_blank" rel="noopener">汉语拼音笔画</a>
+                </p>
              
               
                 <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
@@ -321,7 +337,35 @@
         $('#toc').css('visibility', 'visible');
       }
 
-      alert("hello");
+      $('#gen_30_add_b20_btn').click(function(){
+        var total = 32;
+        var res = [];
+        res.push('<table style="font-size:2em;">');
+        for (var i = 0; i < total; i++) {
+          var r1 = Math.ceil(Math.random()*10);
+          var r2 = Math.ceil(Math.random()*10);
+          var r3 = Math.ceil(Math.random()*10);
+          if (r2 == 10) {
+            r2 = 9;
+          }
+          if (r3 == 10) {
+            r3 = 9;
+          }
+          var op = (r1 % 2 == 0) ? '+' : '-';
+          if (op == '-' && r2 < r3) {
+            r2 = r2 + 10;
+          }
+          if ((i % 4) === 0) {
+            res.push("<tr>");
+          }
+          res.push('<td style="width:10em;">' + r2 + "&nbsp;" + op + "&nbsp;" + r3 + "&nbsp;" + "=" + "</td>");
+          if ((i % 4) === 3) {
+            res.push("</tr>");
+          }
+        }
+        res.push("</table>");
+        $('#gen_30_add_b20_result').html(res.join("\n"));
+      });
     });
   </script>
 
