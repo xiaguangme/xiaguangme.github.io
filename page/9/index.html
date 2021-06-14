@@ -175,6 +175,48 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/">kafka-clients 1.0 内部响应接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/" class="index-excerpt">
+        
+        
+          
+        
+        <div>AddOffsetsToTxnResponseversion:0nametypedefaultValuedocStringthrottle_time_msINT320Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not viol</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/22/kafka1-0-generate-rpc-doc/">生成kafka内部请求与响应的接口文档</a>
 
       <a href="/2020/04/22/kafka1-0-generate-rpc-doc/" class="index-excerpt">
@@ -569,50 +611,6 @@ kafka-run-class.sh kafka.tools.GetOf</div>
 发起线程  controller-event-threadcontroller选举的时候
 CLASS_NAME     METHOD_NAME    LINE_NUM  
 kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
-
-      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
-        
-        
-          
-        
-        <div>几个概念的解释
-LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
-HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
       </a>
 
       <div class="index-btm post-metas">

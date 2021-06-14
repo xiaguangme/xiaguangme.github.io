@@ -175,6 +175,52 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/30/dubbo-10.how-invoke-service-after-found/">[dubbo]10.发现到服务之后如何玩转调用的最简过程</a>
+
+      <a href="/2020/05/30/dubbo-10.how-invoke-service-after-found/" class="index-excerpt">
+        
+        
+          
+        
+        <div>10.发现到服务之后如何玩转调用的最简过程上一篇文章中讲述了消费这么找到服务，怎么为后面的调用准备client与invoker。  
+这篇我们探讨下，当一个rpc服务真正发起调用时是怎样的，经历那些过程。  
+我们先截取一段服务发起调用时的调用栈，在截取调用栈之前我们先准备一个用例，有返回值的rpc调用，后面文章也会用到。
+相关case代码facade端的接口:  
+package com.cod</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/05/30/dubbo-09.how-to-find-service-for-consumer/">[dubbo]09.消费者如何发现服务</a>
 
       <a href="/2020/05/30/dubbo-09.how-to-find-service-for-consumer/" class="index-excerpt">
@@ -584,53 +630,6 @@ META-INF/dubbo/</div>
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/food/">food</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/02/dubbo-03.extensible_services/">[dubbo]03. 扩展点背景以及JDK提供的扩展点</a>
-
-      <a href="/2020/05/02/dubbo-03.extensible_services/" class="index-excerpt">
-        
-        
-          
-        
-        <div>03. 扩展点背景以及JDK提供的扩展点为什么需要扩展点因为为了达成能扩展的目的。
-更多细节可以阅读oracle官方文档Creating Extensible Applications With the Java Platform
-重点：
-
-Definitions  
-A service is a set of programming interfaces and classes that pro</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-02
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
             
           </div>
         
