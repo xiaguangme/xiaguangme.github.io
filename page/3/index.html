@@ -175,24 +175,25 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/08/01/c3p0-practice/">c3p0相关</a>
+      <a class="index-header" href="/2021/02/14/read-of-robust-java-benchmarking/">健壮的(robust)Java benchmarking 阅读笔记</a>
 
-      <a href="/2020/08/01/c3p0-practice/" class="index-excerpt">
+      <a href="/2021/02/14/read-of-robust-java-benchmarking/" class="index-excerpt">
         
         
           
         
-        <div>c3p0相关 由于一些历史原因，工作中部分项目还在使用c3p0。这个连接池相对古老，问题相对较多，所以抽时间稍微了解了下。  
-官方或者maven仓库提供的0.9.1.2版本的source，或多或少的有些编译问题。或者是部分类是编译时生成的，比如Newxxx等类。下面的分支对其做了补齐。
-没有编译错误的代码分支
-demo在这里
-整体大致逻辑有：获取(取出)连接、归还连接、创建真实物理连接、最小最大</div>
+        <div>健壮的(robust)Java benchmarking 阅读笔记理解Java代码编写的benchmarking的陷阱(pitfalls)  
+采样与计时
+对目标方法多次后计算平均耗时。
+使用System.nanoTime,而不是System.currentTimeMillis（毫秒 由于一些操作系统差异，导致其精度有问题）。  
+
+代码预热大多数JVM实现有一个复杂难懂的性能生命周期，一般来讲，</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-08-01
+            <i class="iconfont icon-date"></i>&nbsp;2021-02-14
           </div>
         
         
