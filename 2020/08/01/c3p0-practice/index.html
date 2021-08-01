@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="羽衣">
   <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
-  <title>健壮的(robust)Java benchmarking 阅读笔记 - Code to 60</title>
+  <title>c3p0相关 - Code to 60</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
@@ -150,8 +150,8 @@
               
                 <div class="mt-3 post-meta">
                   <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-                  <time datetime="2021-02-14 11:39">
-                    星期日, 二月 14日 2021, 11:39 中午
+                  <time datetime="2020-08-01 19:03">
+                    星期六, 八月 1日 2020, 7:03 晚上
                   </time>
                 </div>
               
@@ -161,7 +161,7 @@
                   
                   <span class="post-meta mr-2">
                     <i class="iconfont icon-chart"></i>
-                    822 字
+                    1.1k 字
                   </span>
                 
 
@@ -171,7 +171,7 @@
                       <i class="iconfont icon-clock-fill"></i>
                     
                     
-                    8
+                    16
                      分钟
                   </span>
                 
@@ -200,32 +200,108 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="健壮的-robust-Java-benchmarking-阅读笔记"><a href="#健壮的-robust-Java-benchmarking-阅读笔记" class="headerlink" title="健壮的(robust)Java benchmarking 阅读笔记"></a>健壮的(robust)Java benchmarking 阅读笔记</h2><p>理解Java代码编写的benchmarking的陷阱(pitfalls)  </p>
-<h3 id="采样与计时"><a href="#采样与计时" class="headerlink" title="采样与计时"></a>采样与计时</h3><ol>
-<li>对目标方法多次后计算平均耗时。</li>
-<li>使用System.nanoTime,而不是System.currentTimeMillis（毫秒 由于一些操作系统差异，导致其精度有问题）。  </li>
-</ol>
-<h3 id="代码预热"><a href="#代码预热" class="headerlink" title="代码预热"></a>代码预热</h3><p>大多数JVM实现有一个复杂难懂的性能生命周期，一般来讲，初始的性能通常是慢的，然后他不断提升，直至到一个稳定状态。 </p>
-<h4 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h4><p>JVM针对类加载的典型做法是在其第一次使用时。所以第一次执行任务的时间包括了类加载的时间，这次包括磁盘io、解析、验证等等。<br>可以通过ClassLoadingMXbean的getTotalLoadedClassCount和getUnloadedClassCount方法在benchmark执行的前后确定类的加载与卸载。</p>
-<h4 id="混合模式"><a href="#混合模式" class="headerlink" title="混合模式"></a>混合模式</h4><p>先执行task一次加载所有的class。<br>执行task足够多次，以确保性能达到稳定状态。<br>继续执行task一些次数，计算总耗时并除以次数后得到结果。  </p>
-<h3 id="动态优化"><a href="#动态优化" class="headerlink" title="动态优化"></a>动态优化</h3><h4 id="逆优化"><a href="#逆优化" class="headerlink" title="逆优化"></a>逆优化</h4><p>JVM有时会停止使用编译的方式退化到解释模式。有两个例子如下：  </p>
+              <h2 id="c3p0相关"><a href="#c3p0相关" class="headerlink" title="c3p0相关"></a>c3p0相关</h2><p> 由于一些历史原因，工作中部分项目还在使用c3p0。这个连接池相对古老，问题相对较多，所以抽时间稍微了解了下。  </p>
+<p>官方或者maven仓库提供的<code>0.9.1.2</code>版本的source，或多或少的有些编译问题。或者是部分类是编译时生成的，比如Newxxx等类。下面的分支对其做了补齐。</p>
+<p><a href="https://github.com/xiaguangme/c3p0-src-noce/tree/0.9.1.2" target="_blank" rel="noopener">没有编译错误的代码分支</a></p>
+<p><a href="https://github.com/xiaguangme/c3p0-demo" target="_blank" rel="noopener">demo在这里</a></p>
+<p>整体大致逻辑有：获取(取出)连接、归还连接、创建真实物理连接、最小最大连接数、idle时间、idle检测等等。</p>
+<ul>
+<li><p>从C3P0PooledConnectionPoolManager中拿到C3P0PooledConnectionPool com.mchange.v2.c3p0.impl.C3P0PooledConnectionPoolManager.getPool(DbAuth)</p>
+</li>
+<li><p><strong>获取(取出)连接</strong>checkout<br>从C3P0PooledConnectionPool中checkout出PooledConnection<br>PooledConnectioBasicResourcePooln(代码中具体的是NewPooledConnection) 是在BasicResourcePool 中管理的， 代码中简称rp<br> 也是有关闭的概念  一旦关闭了 就不能再从里面checkout出连接了</p>
+</li>
+<li><p>new proxy<br>NewProxyConnection （physicalConnection—com.mysql.jdbc.JDBC4Connection）  NewPooledConnection.java<br>具体关系是这样的：<br>是在NewPooledConnection中构建 了NewProxyConnection，构建NewProxyConnection时送进去的构造参数的也就是真正连接是physicalConnection(该实例对应的类是com.mysql.jdbc.JDBC4Connection），   NewProxyConnection的parentPooledConnection又被设置成构造他的NewPooledConnection实例。<br>然后真正返回给业务侧使用的也就是NewProxyConnection实例。</p>
+<pre><code class="hljs java">    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> Connection <span class="hljs-title">getConnection</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> SQLException</span>
+<span class="hljs-function">    </span>&#123;
+        <span class="hljs-keyword">try</span>
+        &#123;
+            <span class="hljs-comment">//throw new SQLException("NOT IMPLEMENTED");</span>
+            <span class="hljs-keyword">if</span> ( exposedProxy == <span class="hljs-keyword">null</span> )
+            &#123;
+                exposedProxy = <span class="hljs-keyword">new</span> NewProxyConnection( physicalConnection, <span class="hljs-keyword">this</span> );
+            &#125;
+            <span class="hljs-keyword">else</span>
+            &#123;
+<span class="hljs-comment">//              System.err.println("c3p0 -- Uh oh... getConnection() was called on a PooledConnection when " +</span>
+<span class="hljs-comment">//              "it had already provided a client with a Connection that has not yet been " +</span>
+<span class="hljs-comment">//              "closed. This probably indicates a bug in the connection pool!!!");</span>
+
+                <span class="hljs-keyword">if</span> ( logger.isLoggable( MLevel.WARNING ) )
+                    logger.warning(<span class="hljs-string">"c3p0 -- Uh oh... getConnection() was called on a PooledConnection when "</span> +
+                                    <span class="hljs-string">"it had already provided a client with a Connection that has not yet been "</span> +
+                    <span class="hljs-string">"closed. This probably indicates a bug in the connection pool!!!"</span>);
+
+            &#125;
+            <span class="hljs-keyword">return</span> exposedProxy;
+        &#125;
+        <span class="hljs-keyword">catch</span> ( Exception e )
+        &#123;
+            SQLException sqle = handleThrowable( e );
+            <span class="hljs-keyword">throw</span> sqle;
+        &#125;
+    &#125;</code></pre>
+
+
+
+</li>
+</ul>
+<ul>
+<li><p><strong>创建物理连接</strong>的地方<br>com.mchange.v2.c3p0.DriverManagerDataSource.getConnection(String, String)  </p>
+<p>com.mchange.v2.c3p0.DriverManagerDataSource<br>创建物理连接的调用栈: </p>
+<pre><code class="hljs java"><span class="hljs-meta">@com</span>.mchange.v2.c3p0.DriverManagerDataSource.getConnection()
+    at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:<span class="hljs-number">183</span>)
+    at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:<span class="hljs-number">172</span>)
+    at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool$<span class="hljs-number">1</span>PooledConnectionResourcePoolManager.acquireResource(C3P0PooledConnectionPool.java:<span class="hljs-number">139</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool.doAcquire(BasicResourcePool.java:<span class="hljs-number">1014</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool.access$<span class="hljs-number">3</span>(BasicResourcePool.java:<span class="hljs-number">1010</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool$AcquireTask.run(BasicResourcePool.java:<span class="hljs-number">1810</span>)
+    at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:<span class="hljs-number">183</span>)        at com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:<span class="hljs-number">547</span>)
+    at com.mchange.v2.c3p0.WrapperConnectionPoolDataSource.getPooledConnection(WrapperConnectionPoolDataSource.java:<span class="hljs-number">172</span>)
+    at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool$<span class="hljs-number">1</span>PooledConnectionResourcePoolManager.acquireResource(C3P0PooledConnectionPool.java:<span class="hljs-number">139</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool.doAcquire(BasicResourcePool.java:<span class="hljs-number">1014</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool.access$<span class="hljs-number">3</span>(BasicResourcePool.java:<span class="hljs-number">1010</span>)
+    at com.mchange.v2.resourcepool.BasicResourcePool$AcquireTask.run(BasicResourcePool.java:<span class="hljs-number">1810</span>)
+    at com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:<span class="hljs-number">547</span>)</code></pre>
+
+<p><strong>创建真实连接AcquireTask</strong>任务创建的调用栈：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">08</span>-<span class="hljs-number">01</span> <span class="hljs-number">11</span>:<span class="hljs-number">19</span>:<span class="hljs-number">33</span>;thread_name=Timer-<span class="hljs-number">0</span>;id=d;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.mchange.v2.resourcepool.BasicResourcePool$AcquireTask.&lt;init&gt;()
+        at com.mchange.v2.resourcepool.BasicResourcePool.expandPool(BasicResourcePool.java:<span class="hljs-number">454</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool._recheckResizePool(BasicResourcePool.java:<span class="hljs-number">395</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool.recheckResizePool(BasicResourcePool.java:<span class="hljs-number">437</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool.ensureMinResources(BasicResourcePool.java:<span class="hljs-number">1571</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool.cullExpired(BasicResourcePool.java:<span class="hljs-number">1469</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool.access$<span class="hljs-number">12</span>(BasicResourcePool.java:<span class="hljs-number">1442</span>)
+        at com.mchange.v2.resourcepool.BasicResourcePool$CullTask.run(BasicResourcePool.java:<span class="hljs-number">1937</span>)
+        at java.util.TimerThread.mainLoop(Timer.java:<span class="hljs-number">555</span>)
+        at java.util.TimerThread.run(Timer.java:<span class="hljs-number">505</span>)</code></pre>
+</li>
+<li><p>归还连接的地方。close方法触发<br>com.mchange.v2.resourcepool.BasicResourcePool.checkinResource(Object) 负责归还连接到资源池</p>
+<pre><code class="hljs java">Thread [main] (Suspended (breakpoint at line <span class="hljs-number">1215</span> in BasicResourcePool))  
+  owns: BasicResourcePool  (id=<span class="hljs-number">34</span>)  
+  owns: NewProxyConnection  (id=<span class="hljs-number">35</span>) 
+  BasicResourcePool.doCheckinManaged(Object) line: <span class="hljs-number">1215</span> 
+  BasicResourcePool.checkinResource(Object) line: <span class="hljs-number">647</span> 
+  C3P0PooledConnectionPool$ConnectionEventListenerImpl.doCheckinResource(ConnectionEvent) line: <span class="hljs-number">636</span> 
+  C3P0PooledConnectionPool$ConnectionEventListenerImpl.connectionClosed(ConnectionEvent) line: <span class="hljs-number">630</span>  
+  ConnectionEventSupport.fireConnectionClosed() line: <span class="hljs-number">55</span>  
+  NewPooledConnection.fireConnectionClosed() line: <span class="hljs-number">510</span>  
+  NewPooledConnection.markClosedProxyConnection(NewProxyConnection, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">381</span>  
+  NewProxyConnection.close() line: <span class="hljs-number">78</span> 
+  C3poDemo1.testQuery() line: <span class="hljs-number">77</span>  
+  C3poDemo1.main(String[]) line: <span class="hljs-number">51</span></code></pre>
+</li>
+<li><p>idle连接过期时间到了，会释放连接并重新创建真实连接达成expand pool。</p>
+</li>
+</ul>
+<p>通过不断的创建任务放到自己实现的线程池ThreadPoolAsynchronousRunner中去执行，达到；连接创建与归还的目的。</p>
+<p><code>ThreadPoolAsynchronousRunner</code>中<code>PoolThread</code>是执行线程<br>他的run方法不断将pendingTasks中任务拿出来进行执行<br>他的实例可以有多个 通过synchronized ( ThreadPoolAsynchronousRunner.this )搞定并发问题 </p>
+<p>c3p0的问题有：</p>
 <ol>
-<li>class loading会使一些单一的调用转换过期作废。  </li>
-<li>一些不正常的路径被执行到，比如异常分支，如果执行了很多次则会触发重新编译。</li>
+<li>归还的任务没有优先级，本意上我们希望它能被优先执行。</li>
+<li>多处使用synchronized</li>
+<li>没有监控与度量。对于连接池，我们需要监控：获取连接对象的时间，在使用的连接数量，idle的连接数量，连接出池时间，创建真实连接的数量与频率，创建真实连接错误的次数和原因等。</li>
 </ol>
-<h4 id="OSR问题"><a href="#OSR问题" class="headerlink" title="OSR问题"></a>OSR问题</h4><p>OSR(On-stack replacement)可以用在单一方法调用的内部的多次循环上，但是OSR有时不能做循环提升，数组范围检查消除和循环展开，进而影响性能数据。<br>唯一的解决办法是识别出它能发生在哪里，且重新结构化你的代码。一般的做法是，将关键的代码循环放入到单独的方法中。<br>文中的case，阻止OSR后，性能提升一倍。<br>但是OSR也不是那么脆弱，不要过于对此焦虑(anxious)，除非你确定你的代码是因OSR造成了issue。  </p>
-<h4 id="DCE问题"><a href="#DCE问题" class="headerlink" title="DCE问题"></a>DCE问题</h4><p>DCE(Dead-code elimination)的典型例子有个是jjavac在编译期静态的进行消除。动态编译器也可以做DCE，但是我们暂时没有一个好的描述关于怎样的代码就算是dead code。虽说不可达代码是显而易见的一种，但是JVM有更多的激进的DCE策略。比如文中的case：</p>
-<ol>
-<li>计算result</li>
-<li>最后输出result<br>对于步骤2是否执行，会极大的影响程序的性能，如果不输出result，JVM会认为是DCE，则不再对result进行计算，那么将得到一个错误的性能数据。所以你如果要得到正确的计算result的性能数据，那么需要在最后将result输出(或者其他手段阻止DCE发生)。 </li>
-</ol>
-<p><strong>比较阻止OSR和阻止DCE：</strong>  </p>
-<ol>
-<li>未阻止OSR，最多导致一个不精确的结果。  </li>
-<li>未阻止DCE，将导致一个完全错误的结果。  </li>
-</ol>
-<h4 id="资源回收"><a href="#资源回收" class="headerlink" title="资源回收"></a>资源回收</h4><p>主要讲了GC/OF对测试的影响，并给出了错误的统计GC/OF影响的方式。<br>使用System.gc时可能会得到一个错误的失真的结果，注意jvm的参数-XX:+ExplicitGCInvokesConcurrent -XX:+DisableExplicitGC。</p>
-<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>系统缓存、电源、其他程序、JVM选项对benchmark的影响</p>
 
             </article>
             <hr>
@@ -256,9 +332,9 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2021/03/27/arthas-advance-use-1/">
+                      <a href="/2021/02/14/read-of-robust-java-benchmarking/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">arthas进阶使用-1</span>
+                        <span class="hidden-mobile">健壮的(robust)Java benchmarking 阅读笔记</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -266,8 +342,8 @@
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/08/01/c3p0-practice/">
-                        <span class="hidden-mobile">c3p0相关</span>
+                      <a href="/2020/07/11/spring-01-01.utils-annotation/">
+                        <span class="hidden-mobile">[spring-utils]01-02.工具类-注解相关</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -407,7 +483,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "健壮的(robust)Java benchmarking 阅读笔记&nbsp;",
+        "c3p0相关&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
