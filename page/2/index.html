@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/22/kafka-11-controller-elected-leader-boot/">[kafka]11.controller如何选主及其启动过程分析</a>
+
+      <a href="/2021/05/22/kafka-11-controller-elected-leader-boot/" class="index-excerpt">
+        
+        
+          
+        
+        <div>controller如何选主及其启动过程分析broker启动
+kafka.controller.KafkaController.startup()   // controller启动  注册了启动Startup事件用于选择controller，即controller选主(KafkaController.scala 1141行)  以及RegisterBrokerAndReelec
+kafka.se</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/05/21/kafka-10-HW-update/">[kafka]10.HW更新</a>
 
       <a href="/2021/05/21/kafka-10-HW-update/" class="index-excerpt">
@@ -574,47 +618,6 @@ gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中
               <a href="/tags/scala/">scala</a>
             
               <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/03/27/arthas-advance-use-1/">arthas进阶使用-1</a>
-
-      <a href="/2021/03/27/arthas-advance-use-1/" class="index-excerpt">
-        
-        
-          
-        
-        <div>arthas进阶使用-1本篇主要记录arthas除了watch、trace、stack、sc、thread等常用命令之外的用法。  
-为什么琢磨这些“高级”用法，源于我在阅读一些其他代码(或者定位问题时)，我要分析诊断初始化过程，包括main方法刚刚启动时，如果是传统的attach玩法，main方法早已跑了多远下去了。好在arthas本身就支持agent模式，我改了两行代码加挖掘了他一些用法达成了</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-03-27
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
             
           </div>
         

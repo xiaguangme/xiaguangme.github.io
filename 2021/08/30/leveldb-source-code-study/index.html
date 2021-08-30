@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[leveldb]leveldb源码阅读 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-08-30 23:55">
+                    星期一, 八月 30日 2021, 11:55 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    5.6k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    75
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="leveldb源码阅读"><a href="#leveldb源码阅读" class="headerlink" title="leveldb源码阅读"></a>leveldb源码阅读</h1><p>文章结构</p>
+<ul>
+<li>01.前期准备</li>
+<li>02.整体架构与相关图解</li>
+<li>03.写数据分析</li>
+<li>04.读数据分析</li>
+<li>05.LRU与skiplist实现</li>
+<li>06.compact分析</li>
+<li>07.多种iter实现</li>
+<li>08.系统api对接调用</li>
+</ul>
+<h2 id="01-前期准备"><a href="#01-前期准备" class="headerlink" title="01. 前期准备"></a>01. 前期准备</h2><p>版本 <code>v1.20</code></p>
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> master </span>
+git clone --recurse-submodules https://github.com/google/leveldb.git
+
+<span class="hljs-meta">#</span><span class="bash"> v1.20</span>
+git checkout v1.20
+<span class="hljs-meta">#</span><span class="bash"> 生产版本</span>
+make
+<span class="hljs-meta">#</span><span class="bash"> 调试版本</span>
+make OPT=-g2
+
+<span class="hljs-meta">#</span><span class="bash"> demo项目</span>
+<span class="hljs-meta">#</span><span class="bash"> 设置动态库路径，用CDT的时候 把这个配置run configuration的环境变量中</span>
+export LD_LIBRARY_PATH=/home/xxx/004.work/001.workspace/02.cpp-200803/leveldb-demo/libs
+
+<span class="hljs-meta">#</span><span class="bash">修改makefile</span>
+LIBS =      /home/xxx/004.work/001.workspace/02.cpp-200803/leveldb-demo/libs/*.so
+
+<span class="hljs-meta">#</span><span class="bash"> 配置CDT</span>
+<span class="hljs-meta">#</span><span class="bash"> 增加build 环境变量</span>
+CPLUS_INCLUDE_PATH=/home/chenxiaguang/500.ssd/600.self/002.code/02.cpp/004.level/leveldb/include</code></pre>
+
+
+
+<h2 id="02-整体架构与相关图解"><a href="#02-整体架构与相关图解" class="headerlink" title="02. 整体架构与相关图解"></a>02. 整体架构与相关图解</h2><h3 id="一些关键词与基本概念"><a href="#一些关键词与基本概念" class="headerlink" title="一些关键词与基本概念"></a>一些关键词与基本概念</h3><p><code>LSM</code>   <code>appendonly</code>  <code>写性能友好</code>   <code>MemTable</code>   <code>sst/ldb文件</code>  <code>WAL</code>  <code>skiplist</code>  <code>LRU</code>  <code>MANIFEST</code></p>
+<p>leveldb是LSM-Tree的一个实现。LSM-Tree 由三个数据结构组成：内存表分为 Memtable 和 ImmutableTable，磁盘上的 ldb(SSTable) 文件。写内存表时会先写WAL，即log文件，用于恢复等。</p>
+<h3 id="相关图解"><a href="#相关图解" class="headerlink" title="相关图解"></a>相关图解</h3><h4 id="leveldb中skiplist跳表图解"><a href="#leveldb中skiplist跳表图解" class="headerlink" title="leveldb中skiplist跳表图解"></a>leveldb中skiplist跳表图解</h4><p><img src="https://www.code260.com//img/leveldb-skiplist.png" srcset="/img/loading.gif" alt=""></p>
+<h4 id="leveldb中LRU-cache图解"><a href="#leveldb中LRU-cache图解" class="headerlink" title="leveldb中LRU cache图解"></a>leveldb中LRU cache图解</h4><p><img src="https://www.code260.com//img/leveldb-lru.png" srcset="/img/loading.gif" alt=""></p>
+<h4 id="leveldb中文件格式图解-MANIFEST文件"><a href="#leveldb中文件格式图解-MANIFEST文件" class="headerlink" title="leveldb中文件格式图解-MANIFEST文件"></a>leveldb中文件格式图解-MANIFEST文件</h4><p><img src="https://www.code260.com//img/leveldb-manifest-format.png" srcset="/img/loading.gif" alt=""></p>
+<h4 id="leveldb中文件格式图解-ldb-sst-文件"><a href="#leveldb中文件格式图解-ldb-sst-文件" class="headerlink" title="leveldb中文件格式图解-ldb(sst)文件"></a>leveldb中文件格式图解-ldb(sst)文件</h4><p><img src="https://www.code260.com//img/leveldb-sst-format.png" srcset="/img/loading.gif" alt=""></p>
+<h2 id="03-写数据分析"><a href="#03-写数据分析" class="headerlink" title="03. 写数据分析"></a>03. 写数据分析</h2><p>在leveldb的整体架构上来说，<strong>写数据是先写log再写MemTable，MemTable到一定大小时再compact刷盘</strong>。</p>
+<h3 id="写流程"><a href="#写流程" class="headerlink" title="写流程"></a>写流程</h3><ul>
+<li><p>DBImpl::MakeRoomForWrite 此处主要<strong>完成MemTable已用大小的检查，并对如果MemTable满了之后的处理</strong>。当MemTable到一定大小(默认4MB)时，就会触发compact刷盘，就是在此处完成逻辑判断的。当MemTable满了且imm table未完成compcat刷盘，那么就在此等待。此外，当MemTable满了且L0文件太多也会在此等待。</p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// db_impl.cc</span>
+<span class="hljs-comment">// line 1341</span>
+<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!force &amp;&amp;
+               (mem_-&gt;ApproximateMemoryUsage() &lt;= options_.write_buffer_size)) &#123; <span class="hljs-comment">// options_.write_buffer_size默认是4MB。是否超过compact刷盘阈值的判断。</span>
+      <span class="hljs-comment">// There is room in current memtable</span>
+      <span class="hljs-keyword">break</span>;<span class="hljs-comment">// 正常是走到这个分支break，因为有空间可以直接写</span>
+<span class="hljs-comment">// ...........</span>
+<span class="hljs-comment">// line 1345    </span>
+&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (imm_ != <span class="hljs-literal">NULL</span>) &#123; <span class="hljs-comment">// 这个分支表示写的太快了， MemTable满了且imm table未完成compcat刷盘，那么就在此等待</span>
+      <span class="hljs-comment">// We have filled up the current memtable, but the previous</span>
+      <span class="hljs-comment">// one is still being compacted, so we wait.</span>
+      Log(options_.info_log, <span class="hljs-string">"Current memtable full; waiting...\n"</span>);
+      bg_cv_.Wait();
+&#125; <span class="hljs-keyword">else</span> &#123;
+<span class="hljs-comment">// ...........</span>
+<span class="hljs-comment">// line 1375    </span>
+      MaybeScheduleCompaction(); <span class="hljs-comment">// 触发compact刷盘</span>
+    &#125;</code></pre>
+
+
+
+</li>
+</ul>
+<ul>
+<li><p>Writer::AddRecord log_writer.cc line36 <strong>写WAL log</strong>。</p>
+<ul>
+<li>根据block上还剩的大小来确定能否写得这次的数据，进而推断出RecordType。RecordType分为kFullType、kFirstType、kLastType、kMiddleType。能完全写得下的称之为kFullType，只能写前面一部分的为kFirstType，只能写后面一部分的为kLastType，只能写中间一部分的为kMiddleType。</li>
+<li>Writer::EmitPhysicalRecord log_writer.cc line84写物理记录，即写WAL日志，即数据目录下的xxx.log。写的方式也比较简单，先写header再写数据，数据定长。<ul>
+<li>header长度为7，索引0<del>3的这四个byte为数据的crc值通过fixed32方式编码的结果，索引4</del>5的两个byte表示长度。索引6的这个byte表示上一步推导出来的类型。</li>
+<li>写完header后在后面append数据。然后更新block_offset_，更新的逻辑就是在原来他的值的基础上加上header size和数据的长度。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="hljs txt">♨ hexdump -C &#x2F;tmp&#x2F;testdb02&#x2F;000163.log
+00000000  64 04 5f 0c 1c 00 01 5f  88 1e 00 00 00 00 00 01  |d._...._........|
+00000010  00 00 00 01 03 6b 2d 63  0a 68 65 6c 6c 6f 2d 31  |.....k-c.hello-1|
+00000020  31 2d 63                                          |1-c|
+00000023</code></pre>
+
+<p>这是我写完log后文件的内容，我demo中写如的key是k-c，value是hello-11-c。</p>
+</li>
+<li><p>MemTable::Add  memtable.cc line82 <strong>分配内存并组织需要插入MemTable的数据buf</strong>。buf的具体的组织形式是：第一个byte是internal_key_size以Varint32编码后的值，internal_key_size是key的大小加8。接下来是key的数据。接下来8个byte是SequenceNumber和type(指ValueType，即在demo case中此处是kTypeValue)合在一起后以Fixed64编码后的值。合的方式是(SequenceNumber &lt;&lt; 8) | type。相当于后一位给type用。接下来的一个byte是val_size以Varint32编码后的值。接下来是value的数据。</p>
+</li>
+<li><p>SkipList&lt;Key,Comparator&gt;::Insert  skiplist.h line 337 <strong>将key引用插入MemTable</strong>。 MemTable的<strong>内部数据结构是一个<code>skiplist</code></strong>。本系列文章中有章节会详细描述关于<code>skiplist</code>，此处不再赘述。</p>
+</li>
+</ul>
+<p>写入过程的关键调用堆栈：  </p>
+<pre><code class="hljs cpp">Thread #<span class="hljs-number">1</span> [leveldb-demo] <span class="hljs-number">3045680</span> [core: <span class="hljs-number">3</span>] (Suspended : Step)	
+	leveldb::SkipList&lt;<span class="hljs-keyword">char</span> <span class="hljs-keyword">const</span>*, leveldb::MemTable::KeyComparator&gt;::Insert() at skiplist.h:<span class="hljs-number">341</span> <span class="hljs-number">0x7ffff7d7c509</span>	
+	leveldb::MemTable::Add() at memtable.cc:<span class="hljs-number">105</span> <span class="hljs-number">0x7ffff7d7bae4</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::MemTableInserter::Put at write_batch.cc:<span class="hljs-number">118</span> <span class="hljs-number">0x7ffff7d8e795</span>	
+	leveldb::WriteBatch::Iterate() at write_batch.cc:<span class="hljs-number">59</span> <span class="hljs-number">0x7ffff7d8e487</span>	
+	leveldb::WriteBatchInternal::InsertInto() at write_batch.cc:<span class="hljs-number">133</span> <span class="hljs-number">0x7ffff7d8e882</span>	
+	leveldb::DBImpl::Write() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">233</span> <span class="hljs-number">0x7ffff7d6c41a</span>	
+	leveldb::DB::Put() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">479</span> <span class="hljs-number">0x7ffff7d6d61e</span>	
+	leveldb::DBImpl::Put() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">187</span> <span class="hljs-number">0x7ffff7d6c081</span>	
+	testPutDbSingleKey() at leveldb-demo.cpp:<span class="hljs-number">98</span> <span class="hljs-number">0x4018c9</span>	
+	main() at leveldb-demo.cpp:<span class="hljs-number">222</span> <span class="hljs-number">0x4015c9</span></code></pre>
+
+<h2 id="04-读数据分析"><a href="#04-读数据分析" class="headerlink" title="04. 读数据分析"></a>04. 读数据分析</h2><p>在leveldb的整体架构上来说，<strong>读数据是先查找MemTable mem；找不到则查找MemTable imm，MemTable内部的数据结构是skiplist；再找不到则查找current(Version)，这个Version背后对应的是ldb(老版本是sst文件，下同)文件</strong>。</p>
+<p>sst:Sorted String Table</p>
+<h3 id="读流程"><a href="#读流程" class="headerlink" title="读流程"></a>读流程</h3><ul>
+<li><p>构造LookupKey，LookupKey结构如下：</p>
+<pre><code class="hljs plain"> LookupKey
+ +           +                                     +            +
+ &lt;+最大长度5+&gt;                                       &lt;-+固定长度8+&gt;
+ |           |                                     |            |
+ +--------------------------------------------------------------+
+ |           |                                     |            |
+ |           |                                     |            |
+ |           |                                     |            |
+ +-----------+-------------------------------------+------------+
+①           ②                                    ③            ④
++            +                                     +            +
+|            |                                     |            |
+|            |                                     |            |
+|            |                                     |            v end_
+|            |                                     |
+|            |                                     |   ③和④之间是seqNum和vauleType
+|            |                                     |   经EncodeFixed64后数据
+|            |                                     v
+|            |                      ②和③之间是key的数据
+|            |
+|            +----&gt;kstart_
+|            ①和②之间存放key长度
+|            此处key长度指加8后且经过EncodeVarint32编码的数据
++-----&gt;start_
+
+注：如果字符图显示的格式不对，是因为系统等宽字体等问题，可以考虑贴到其他编辑器中查看</code></pre>
+
+<p>EncodeVarint32 最多5个char  </p>
+<p>PackSequenceAndType 8个char   </p>
+</li>
+<li><p><strong>查找mem(MemTable)</strong>，MemTable内部是一个跳表SkipList，整个查询过程遵循跳表的查询逻辑。具体可以参见跳表章节。查到则退出。</p>
+</li>
+<li><p><strong>查找imm(MemTable)</strong>，因为都是MemTable，所以逻辑同上。</p>
+</li>
+<li><p>Version::Get  version_set.cc line 332 <strong>查找current(Version)，这个是查找sst的过程</strong>。</p>
+<ul>
+<li><p>先<strong>找到在哪个sst中</strong>，Version::Get  version_set.cc line 356 ~ line 390。</p>
+<p>sst 文件按level组织，默认7个level。 查找sst时，按level进行迭代。level 0特殊处理。</p>
+<p><strong>level 0的挨个迭代sst。非level 0 的按二分查找的方式进行查找</strong>，FindFile version_set.cc line 86。因为非level 0的多个sst的key的范围是有序的，比如:sst 0 对应 a<del>d,sst 1 对应 e</del>h,sst 2 对应 i~p… 基于这个有序的规律的前提，就可以进行二分查找了。level 0 的不是有序的，可能存在范围重叠，所以要挨个迭代。    </p>
+<p>每个sst文件中的key是有序的，且对应一定范围的key。sst对应的key的范围的值，即最大key和最小key是在MANIFEST文件中记录的，关于MANIFEST文件的格式与解析可以参见相关章节。 查找sst时，迭代sst的过程中，会将我们要查找的目标key和sst文件对应的key范围进行比较，落在这个范围内的，说明要查找的key在这个sst文件中。</p>
+</li>
+<li><p><strong>获取sst文件对应的数据，有缓存机制。</strong> ableCache::FindTable， table_cache.cc line 48。 上一步确定了在哪个sst文件中之后，接下来就是在文件中定位对应的key。文件与其对应的数据有一层ShardedLRUCache缓存。此时会<strong>先从ShardedLRUCache缓存中查，查不到再打开物理文件读取对应数据</strong>。</p>
+<ul>
+<li><p>查找缓存</p>
+<pre><code class="hljs cpp">*handle = cache_-&gt;Lookup(key);   <span class="hljs-comment">// table_cache.cc line 51。 cache_ 实例是 cache_(NewLRUCache(entries))</span></code></pre>
+
+<p>查LRUCache的调用栈如下：</p>
+<pre><code class="hljs cpp">Thread #<span class="hljs-number">1</span> [leveldb-demo] <span class="hljs-number">10459</span> [core: <span class="hljs-number">3</span>] (Suspended : Step)	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::HandleTable::Lookup at cache.cc:<span class="hljs-number">78</span> <span class="hljs-number">0x7ffff7d9830c</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::LRUCache::Lookup at cache.cc:<span class="hljs-number">257</span> <span class="hljs-number">0x7ffff7d98ab2</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::ShardedLRUCache::Lookup at cache.cc:<span class="hljs-number">368</span> <span class="hljs-number">0x7ffff7d99395</span>	
+	leveldb::TableCache::FindTable() at table_cache.cc:<span class="hljs-number">51</span> <span class="hljs-number">0x7ffff7d80949</span>	
+	leveldb::TableCache::Get() at table_cache.cc:<span class="hljs-number">112</span> <span class="hljs-number">0x7ffff7d80ddc</span>	
+	leveldb::Version::Get() at version_set.cc:<span class="hljs-number">408</span> <span class="hljs-number">0x7ffff7d83eac</span>	
+	leveldb::DBImpl::Get() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">141</span> <span class="hljs-number">0x7ffff7d6bcf0</span>	
+	testGetdb() at leveldb-demo.cpp:<span class="hljs-number">40</span> <span class="hljs-number">0x40577b</span>	
+	main() at leveldb-demo.cpp:<span class="hljs-number">217</span> <span class="hljs-number">0x4015c9</span></code></pre>
+
+
+
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>- 打开物理文件读取数据
+
+  调用系统调用open打开文件，并调用系统调用mmap映射文件到内存， env_posix.cc line 347。
+
+  <pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">virtual</span> Status <span class="hljs-title">NewRandomAccessFile</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span>&amp; fname,</span></span>
+<span class="hljs-function"><span class="hljs-params">                                   RandomAccessFile** result)</span> </span>&#123;
+  *result = <span class="hljs-literal">NULL</span>;
+  Status s;
+  <span class="hljs-keyword">int</span> fd = open(fname.c_str(), O_RDONLY);  <span class="hljs-comment">// 打开</span>
+  <span class="hljs-keyword">if</span> (fd &lt; <span class="hljs-number">0</span>) &#123;
+    s = IOError(fname, errno);
+  &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (mmap_limit_.Acquire()) &#123;
+    <span class="hljs-keyword">uint64_t</span> size;
+    s = GetFileSize(fname, &amp;size);
+    <span class="hljs-keyword">if</span> (s.ok()) &#123;
+      <span class="hljs-keyword">void</span>* base = mmap(<span class="hljs-literal">NULL</span>, size, PROT_READ, MAP_SHARED, fd, <span class="hljs-number">0</span>); <span class="hljs-comment">// 映射到内存</span>
+      <span class="hljs-keyword">if</span> (base != MAP_FAILED) &#123;
+        *result = <span class="hljs-keyword">new</span> PosixMmapReadableFile(fname, base, size, &amp;mmap_limit_);
+      &#125; <span class="hljs-keyword">else</span> &#123;
+        s = IOError(fname, errno);
+      &#125;
+    &#125;
+    close(fd);
+    <span class="hljs-keyword">if</span> (!s.ok()) &#123;
+      mmap_limit_.Release();
+    &#125;
+  &#125; <span class="hljs-keyword">else</span> &#123;
+    *result = <span class="hljs-keyword">new</span> PosixRandomAccessFile(fname, fd, &amp;fd_limit_);
+  &#125;
+  <span class="hljs-keyword">return</span> s;
+&#125;</code></pre>
+
+  mmap映射后，当需要读取数据时直接操作内存即可。
+
+  调用系统调用open打开文件的调用栈:  
+
+  <pre><code class="hljs cpp">Thread #<span class="hljs-number">1</span> [leveldb-demo] <span class="hljs-number">21700</span> [core: <span class="hljs-number">4</span>] (Suspended : Step)	
+	__libc_open64() at open64.c:<span class="hljs-number">40</span> <span class="hljs-number">0x7ffff7a24e79</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::PosixEnv::NewRandomAccessFile at env_posix.cc:<span class="hljs-number">351</span> <span class="hljs-number">0x7ffff7d9c6c8</span>	
+	leveldb::TableCache::FindTable() at table_cache.cc:<span class="hljs-number">56</span> <span class="hljs-number">0x7ffff7d809c3</span>	
+	leveldb::TableCache::Get() at table_cache.cc:<span class="hljs-number">112</span> <span class="hljs-number">0x7ffff7d80ddc</span>	
+	leveldb::Version::Get() at version_set.cc:<span class="hljs-number">408</span> <span class="hljs-number">0x7ffff7d83eac</span>	
+	leveldb::DBImpl::Get() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">141</span> <span class="hljs-number">0x7ffff7d6bcf0</span>	
+	testGetdb() at leveldb-demo.cpp:<span class="hljs-number">40</span> <span class="hljs-number">0x40577b</span>	
+	main() at leveldb-demo.cpp:<span class="hljs-number">217</span> <span class="hljs-number">0x4015c9</span></code></pre>
+
+  读取数据的调用栈：
+
+  <pre><code class="hljs cpp">Thread #<span class="hljs-number">1</span> [leveldb-demo] <span class="hljs-number">21700</span> [core: <span class="hljs-number">3</span>] (Suspended : Step)	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::PosixMmapReadableFile::Read at env_posix.cc:<span class="hljs-number">204</span> <span class="hljs-number">0x7ffff7d9bc7f</span>	
+	leveldb::Table::Open() at table.cc:<span class="hljs-number">50</span> <span class="hljs-number">0x7ffff7d95265</span>	
+	leveldb::TableCache::FindTable() at table_cache.cc:<span class="hljs-number">64</span> <span class="hljs-number">0x7ffff7d80ae0</span>	
+	leveldb::TableCache::Get() at table_cache.cc:<span class="hljs-number">112</span> <span class="hljs-number">0x7ffff7d80ddc</span>	
+	leveldb::Version::Get() at version_set.cc:<span class="hljs-number">408</span> <span class="hljs-number">0x7ffff7d83eac</span>	
+	leveldb::DBImpl::Get() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">141</span> <span class="hljs-number">0x7ffff7d6bcf0</span>	
+	testGetdb() at leveldb-demo.cpp:<span class="hljs-number">40</span> <span class="hljs-number">0x40577b</span>	
+	main() at leveldb-demo.cpp:<span class="hljs-number">217</span> <span class="hljs-number">0x4015c9</span></code></pre>
+
+
+
+- 读取并解析sst文件footer区域，index对应的区域。
+
+  sst文件不同于我们一般接触到的MANIFEST文件或者其他常规玩法，他是将魔法数字、一些标志性数据放在了文件末尾，称之为footer区域。  
+
+  解析footer区域，相应代码如下，具体数据组织形式可以参见文件格式和图解章节。footer区域中index元数据、meta数据、魔法数字等内容。
+
+  <pre><code class="hljs cpp"><span class="hljs-comment">//   table.cc line 53</span>
+Footer footer;
+  s = footer.DecodeFrom(&amp;footer_input);
+
+<span class="hljs-comment">// format.cc line 43</span>
+<span class="hljs-function">Status <span class="hljs-title">Footer::DecodeFrom</span><span class="hljs-params">(Slice* input)</span> </span>&#123;
+  <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>* magic_ptr = input-&gt;data() + kEncodedLength - <span class="hljs-number">8</span>;
+  <span class="hljs-keyword">const</span> <span class="hljs-keyword">uint32_t</span> magic_lo = DecodeFixed32(magic_ptr);
+  <span class="hljs-keyword">const</span> <span class="hljs-keyword">uint32_t</span> magic_hi = DecodeFixed32(magic_ptr + <span class="hljs-number">4</span>);
+  <span class="hljs-keyword">const</span> <span class="hljs-keyword">uint64_t</span> magic = ((<span class="hljs-keyword">static_cast</span>&lt;<span class="hljs-keyword">uint64_t</span>&gt;(magic_hi) &lt;&lt; <span class="hljs-number">32</span>) |
+                          (<span class="hljs-keyword">static_cast</span>&lt;<span class="hljs-keyword">uint64_t</span>&gt;(magic_lo)));
+  <span class="hljs-keyword">if</span> (magic != kTableMagicNumber) &#123;
+    <span class="hljs-keyword">return</span> Status::Corruption(<span class="hljs-string">"not an sstable (bad magic number)"</span>);
+  &#125;
+
+  Status result = metaindex_handle_.DecodeFrom(input);
+  <span class="hljs-keyword">if</span> (result.ok()) &#123;
+    result = index_handle_.DecodeFrom(input);
+  &#125;
+  <span class="hljs-keyword">if</span> (result.ok()) &#123;
+    <span class="hljs-comment">// We skip over any leftover data (just padding for now) in "input"</span>
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span>* end = magic_ptr + <span class="hljs-number">8</span>;
+    *input = Slice(end, input-&gt;data() + input-&gt;size() - end);
+  &#125;
+  <span class="hljs-keyword">return</span> result;
+&#125;</code></pre>
+
+  从footer区域中拿到index区域的元数据（包括index实际区域的大小size和offset，offset是指从文件的哪里开始是index的实际区域）后，解析index的实际区域。解析index实际数据区的调用栈如下：  
+
+  <pre><code class="hljs cpp">Thread #<span class="hljs-number">1</span> [leveldb-demo] <span class="hljs-number">21700</span> [core: <span class="hljs-number">4</span>] (Suspended : Step)	
+	leveldb::ReadBlock() at format.cc:<span class="hljs-number">69</span> <span class="hljs-number">0x7ffff7d92356</span>	
+	leveldb::Table::Open() at table.cc:<span class="hljs-number">65</span> <span class="hljs-number">0x7ffff7d953aa</span>	
+	leveldb::TableCache::FindTable() at table_cache.cc:<span class="hljs-number">64</span> <span class="hljs-number">0x7ffff7d80ae0</span>	
+	leveldb::TableCache::Get() at table_cache.cc:<span class="hljs-number">112</span> <span class="hljs-number">0x7ffff7d80ddc</span>	
+	leveldb::Version::Get() at version_set.cc:<span class="hljs-number">408</span> <span class="hljs-number">0x7ffff7d83eac</span>	
+	leveldb::DBImpl::Get() at db_impl.cc:<span class="hljs-number">1</span>,<span class="hljs-number">141</span> <span class="hljs-number">0x7ffff7d6bcf0</span>	
+	testGetdb() at leveldb-demo.cpp:<span class="hljs-number">40</span> <span class="hljs-number">0x40577b</span>	
+	main() at leveldb-demo.cpp:<span class="hljs-number">217</span> <span class="hljs-number">0x4015c9</span></code></pre>
+
+
+
+- 通过index数据构建Block::NewIterator，以及确定`num_restarts`等信息。`num_restarts`的值是在index区，Fixed32编码的，且在这个区域的最尾端(标志性数据又是以编码在尾端的方式存储的)。
+
+  <pre><code class="hljs cpp"><span class="hljs-function">Iterator* <span class="hljs-title">Block::NewIterator</span><span class="hljs-params">(<span class="hljs-keyword">const</span> Comparator* cmp)</span> </span>&#123;
+  <span class="hljs-keyword">if</span> (size_ &lt; <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">uint32_t</span>)) &#123;
+    <span class="hljs-keyword">return</span> NewErrorIterator(Status::Corruption(<span class="hljs-string">"bad block contents"</span>));
+  &#125;
+  <span class="hljs-keyword">const</span> <span class="hljs-keyword">uint32_t</span> num_restarts = NumRestarts(); <span class="hljs-comment">// 读取index区  确定num_restarts值，Fixed32编码的， 在index区最尾端。</span>
+  <span class="hljs-keyword">if</span> (num_restarts == <span class="hljs-number">0</span>) &#123;
+    <span class="hljs-keyword">return</span> NewEmptyIterator();
+  &#125; <span class="hljs-keyword">else</span> &#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Iter(cmp, data_, restart_offset_, num_restarts);
+  &#125;
+&#125;</code></pre>
+
+
+
+- 根据上一步构造出来的Block Iterator，seek出查找的目标的key在哪里。  Block::Iter   Seek  block.cc line 165 
+
+  几个关键函数与步骤
+
+  1. 根据restarts的num用二分查找确定在索引restarts中最靠近我们要查的目标key的 key&apos; 的指针位置(内存地址)
+
+     data_ 对象的地址是index区开始的地方， restarts_ 表示“key的指针的相对位移”开始的地方(即**相对位移开始的地方**，其他都是修饰)，key的指针的**相对位移 用Fixed32表示**，长度是 sizeof(uint32_t))，是第多少个key，就加上 多少\*sizeof(uint32_t))，“第多少个”在上式中就是index。**data_ 到 restarts_之间**的数据是**索引的key**的存放区(真正的kv还不在这个地方，真正的kv在data_ 之前，这个地方只是**单纯的编入索引的key**)。所以key&apos; 的指针位置是落在索引数据区内的，不是数据区的那个kv的key的指针哈。 数据组织的具体细节可以参考图解与文件格式相关章节。
+
+     <pre><code class="hljs cpp"><span class="hljs-comment">// block.cc line 172 </span>
+<span class="hljs-keyword">uint32_t</span> region_offset = GetRestartPoint(mid);
+
+<span class="hljs-comment">// block.cc line 99</span>
+<span class="hljs-function"><span class="hljs-keyword">uint32_t</span> <span class="hljs-title">GetRestartPoint</span><span class="hljs-params">(<span class="hljs-keyword">uint32_t</span> index)</span> </span>&#123;
+    assert(index &lt; num_restarts_);
+    <span class="hljs-keyword">return</span> DecodeFixed32(data_ + restarts_ + index * <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">uint32_t</span>)); <span class="hljs-comment">// 根据restarts的num确定key'的指针位置</span>
+  &#125;</code></pre>
+
+
+
+  2. 从key&apos; 开始依次查找索引中最靠近我们key的 key&apos;&apos;。 ParseNextKey。
+
+     <pre><code class="hljs cpp"><span class="hljs-comment">// block.cc line 195   </span>
+<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;
+      <span class="hljs-keyword">if</span> (!ParseNextKey()) &#123;
+        <span class="hljs-keyword">return</span>;
+      &#125;
+      <span class="hljs-keyword">if</span> (Compare(key_, target) &gt;= <span class="hljs-number">0</span>) &#123;
+        <span class="hljs-keyword">return</span>;
+      &#125;
+    &#125;</code></pre>
+
+
+
+  3. 当确定的key&apos;&apos; 还不是目标key本身时(只是最近接，可能不等)，基于前面两步确定的数据到真正数据区依次查找。逻辑与1 、2步骤相同，因为复用的一个方法。到真正数据区依然有restarts_的概念，可以近似理解成“又是一级索引，只是个数不多，我调试时发现只有9个”，不同的是这次到步骤2时，如果查找的目标key在db中存在，那就一定能精确命中，因为到真正数据区了嘛，再找不到就是没有了。key对应的值也在此处能找出来了。
+
+  4. 步骤3推到了saver.state为kFound，在Version::Get中case到kFound return。同时有个说明：由0~config::kNumLevels-1层(level)进行寻找  找到了就在此处return。对于一个key写多次的 他能保证最后一次写的 能被先读到  那么最后一次读的就是最新值。</code></pre><ul>
+<li>按需判断是否要compcat。 MaybeScheduleCompaction。再做一些释放工作，至此，查询过程结束。 </li>
+</ul>
+<h2 id="05-LRU-cache与skiplist实现"><a href="#05-LRU-cache与skiplist实现" class="headerlink" title="05. LRU cache与skiplist实现"></a>05. LRU cache与skiplist实现</h2><h3 id="LRU-cache"><a href="#LRU-cache" class="headerlink" title="LRU cache"></a>LRU cache</h3><p>在leveldb中，sst的数据是用LRU cache缓存，准确的说，用的应该是<code>ShardedLRUCache</code>，<code>ShardedLRUCache</code>是基于LRU cache上面做了一层分片。具体使用的详情参见《读数据分析》章节的Version::Get部分。</p>
+<p>LRU cache的实现在<code>LRUCache</code>类中，cache.cc line 153。</p>
+<p>怎么实现LRU？简单地说是，<strong>双向链表实现LRU，设置一个dummy节点(此处是lru_)，每次使用的时候把用的那个插到dummy节点前面,这样，不被使用的就不段被往前挤，这样dummy节点紧贴着的前向的(越靠近dummy的就是使用越多的)就是最近使用的，dummy节点紧贴着的后向的就是最久没使用的(本意是挤到最前面去了，但是因为是双向的，所以是dummy的后向节点)</strong>。</p>
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><p>dummy节点lru_都是自己：  </p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// cache.cc line 200</span>
+LRUCache::LRUCache()
+    : usage_(<span class="hljs-number">0</span>) &#123;
+  <span class="hljs-comment">// Make empty circular linked lists.</span>
+  lru_.next = &amp;lru_;
+  lru_.prev = &amp;lru_;
+  in_use_.next = &amp;in_use_;
+  in_use_.prev = &amp;in_use_;
+&#125;</code></pre>
+
+<h4 id="查找使用"><a href="#查找使用" class="headerlink" title="查找使用"></a>查找使用</h4><p>Lookup一次 refs加1，并从所在位置挪掉，并append到lru_前面去：</p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// cache.cc line 255</span>
+<span class="hljs-function">Cache::Handle* <span class="hljs-title">LRUCache::Lookup</span><span class="hljs-params">(<span class="hljs-keyword">const</span> Slice&amp; key, <span class="hljs-keyword">uint32_t</span> hash)</span> </span>&#123;
+  <span class="hljs-function">MutexLock <span class="hljs-title">l</span><span class="hljs-params">(&amp;mutex_)</span></span>;
+  LRUHandle* e = table_.Lookup(key, hash);
+  <span class="hljs-keyword">if</span> (e != <span class="hljs-literal">NULL</span>) &#123;
+    Ref(e);
+  &#125;
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">reinterpret_cast</span>&lt;Cache::Handle*&gt;(e);
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">LRUCache::Ref</span><span class="hljs-params">(LRUHandle* e)</span> </span>&#123;
+  <span class="hljs-keyword">if</span> (e-&gt;refs == <span class="hljs-number">1</span> &amp;&amp; e-&gt;in_cache) &#123;  <span class="hljs-comment">// If on lru_ list, move to in_use_ list.</span>
+    LRU_Remove(e);
+    LRU_Append(&amp;in_use_, e);
+  &#125;
+  e-&gt;refs++;
+&#125;</code></pre>
+
+<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p>插入时，如果容量满了，要挤掉最老的</p>
+<pre><code class="hljs cpp"><span class="hljs-comment">// cache.cc line 293  </span>
+<span class="hljs-keyword">while</span> (usage_ &gt; capacity_ &amp;&amp; lru_.next != &amp;lru_) &#123;
+    LRUHandle* old = lru_.next;
+    assert(old-&gt;refs == <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">bool</span> erased = FinishErase(table_.Remove(old-&gt;key(), old-&gt;hash));
+    <span class="hljs-keyword">if</span> (!erased) &#123;  <span class="hljs-comment">// to avoid unused variable when compiled NDEBUG</span>
+      assert(erased);
+    &#125;
+  &#125;</code></pre>
+
+
+
+<h3 id="skiplist"><a href="#skiplist" class="headerlink" title="skiplist"></a>skiplist</h3><p>其是<strong>MemTable的内部数据结构</strong>。</p>
+<p>其实现在<code>skiplist.h</code>中。</p>
+<h4 id="打印"><a href="#打印" class="headerlink" title="打印"></a>打印</h4><p>对于skiplist来说，我们只需要打印出内部结构，就能一目了然地清晰地观察跳表的结构及其内部数据，于是我写了一段简单的打印代码：</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">toStringForSLevel</span><span class="hljs-params">(<span class="hljs-keyword">int</span> level)</span> <span class="hljs-keyword">const</span> </span>&#123;
+ Node* x = head_;
+ <span class="hljs-keyword">int</span> maxlevel = GetMaxHeight() - <span class="hljs-number">1</span>;
+ <span class="hljs-keyword">if</span> (level &gt; maxlevel) &#123;
+  <span class="hljs-keyword">return</span>;
+ &#125;
+ Node* next = x-&gt;Next(level);
+ <span class="hljs-keyword">if</span> (next == <span class="hljs-literal">NULL</span>) &#123;
+  <span class="hljs-keyword">return</span>;
+ &#125;
+ <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"level:"</span> &lt;&lt; level &lt;&lt; <span class="hljs-string">": "</span> &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+ <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"level:"</span> &lt;&lt; level &lt;&lt; <span class="hljs-string">": "</span> &lt;&lt; next-&gt;key &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+ <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;
+  Node* innerNext = next-&gt;Next(level); <span class="hljs-comment">// 一直迭代next 的leve位置就可以了，这个有点不同于我们正常理解的方式，其实他一个横纵的结构。可以参见跳表的图。</span>
+  <span class="hljs-keyword">if</span> (innerNext == <span class="hljs-literal">NULL</span>) &#123;
+	  <span class="hljs-keyword">break</span>;
+  &#125;
+  <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"level:"</span> &lt;&lt; level &lt;&lt; <span class="hljs-string">": "</span> &lt;&lt; innerNext-&gt;key &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+  next = innerNext;
+ &#125;
+	<span class="hljs-keyword">return</span>;
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">toString</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span> </span>&#123;
+ <span class="hljs-keyword">int</span> maxlevel = GetMaxHeight();
+ <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; maxlevel; i++) &#123;
+  toStringForSLevel(i);
+ &#125;
+&#125;</code></pre>
+
+<p>改代码需要include iostream这个lib，然后插入在GetMaxHeight函数后面(下方)，具体结构可以参见 相关图解章节，可以一目了然。</p>
+<h2 id="06-compact分析"><a href="#06-compact分析" class="headerlink" title="06. compact分析"></a>06. compact分析</h2><p>本章节有参考网路上部分文章与材料。</p>
+<h3 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h3><p>compact分两大类，第二类又分三种小的：</p>
+<ul>
+<li>Minor Compaction。memTable写满之后，转成imm后落地到磁盘sst文件的过程。</li>
+<li>Major Compaction。<ul>
+<li>手动compact。调用levedb的api DBImpl::CompactRange(<strong>const</strong> Slice <em>begin, <strong>const</strong> Slice</em> end)达成，比如ceph就这么干的。</li>
+<li>sst文件大小超出阈值后compact。size compact。每个level的文件总和有个阈值，每次会进行当前的size总和除以阈值来计算score，当score超出范围后选择最大的score对应的level进行compact。每个level的文件总和的阈值不同，level越大，阈值越大。</li>
+<li>查找时未能命中次数超过阈值后compact。seek compact。</li>
+</ul>
+</li>
+</ul>
+<p>Major Compaction过程中主要做哪些逻辑，也就是compact了啥？</p>
+<ol>
+<li>均衡各个level的数据，保证 read 的性能；</li>
+<li>合并delete数据，释放磁盘空间，因为leveldb是采用的延迟（标记）删除；</li>
+<li>合并update的数据，例如put同一个key，新put的会替换旧put的，虽然数据做了update，但是update类似于delete，是采用的延迟（标记）update，实际的update是在compact中完成，并实现空间的释放。</li>
+</ol>
+<h3 id="compact过程"><a href="#compact过程" class="headerlink" title="compact过程"></a>compact过程</h3><h4 id="选择进行合并的文件"><a href="#选择进行合并的文件" class="headerlink" title="选择进行合并的文件"></a>选择进行合并的文件</h4><p>函数VersionSet::PickCompaction用于构建出一次合并对应的Compaction结构体。来看这个函数主要的流程。</p>
+<p>在挑选哪些文件需要合并时，依赖于两个原则：</p>
+<ul>
+<li>首先考虑每一层文件的数量：这个数量的计数，对应到Version的compaction_score_中，在每次VersionSet::Finalize函数中，都会首先进行预计算这个值，那个级别的分数高，下一次就优先选择该层次来做合并。对于不同的层次，计算的规则也不同：<ul>
+<li>level 0：0级文件的数量除以kL0_CompactionTrigger来计算分数。</li>
+<li>非0级：该层次的所有文件大小/MaxBytesForLevel(level)来计算分数。</li>
+</ul>
+</li>
+<li>如果上面的计算中，compaction_score_为0，那么就需要具体针对一个文件来进行合并。leveldb中，在FileMetaData结构体里有一个成员allowed_seeks，表示在该文件中查询某个键值时最多允许的定位次数，当这个值为0时，意味这个文件多次查询都没有查询到数据，因此这个文件就需要进行合并了。</li>
+</ul>
+<p>文件的allowed_seeks在VersionSet::Builder::Apply函数中进行计算。</p>
+<h4 id="开始合并"><a href="#开始合并" class="headerlink" title="开始合并"></a>开始合并</h4><p>实际的合并动作是在DBImpl::DoCompactionWork函数中完成的。</p>
+<p>这个压缩过程中的迭代，用了很多个迭代器  </p>
+<pre><code class="hljs cpp">Thread #<span class="hljs-number">2</span> [leveldb-demo] <span class="hljs-number">95928</span> [core: <span class="hljs-number">4</span>] (Suspended : Step)	
+	leveldb::Block::Iter::Next() at block.cc:<span class="hljs-number">139</span> <span class="hljs-number">0x7ffff7d925d2</span>	
+	leveldb::IteratorWrapper::Next() at iterator_wrapper.h:<span class="hljs-number">42</span> <span class="hljs-number">0x7ffff7d95e48</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::TwoLevelIterator::Next at two_level_iterator.cc:<span class="hljs-number">114</span> <span class="hljs-number">0x7ffff7d99196</span>	
+	leveldb::IteratorWrapper::Next() at iterator_wrapper.h:<span class="hljs-number">42</span> <span class="hljs-number">0x7ffff7d95e48</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::TwoLevelIterator::Next at two_level_iterator.cc:<span class="hljs-number">114</span> <span class="hljs-number">0x7ffff7d99196</span>	
+	leveldb::IteratorWrapper::Next() at iterator_wrapper.h:<span class="hljs-number">42</span> <span class="hljs-number">0x7ffff7d95e48</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::MergingIterator::Next at merger.cc:<span class="hljs-number">81</span> <span class="hljs-number">0x7ffff7d956df</span>	
+	leveldb::DBImpl::DoCompactionWork() at db_impl.cc:<span class="hljs-number">955</span> <span class="hljs-number">0x7ffff7d6f12d</span>	
+	leveldb::DBImpl::BackgroundCompaction() at db_impl.cc:<span class="hljs-number">685</span> <span class="hljs-number">0x7ffff7d6dc62</span>	
+	leveldb::DBImpl::BackgroundCall() at db_impl.cc:<span class="hljs-number">611</span> <span class="hljs-number">0x7ffff7d6d57e</span>	
+	leveldb::DBImpl::BGWork() at db_impl.cc:<span class="hljs-number">604</span> <span class="hljs-number">0x7ffff7d6d4f4</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::PosixEnv::BGThread at env_posix.cc:<span class="hljs-number">661</span> <span class="hljs-number">0x7ffff7da007c</span>	
+	leveldb::(anonymous <span class="hljs-keyword">namespace</span>)::PosixEnv::BGThreadWrapper at env_posix.cc:<span class="hljs-number">598</span> <span class="hljs-number">0x7ffff7d9fcd6</span>	
+	start_thread() at pthread_create.c:<span class="hljs-number">477</span> <span class="hljs-number">0x7ffff77b6609</span>	
+	clone() at clone.S:<span class="hljs-number">95</span> <span class="hljs-number">0x7ffff7a41293</span></code></pre>
+
+
+
+<h2 id="07-多种Iterator实现"><a href="#07-多种Iterator实现" class="headerlink" title="07. 多种Iterator实现"></a>07. 多种Iterator实现</h2><p>leveldb中有多种Iterator实现：</p>
+<ol>
+<li>Block::Iter。实现了对sstable内部block的访问。</li>
+<li>MemTableIterator。实现了对memtable的迭代遍历，由于memtable由skiplist实现，因此内部封装了对skiplist的迭代访问。</li>
+<li>TwoLevelIterator。组合迭代器，有两层。</li>
+<li>Version::LevelFileNumIterator。对有序的sst文件们的访问。</li>
+<li>MergingIterator。用于compact过程的迭代器。</li>
+</ol>
+<h2 id="08-系统api与一些库函数的使用"><a href="#08-系统api与一些库函数的使用" class="headerlink" title="08. 系统api与一些库函数的使用"></a>08. 系统api与一些库函数的使用</h2><ol>
+<li><p>fread_unlocked<br>顺序读 <code>read</code> 内部实现调用了 <code>fread_unlocked</code> 函数，该函数在读取文件时不会锁住文件流，因此外部的并发访问需要自行提供并发控制。需要注意的是，该函数是 GNU 的一个扩展，在 Unix 系统，例如 MacOS，FreeBSD，Soloris 中并无定义，因此作者使用了宏来控制 <code>fread_unlocked</code> 的定义。</p>
+</li>
+<li><p>fopen<br>FILE* fopen(const char *path, const char *mode); // 打开文件</p>
+</li>
+<li><p>memcmp<br>原型： int memcmp(void *buf1, void *buf2, unsigned int count);<br>比较内存区域buf1和buf2的前count个字节。结果已返回大于0还是小于0来表示比较的大小。 #include &lt;string.h&gt;。</p>
+</li>
+<li><p>snprintf</p>
+<p>C 库函数 <strong>int snprintf(char *str, size_t size, const char *format, …)</strong> 设将可变参数(…)按照 format 格式化成字符串，并将字符串复制到 str 中，size 为要写入的字符的最大数目，超过 size 会被截断。</p>
+<p>原型：</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">snprintf</span> <span class="hljs-params">( <span class="hljs-keyword">char</span> * str, <span class="hljs-keyword">size_t</span> size, <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> * format, ... )</span></span>;</code></pre>
+
+<p>#include &lt;stdio.h&gt;。</p>
+</li>
+<li><p>vsnprintf<br>头文件：#include  &lt;stdarg.h&gt;<br>函数原型：</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">vsnprintf</span><span class="hljs-params">(<span class="hljs-keyword">char</span> *str, <span class="hljs-keyword">size_t</span> size, <span class="hljs-keyword">const</span> <span class="hljs-keyword">char</span> *format, va_list ap)</span></span>;</code></pre>
+
+<p>函数说明：将可变参数格式化输出到一个字符数组</p>
+</li>
+<li><p>fwrite<br>C 标准库 - &lt;stdio.h&gt;</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">size_t</span> <span class="hljs-title">fwrite</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">void</span> *ptr, <span class="hljs-keyword">size_t</span> size, <span class="hljs-keyword">size_t</span> nmemb, FILE *stream)</span></span></code></pre>
+
+<p>把 ptr 所指向的数组中的数据写入到给定流 stream 中。</p>
+<p>参数<br>ptr – 这是指向要被写入的元素数组的指针。<br>size – 这是要被写入的每个元素的大小，以字节为单位。<br>nmemb – 这是元素的个数，每个元素的大小为 size 字节。<br>stream – 这是指向 FILE 对象的指针，该 FILE 对象指定了一个输出流。<br>返回值<br>如果成功，该函数返回一个 size_t 对象，表示元素的总数，该对象是一个整型数据类型。如果该数字与 nmemb 参数不同，则会显示一个错误。</p>
+</li>
+<li><p>fflush</p>
+<p>C 标准库 - &lt;stdio.h&gt;</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">fflush</span><span class="hljs-params">(FILE *stream)</span></span></code></pre>
+
+<p>C 库函数 int fflush(FILE *stream) 刷新流 stream 的输出缓冲区。</p>
+</li>
+<li><p>gettimeofday</p>
+<p>&lt;sys/time.h&gt;</p>
+<pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">gettimeofday</span><span class="hljs-params">(struct  timeval*tv,struct  timezone *tz )</span></span></code></pre>
+
+<p>gettimeofday()会把目前的时间用tv 结构体返回，当地时区的信息则放到tz所指的结构中</p>
+<p>timeval 结构体定义：</p>
+<pre><code class="hljs cpp"><span class="hljs-class"><span class="hljs-keyword">struct</span>  <span class="hljs-title">timeval</span>&#123;</span>
+       <span class="hljs-keyword">long</span>  tv_sec;  <span class="hljs-comment">/*秒*/</span>
+       <span class="hljs-keyword">long</span>  tv_usec; <span class="hljs-comment">/*微妙*/</span>
+&#125;；</code></pre>
+
+
+
+</li>
+</ol>
+<ol start="9">
+<li><p>localtime_r</p>
+<p>&lt;time.h&gt;</p>
+<pre><code class="hljs cpp"><span class="hljs-function">struct tm *<span class="hljs-title">localtime_r</span><span class="hljs-params">(<span class="hljs-keyword">const</span> <span class="hljs-keyword">time_t</span> *timep, struct tm *result)</span></span>;</code></pre>
+
+<p>把从1970-1-1零点零分到当前时间系统所偏移的秒数时间转换为本地时间，而gmtimes函数转换后的时间没有经过时区变换，是UTC时间 。</p>
+</li>
+</ol>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/cpp/">cpp</a>
+                    
+                      <a class="hover-with-bg" href="/tags/leveldb%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">leveldb源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2099/04/02/dubbo-02.article-outline/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[dubbo]02.导读提示</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/08/01/c3p0-practice/">
+                        <span class="hidden-mobile">c3p0相关</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[leveldb]leveldb源码阅读&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
