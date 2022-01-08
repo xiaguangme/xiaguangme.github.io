@@ -4,60 +4,6 @@
   
   
   <entry>
-    <title>[kafka]01.kafka源码阅读-导读提示</title>
-    <link href="/2099/05/12/kafka-01-read-guide/"/>
-    <url>/2099/05/12/kafka-01-read-guide/</url>
-    
-    <content type="html"><![CDATA[<h2 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h2><p> 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。</p><ul><li><a href="https://www.code260.com/2099/05/12/kafka-01-read-guide/">01.kafka源码阅读-导读提示</a></li><li><a href="https://www.code260.com/2021/05/13/kafka-02-code-version-compile-cmd/">02.代码版本、编译与常用命令</a></li><li><a href="https://www.code260.com/2021/05/14/kafka-03-producer-batch-send-impl/">03.生产者批量发送机制实现</a></li><li><a href="https://www.code260.com/2021/05/15/kafka-04-consumer-group-impl/">04.消费者组机制实现</a></li><li><a href="https://www.code260.com/2021/05/16/kafka-05-offset-range-query-impl/">05.offset range查询的实现</a></li><li><a href="https://www.code260.com/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/">06.强制写盘与JDK对其的支持、mmap、零拷贝等</a></li><li><a href="https://www.code260.com/2021/05/18/kafka-07-data-write-disk/">07.数据写盘</a></li><li><a href="https://www.code260.com/2021/05/19/kafka-08-replica-protocol/">08.副本复制协议</a></li><li><a href="https://www.code260.com/2021/05/20/kafka-09-LEO-update/">09.LEO更新</a></li><li><a href="https://www.code260.com/2021/05/21/kafka-10-HW-update/">10.HW更新</a></li><li><a href="https://www.code260.com/2021/05/22/kafka-11-controller-elected-leader-boot/">11.controller如何选主及其启动过程分析</a></li><li><a href="https://www.code260.com/2021/05/23/kafka-12-replica-stm/">12.副本状态机状态定义与变换逻辑</a></li><li><a href="https://www.code260.com/2021/05/24/kafka-13-partition-stm/">13.分区选主、分区状态机定义与变换逻辑</a></li><li><a href="https://www.code260.com/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/">14.LEADER_AND_ISR和UPDATE_METADATA请求分析</a></li><li><a href="https://www.code260.com/2021/05/26/kafka-15-replica-exp-case/">15.副本复制异常场景及样例case分析</a></li><li><a href="https://www.code260.com/2021/05/27/kafka-16-inner-rpc-doc/">16.内部rpc接口文档</a></li></ul>]]></content>
-    
-    
-    <categories>
-      
-      <category>opensource-code-study</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>scala</tag>
-      
-      <tag>kafka源码分析</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>[dubbo]02.导读提示</title>
-    <link href="/2099/04/02/dubbo-02.article-outline/"/>
-    <url>/2099/04/02/dubbo-02.article-outline/</url>
-    
-    <content type="html"><![CDATA[<h2 id="导读提示"><a href="#导读提示" class="headerlink" title="导读提示"></a>导读提示</h2><p><img src="/img/opensource-code-study/dubbo-article-guide.png" srcset="/img/loading.gif" alt="导读提示"></p>]]></content>
-    
-    
-    <categories>
-      
-      <category>opensource-code-study</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>java</tag>
-      
-      <tag>dubbo源码分析</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>关于分布式系统中一致性的相关概念</title>
     <link href="/2022/01/08/distribute-consistency/"/>
     <url>/2022/01/08/distribute-consistency/</url>
@@ -556,6 +502,33 @@
     <url>/2021/05/13/kafka-02-code-version-compile-cmd/</url>
     
     <content type="html"><![CDATA[<h2 id="代码版本、编译与常用命令"><a href="#代码版本、编译与常用命令" class="headerlink" title="代码版本、编译与常用命令"></a>代码版本、编译与常用命令</h2><h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><ol><li><p>下载sbt  </p></li><li><p>下载scalaIDE  </p></li><li><p>下载gradle 选择4版本，可以跳过一些问题    设置对应环境变量  </p></li><li><p>gradle -b build.gradle jar  编译kafka代码</p></li><li><p>gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中, 导入后个别配置问题导致的报错fix一下就能没有错误了     </p></li><li><p>选用的代码版本 是  <strong>1.1.1-RC3</strong>这个tag</p></li><li><p><strong>修改日志级别</strong>：</p><pre><code class="hljs properties"><span class="hljs-comment"># 修改kafka_2.11-1.1.1-00/config/log4j.properties 这两个地方调整成trace级别 </span><span class="hljs-comment"># leader端处理请求的日志打开</span><span class="hljs-meta">log4j.rootLogger</span>=<span class="hljs-string">TRACE, stdout, kafkaAppender</span><span class="hljs-meta">log4j.logger.kafka.network.RequestChannel$</span>=<span class="hljs-string">TRACE, requestAppender</span><span class="hljs-comment"># 副本请求线程的日志打开</span><span class="hljs-meta">log4j.logger.kafka.server.ReplicaFetcherThread</span>=<span class="hljs-string">TRACE, requestAppender</span><span class="hljs-meta">log4j.additivity.kafka.server.ReplicaFetcherThread</span>=<span class="hljs-string">false</span></code></pre></li></ol><h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><h3 id="创建topic"><a href="#创建topic" class="headerlink" title="创建topic"></a>创建topic</h3><pre><code class="hljs shell">bin/kafka-topics.sh --create --zookeeper 127.0.0.1:2182 --partitions 1 --replication-factor 2 --topic simon.test02.p1r2</code></pre><h3 id="删除topic"><a href="#删除topic" class="headerlink" title="删除topic"></a>删除topic</h3><pre><code class="hljs shell">bin/kafka-topics.sh --delete  --zookeeper 127.0.0.1:2182 --topic simon.test03.p10r2</code></pre><h3 id="查询offset-range"><a href="#查询offset-range" class="headerlink" title="查询offset range"></a>查询offset range</h3><pre><code class="hljs shell">bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list 127.0.0.1:9092 -topic simon.test02.p1r2 --time -2      <span class="hljs-meta">#</span><span class="bash"> simon.test01.p1r2:0:0</span>bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list 127.0.0.1:9092 -topic simon.test02.p1r2 --time -1      <span class="hljs-meta">#</span><span class="bash"> simon.test01.p1r2:0:0</span></code></pre><p>-2 是最早的   -1是最近的</p><h3 id="查询topic情况"><a href="#查询topic情况" class="headerlink" title="查询topic情况"></a>查询topic情况</h3><pre><code class="hljs shell">bin/kafka-topics.sh --describe --topic simon.test02.p1r2 --zookeeper 127.0.0.1:2182</code></pre><h3 id="修改topic配置，比如修改min-insync-replicas去覆盖server-properties中的值"><a href="#修改topic配置，比如修改min-insync-replicas去覆盖server-properties中的值" class="headerlink" title="修改topic配置，比如修改min.insync.replicas去覆盖server.properties中的值"></a>修改topic配置，比如修改min.insync.replicas去覆盖server.properties中的值</h3><pre><code class="hljs shell">bin/kafka-configs.sh \   --zookeeper localhost:2181 \   --alter \   --entity-type topics \   --entity-name yourTopicName \   --add-config min.insync.replicas=2</code></pre><h3 id="console消费"><a href="#console消费" class="headerlink" title="console消费"></a>console消费</h3><pre><code class="hljs shell">bin/kafka-console-consumer.sh --topic simon.test02.p1r2 --bootstrap-server 127.0.0.1:9092,127.0.0.1:9094  --from-beginning 10bin/kafka-console-consumer.sh --topic simon.test20.p3r2 --group ss-test-group --bootstrap-server 127.0.0.1:9092,127.0.0.1:9094  --from-beginning 10</code></pre><h3 id="console生产"><a href="#console生产" class="headerlink" title="console生产"></a>console生产</h3><pre><code class="hljs shell">bin/kafka-console-producer.sh --topic simon.test02.p1r2 --broker-list 127.0.0.1:9092bin/kafka-console-producer.sh --topic simon.test02.p1r2 --broker-list 127.0.0.1:9092,127.0.0.1:9094 --request-timeout-ms 6000000  --request-required-acks -1</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>scala</tag>
+      
+      <tag>kafka源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>[kafka]01.kafka源码阅读-导读提示</title>
+    <link href="/2021/05/12/kafka-01-read-guide/"/>
+    <url>/2021/05/12/kafka-01-read-guide/</url>
+    
+    <content type="html"><![CDATA[<h2 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h2><p> 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。</p><ul><li><a href="https://www.code260.com/2099/05/12/kafka-01-read-guide/">01.kafka源码阅读-导读提示</a></li><li><a href="https://www.code260.com/2021/05/13/kafka-02-code-version-compile-cmd/">02.代码版本、编译与常用命令</a></li><li><a href="https://www.code260.com/2021/05/14/kafka-03-producer-batch-send-impl/">03.生产者批量发送机制实现</a></li><li><a href="https://www.code260.com/2021/05/15/kafka-04-consumer-group-impl/">04.消费者组机制实现</a></li><li><a href="https://www.code260.com/2021/05/16/kafka-05-offset-range-query-impl/">05.offset range查询的实现</a></li><li><a href="https://www.code260.com/2021/05/17/kafka-06-force-flush-mmp-zero-copy-jdk/">06.强制写盘与JDK对其的支持、mmap、零拷贝等</a></li><li><a href="https://www.code260.com/2021/05/18/kafka-07-data-write-disk/">07.数据写盘</a></li><li><a href="https://www.code260.com/2021/05/19/kafka-08-replica-protocol/">08.副本复制协议</a></li><li><a href="https://www.code260.com/2021/05/20/kafka-09-LEO-update/">09.LEO更新</a></li><li><a href="https://www.code260.com/2021/05/21/kafka-10-HW-update/">10.HW更新</a></li><li><a href="https://www.code260.com/2021/05/22/kafka-11-controller-elected-leader-boot/">11.controller如何选主及其启动过程分析</a></li><li><a href="https://www.code260.com/2021/05/23/kafka-12-replica-stm/">12.副本状态机状态定义与变换逻辑</a></li><li><a href="https://www.code260.com/2021/05/24/kafka-13-partition-stm/">13.分区选主、分区状态机定义与变换逻辑</a></li><li><a href="https://www.code260.com/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/">14.LEADER_AND_ISR和UPDATE_METADATA请求分析</a></li><li><a href="https://www.code260.com/2021/05/26/kafka-15-replica-exp-case/">15.副本复制异常场景及样例case分析</a></li><li><a href="https://www.code260.com/2021/05/27/kafka-16-inner-rpc-doc/">16.内部rpc接口文档</a></li></ul>]]></content>
     
     
     <categories>
@@ -1439,6 +1412,33 @@
     <url>/2020/05/02/dubbo-03.extensible_services/</url>
     
     <content type="html"><![CDATA[<h2 id="03-扩展点背景以及JDK提供的扩展点"><a href="#03-扩展点背景以及JDK提供的扩展点" class="headerlink" title="03. 扩展点背景以及JDK提供的扩展点"></a>03. 扩展点背景以及JDK提供的扩展点</h2><h3 id="为什么需要扩展点"><a href="#为什么需要扩展点" class="headerlink" title="为什么需要扩展点"></a>为什么需要扩展点</h3><p>因为为了达成能扩展的目的。</p><p>更多细节可以阅读oracle官方文档<a href="https://www.oracle.com/technical-resources/articles/javase/extensible.html" target="_blank" rel="noopener">Creating Extensible Applications With the Java Platform</a></p><p>重点：</p><blockquote><p><strong>Definitions</strong>  </p><p>A <em>service</em> is a set of programming interfaces and classes that provide access to some specific application functionality or feature. The service may simply define the interfaces for the functionality and a way to retrieve an implementation. In the word-processor example, a dictionary service can define a way to retrieve a dictionary and the definition of a word, but it does not implement the underlying feature set. Instead, it relies on a <em>service provider</em> to implement that functionality.  </p><p>A <em>service provider interface</em> (SPI) is the set of public interfaces and abstract classes that a service defines. The SPI defines the classes and methods available to your application. </p><p>A <em>service provider</em> implements the SPI. An application with extensible services will allow you, vendors, and perhaps even customers to add service providers without modifying the original application.</p></blockquote><h3 id="目前有什么扩展点机制实现"><a href="#目前有什么扩展点机制实现" class="headerlink" title="目前有什么扩展点机制实现"></a>目前有什么扩展点机制实现</h3><p>为了实现扩展，粗略的讲能支持bean容器的框架或机制均可以做扩展点</p><ol><li>JDK自带的扩展点机制，ServiceLoader</li><li>专门的bean容器：spring、guice等</li></ol><h3 id="JDK的扩展点"><a href="#JDK的扩展点" class="headerlink" title="JDK的扩展点"></a>JDK的扩展点</h3><p>ServiceLoader：一个简单的服务提供者加载设施。</p><p>使用文档与demo可以参见<a href="https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html" target="_blank" rel="noopener">这里官方doc</a></p><p>注意其使用时配置方式是：</p><blockquote><p>If com.example.impl.StandardCodecs is an implementation of the CodecSet service then its jar file also contains a file named</p><p> META-INF/services/com.example.CodecSet<br>This file contains the single line:</p><p> com.example.impl.StandardCodecs    # Standard codecs</p></blockquote><p>简单地说：是将SPI接口的具体实现类的全限定名写入在 <strong>META-INF/services</strong>目录下以SPI接口全限定名命名的文件中。ServiceLoader能从此文件中知道这个SPI具体选用哪个实现。</p><h3 id="自己实现一个扩展点机需要哪些基础能力"><a href="#自己实现一个扩展点机需要哪些基础能力" class="headerlink" title="自己实现一个扩展点机需要哪些基础能力"></a>自己实现一个扩展点机需要哪些基础能力</h3><p>根据配置读取相应的实现类并创建实例。</p><h3 id="自己实现一个扩展点可以做些什么高阶能力"><a href="#自己实现一个扩展点可以做些什么高阶能力" class="headerlink" title="自己实现一个扩展点可以做些什么高阶能力"></a>自己实现一个扩展点可以做些什么高阶能力</h3><p>自动装配（注入）字段、代理、适配、包装、激活(一次获取多个命中实例)等。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>opensource-code-study</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>java</tag>
+      
+      <tag>dubbo源码分析</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>[dubbo]02.导读提示</title>
+    <link href="/2020/05/02/dubbo-02.article-outline/"/>
+    <url>/2020/05/02/dubbo-02.article-outline/</url>
+    
+    <content type="html"><![CDATA[<h2 id="导读提示"><a href="#导读提示" class="headerlink" title="导读提示"></a>导读提示</h2><p><img src="/img/opensource-code-study/dubbo-article-guide.png" srcset="/img/loading.gif" alt="导读提示"></p>]]></content>
     
     
     <categories>

@@ -175,54 +175,6 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/">[dubbo]24.调用链如何构建的？ProtocolFilterWrapper分析</a>
-
-      <a href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/" class="index-excerpt">
-        
-        
-          
-        
-        <div>24.调用链如何构建的？ProtocolFilterWrapper分析调用链的构建，可以理解成多个invoker实例组成链的构建。
-调用链构建在dubbo中分为两步骤：
-
-JavassistProxyFactory$1的构建。此步骤是将真正的业务方法同规避反射的手段包起来。
-ProtocolFilterWrapper$1的构建。此步骤是将每个filter用Invoker实例包起来并串起来链来。
-
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/06/13/dubbo-23.io-thread-biz-thread/">[dubbo]23.IO线程与业务线程的合与分，以及提供的策略选择实现分析</a>
 
       <a href="/2020/06/13/dubbo-23.io-thread-biz-thread/" class="index-excerpt">
@@ -600,6 +552,50 @@ import org.junit</div>
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>&nbsp;2020-06-01
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/30/dubbo-14.consumer-invoke-chain/">[dubbo]14.consumer端调用链</a>
+
+      <a href="/2020/05/30/dubbo-14.consumer-invoke-chain/" class="index-excerpt">
+        
+        
+          
+        
+        <div>14.consumer端调用链示意图 +----------------------+     +----------------+      +---------------------------+
+ | helloService         |     |      proxy     |      |  InvokerInvocationHandler |
+ | sayHello   </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
           </div>
         
         

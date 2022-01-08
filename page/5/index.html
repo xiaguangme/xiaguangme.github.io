@@ -175,50 +175,6 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/05/30/dubbo-14.consumer-invoke-chain/">[dubbo]14.consumer端调用链</a>
-
-      <a href="/2020/05/30/dubbo-14.consumer-invoke-chain/" class="index-excerpt">
-        
-        
-          
-        
-        <div>14.consumer端调用链示意图 +----------------------+     +----------------+      +---------------------------+
- | helloService         |     |      proxy     |      |  InvokerInvocationHandler |
- | sayHello   </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-05-30
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/05/30/dubbo-13.how-to-implements-sync-and-timeout/">[dubbo]13.调用端如何同步等待网络返回结果以及如何实现调用端超时</a>
 
       <a href="/2020/05/30/dubbo-13.how-to-implements-sync-and-timeout/" class="index-excerpt">
@@ -590,6 +546,54 @@ p</div>
         
         <div>05.dubbo日志机制dubbo对于其日志机制，设计的还是比较灵活的，可以自由配置选用哪种日志框架。这样就能达成跟你的项目所采用的日志框架一致的目的。这是做中间件开发的同学一个值得学习的设计。tomcat是一直到8点几版本才开始能方便的支持不同日志框架的对接。早些版本都是要替换jar之类的办法，还是有一点麻烦的。有些开源框架只支持一种日志框架对接，这样就不是很好了。 
 入手处分析其日志机制，从哪</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-05-04
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/05/04/dubbo-04.extension-loader-impl/">[dubbo]04.dubbo扩展点实现</a>
+
+      <a href="/2020/05/04/dubbo-04.extension-loader-impl/" class="index-excerpt">
+        
+        
+          
+        
+        <div>04.dubbo扩展点实现怎么入手分析与学习
+可以看官方的ExtensionLoaderTest 测试用例，以这些具体的case作为入口。
+也可以直接看ExtensionLoader代码。可以从getExtension,getAdaptiveExtension,getActivateExtension三个方法作为入口。
+
+扩展点的使用配置文件相关配置文件放在哪里？
+
+META-INF/dubbo/</div>
       </a>
 
       <div class="index-btm post-metas">
