@@ -175,6 +175,55 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/23/kafka-12-replica-stm/">[kafka]12.副本状态机状态定义与变换逻辑</a>
+
+      <a href="/2021/05/23/kafka-12-replica-stm/" class="index-excerpt">
+        
+        
+          
+        
+        <div>副本状态机状态定义与变换逻辑副本状态机启动kafka.controller.ReplicaStateMachine.startup()  
+主要两个逻辑：  
+
+初始化副本状态  initializeReplicaState   
+处理副本状态改变事件  handleStateChanges  
+
+初始化副本状态
+根据controllerContext.partitionReplicaAssign</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-23
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/05/22/kafka-11-controller-elected-leader-boot/">[kafka]11.controller如何选主及其启动过程分析</a>
 
       <a href="/2021/05/22/kafka-11-controller-elected-leader-boot/" class="index-excerpt">
@@ -550,57 +599,6 @@ ap</div>
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>&nbsp;2021-05-14
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/13/kafka-02-code-version-compile-cmd/">[kafka]02.代码版本、编译与常用命令</a>
-
-      <a href="/2021/05/13/kafka-02-code-version-compile-cmd/" class="index-excerpt">
-        
-        
-          
-        
-        <div>代码版本、编译与常用命令编译
-下载sbt  
-
-下载scalaIDE  
-
-下载gradle 选择4版本，可以跳过一些问题    设置对应环境变量  
-
-gradle -b build.gradle jar  编译kafka代码
-
-gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中, 导入后个别配置问题导致的报错fix一下就能没有错</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-13
           </div>
         
         

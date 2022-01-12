@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>centos 6.x ssl证书问题解决及systemtap环境准备</title>
+    <link href="/2022/01/09/centos6.x-ssl-error-systemtap-env/"/>
+    <url>/2022/01/09/centos6.x-ssl-error-systemtap-env/</url>
+    
+    <content type="html"><![CDATA[<h1 id="centos-6-x-ssl证书问题解决及systemtap环境准备"><a href="#centos-6-x-ssl证书问题解决及systemtap环境准备" class="headerlink" title="centos 6.x ssl证书问题解决及systemtap环境准备"></a>centos 6.x ssl证书问题解决及systemtap环境准备</h1><h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>选了一个低版本的内核，至于原因就不说了哈。</p><p>先用了centos6.5 安装，结果发现装完之后，再安装其他包的过程中发现其ssl证书有问题，解决起来比较麻烦，放弃。</p><p>换用<code>centos6.8</code>，也是一样的问题。那就只好解决了哈…</p><p>网上找到两个差不多的回答，其中一个可以用，一个不可以用…</p><p>可以用的链接是：<a href="https://community.letsencrypt.org/t/rhel-centos-6-openssl-client-compatibility-after-dst-root-ca-x3-expiration/161032" target="_blank" rel="noopener">https://community.letsencrypt.org/t/rhel-centos-6-openssl-client-compatibility-after-dst-root-ca-x3-expiration/161032</a>  </p><blockquote><p> it’s working like a charm with the manually compiled RPMs!………</p></blockquote><p>注意点开 post#73后面那个向下的小箭头，不然很容易错过看不到答案…</p><p>不可以用的链接是： <a href="https://forums.centos.org/viewtopic.php?f=13&amp;t=78238" target="_blank" rel="noopener">https://forums.centos.org/viewtopic.php?f=13&amp;t=78238</a>  </p><blockquote><p>I don’t want to encourage anyone to stay on Centos 6, on the contrary … upgrade your servers to the latest version … but … this problem can be solved if really needed …</p></blockquote><p>不可以用的原因是缺了个别步骤。</p><p>我亲测可以解决问题的步骤是:</p><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 放入6.8安装的光盘/ 虚拟机的话 直接选iso就可以了</span>mount /dev/sr0 /mnt<span class="hljs-meta">#</span><span class="bash"> 修改yum的repo文件，先把系统自带的删除掉 都不要</span><span class="hljs-meta">#</span><span class="bash"> 将如下的内容放入 /etc/yum.repos.d/CentOS-Base.repo</span>[base]name=CentOS-6failovermethod=priority<span class="hljs-meta">#</span><span class="bash">baseurl=https://vault.centos.org/6.8/os/x86_64/</span>baseurl=file:///mnt/gpgcheck=0<span class="hljs-meta">#</span><span class="bash"> 然后接着操作</span>sudo su - rootwget ftp://ftp.ntua.gr/pub/linux/centos/6.10/os/x86_64/Packages/lksctp-tools-devel-1.0.10-7.el6.x86_64.rpmrpm -ivh lksctp-tools-devel-1.0.10-7.el6.x86_64.rpmyum install docbook-style-xslwget ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home%3A/rexut%3A/RHEL6-EPEL-deps/CentOS_CentOS-6/noarch/asciidoc-8.4.5-4.1.el6.noarch.rpmrpm -ivh asciidoc-8.4.5-4.1.el6.noarch.rpmyum install krb5-devel zlib-devel lksctp-tools-devel util-linux make gcc rpm-buildwget  https://vault.centos.org/7.9.2009/updates/Source/SPackages/openssl-1.0.2k-21.el7_9.src.rpm --no-check-certificaterpm -i openssl-1.0.2k-21.el7_9.src.rpmcd ~/rpmbuild/SOURCES/sed -i 's/secure_getenv(/getenv(/g' *patchcd ../SPECS/sed -i 's/%patch68 -p1 -b .secure-getenv/#%patch68 -p1 -b .secure-getenv/g' openssl.specrpmbuild -bb openssl.speccd ../RPMS/x86_64rpm -U openssl-libs-1.0.2k-21.el6.x86_64.rpm openssl-1.0.2k-21.el6.x86_64.rpmyum install asciidoc java-1.6.0-openjdkmkdir -p /dl/ca-cert; cd /dl/ca-cert;curl -o ca-certificates-2020.2.41-65.1.el6_10.src.rpm https://vault.centos.org/6.10/updates/Source/SPackages/ca-certificates-2020.2.41-65.1.el6_10.src.rpmrpm -i ca-certificates-2020.2.41-65.1.el6_10.src.rpmcurl -o ca-certificates-2021.2.50-72.el7_9.src.rpm https://vault.centos.org/7.9.2009/updates/Source/SPackages/ca-certificates-2021.2.50-72.el7_9.src.rpmrpm2cpio ca-certificates-2021.2.50-72.el7_9.src.rpm | cpio -idmvcp certdata.txt ~/rpmbuild/SOURCES/sed -i 's/Version: 2020.2.41/Version: 2021.2.50/g' ~/rpmbuild/SPECS/ca-certificates.speccd ~/rpmbuild/SPECSrpmbuild -bb ca-certificates.speccd /root/rpmbuild/RPMS/noarch/rpm -U ca-certificates-2021.2.50-65.1.el6.noarch.rpm</code></pre><p>这样就可以解决了，用下面这个验证 ：</p><pre><code class="hljs shell">wget https://vault.centos.org/6.8/os/x86_64/repodata/repomd.xml</code></pre><p>修改 /etc/yum.repos.d/CentOS-Base.repo ：</p><pre><code class="hljs properties"><span class="hljs-attr">[base]</span><span class="hljs-attr">name</span>=<span class="hljs-string">CentOS-6</span><span class="hljs-attr">failovermethod</span>=<span class="hljs-string">priority</span><span class="hljs-attr">baseurl</span>=<span class="hljs-string">https://vault.centos.org/6.8/os/x86_64/</span><span class="hljs-comment">#baseurl=file:///mnt/</span><span class="hljs-attr">gpgcheck</span>=<span class="hljs-string">0</span></code></pre><p>然后：</p><pre><code class="hljs shell">yum clean allyum makecache</code></pre><p>centos6.8 对应内核版本<code>2.6.32-642.el6.x86_64</code>,安装对应的内核调试信息与src包。  </p><pre><code class="hljs shell">https://vault.centos.org/6.8/isos/x86_64/CentOS-6.8-x86_64-bin-DVD1.isowget http://debuginfo.centos.org/6/x86_64/kernel-debuginfo-common-x86_64-2.6.32-642.el6.x86_64.rpmwget http://debuginfo.centos.org/6/x86_64/kernel-debuginfo-2.6.32-642.el6.x86_64.rpmwget http://www.central.org/dl/linuxdev/centos6/x86_64/kernel-devel-2.6.32-642.el6.x86_64.rpmwget https://vault.centos.org/6.8/os/Source/SPackages/kernel-2.6.32-642.el6.src.rpmsudo rpm -ivh kernel-devel-2.6.32-642.el6.x86_64.rpmsudo rpm -ivh kernel-debuginfo-common-x86_64-2.6.32-642.el6.x86_64.rpmsudo rpm -ivh kernel-debuginfo-2.6.32-642.el6.x86_64.rpm</code></pre><p>安装并验证:</p><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 这步骤如果安装网络下载太慢 可以从本地iso安装，跟上面一样改repo文件</span>sudo yum install systemtapstap -e 'probe begin&#123;printf("Hello, World"); exit();&#125;'sudo stap -l 'kernel.function("*")'sudo stap -l 'kernel.function("read")'<span class="hljs-meta">#</span><span class="bash"> 成功执行的话能看到  kernel.function(<span class="hljs-string">"read@fs/sysfs/bin.c:70"</span>)</span><span class="hljs-meta">#</span><span class="bash"> /usr/src/debug/kernel-2.6.32-642.el6/linux-2.6.32-642.el6.x86_64/fs/sysfs/bin.c</span></code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>program-language-practice</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>system</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>关于分布式系统中一致性的相关概念</title>
     <link href="/2022/01/08/distribute-consistency/"/>
     <url>/2022/01/08/distribute-consistency/</url>

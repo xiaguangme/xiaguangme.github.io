@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>centos 6.x ssl证书问题解决及systemtap环境准备 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2022-01-09 19:03">
+                    星期日, 一月 9日 2022, 7:03 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    999 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    16
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="centos-6-x-ssl证书问题解决及systemtap环境准备"><a href="#centos-6-x-ssl证书问题解决及systemtap环境准备" class="headerlink" title="centos 6.x ssl证书问题解决及systemtap环境准备"></a>centos 6.x ssl证书问题解决及systemtap环境准备</h1><h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>选了一个低版本的内核，至于原因就不说了哈。</p>
+<p>先用了centos6.5 安装，结果发现装完之后，再安装其他包的过程中发现其ssl证书有问题，解决起来比较麻烦，放弃。</p>
+<p>换用<code>centos6.8</code>，也是一样的问题。那就只好解决了哈…</p>
+<p>网上找到两个差不多的回答，其中一个可以用，一个不可以用…</p>
+<p>可以用的链接是：<a href="https://community.letsencrypt.org/t/rhel-centos-6-openssl-client-compatibility-after-dst-root-ca-x3-expiration/161032" target="_blank" rel="noopener">https://community.letsencrypt.org/t/rhel-centos-6-openssl-client-compatibility-after-dst-root-ca-x3-expiration/161032</a>  </p>
+<blockquote>
+<p> it’s working like a charm with the manually compiled RPMs!………</p>
+</blockquote>
+<p>注意点开 post#73后面那个向下的小箭头，不然很容易错过看不到答案…</p>
+<p>不可以用的链接是： <a href="https://forums.centos.org/viewtopic.php?f=13&amp;t=78238" target="_blank" rel="noopener">https://forums.centos.org/viewtopic.php?f=13&amp;t=78238</a>  </p>
+<blockquote>
+<p>I don’t want to encourage anyone to stay on Centos 6, on the contrary … upgrade your servers to the latest version … but … this problem can be solved if really needed …</p>
+</blockquote>
+<p>不可以用的原因是缺了个别步骤。</p>
+<p>我亲测可以解决问题的步骤是:</p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 放入6.8安装的光盘/ 虚拟机的话 直接选iso就可以了</span>
+mount /dev/sr0 /mnt
+
+<span class="hljs-meta">#</span><span class="bash"> 修改yum的repo文件，先把系统自带的删除掉 都不要</span>
+<span class="hljs-meta">#</span><span class="bash"> 将如下的内容放入 /etc/yum.repos.d/CentOS-Base.repo</span>
+[base]
+name=CentOS-6
+failovermethod=priority
+<span class="hljs-meta">#</span><span class="bash">baseurl=https://vault.centos.org/6.8/os/x86_64/</span>
+baseurl=file:///mnt/
+gpgcheck=0
+
+<span class="hljs-meta">#</span><span class="bash"> 然后接着操作</span>
+sudo su - root
+wget ftp://ftp.ntua.gr/pub/linux/centos/6.10/os/x86_64/Packages/lksctp-tools-devel-1.0.10-7.el6.x86_64.rpm
+rpm -ivh lksctp-tools-devel-1.0.10-7.el6.x86_64.rpm
+yum install docbook-style-xsl
+
+wget ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home%3A/rexut%3A/RHEL6-EPEL-deps/CentOS_CentOS-6/noarch/asciidoc-8.4.5-4.1.el6.noarch.rpm
+rpm -ivh asciidoc-8.4.5-4.1.el6.noarch.rpm
+
+
+yum install krb5-devel zlib-devel lksctp-tools-devel util-linux make gcc rpm-build
+
+wget  https://vault.centos.org/7.9.2009/updates/Source/SPackages/openssl-1.0.2k-21.el7_9.src.rpm --no-check-certificate
+rpm -i openssl-1.0.2k-21.el7_9.src.rpm
+cd ~/rpmbuild/SOURCES/
+sed -i 's/secure_getenv(/getenv(/g' *patch
+cd ../SPECS/
+sed -i 's/%patch68 -p1 -b .secure-getenv/#%patch68 -p1 -b .secure-getenv/g' openssl.spec
+rpmbuild -bb openssl.spec
+cd ../RPMS/x86_64
+rpm -U openssl-libs-1.0.2k-21.el6.x86_64.rpm openssl-1.0.2k-21.el6.x86_64.rpm
+
+
+yum install asciidoc java-1.6.0-openjdk
+mkdir -p /dl/ca-cert; cd /dl/ca-cert;
+curl -o ca-certificates-2020.2.41-65.1.el6_10.src.rpm https://vault.centos.org/6.10/updates/Source/SPackages/ca-certificates-2020.2.41-65.1.el6_10.src.rpm
+rpm -i ca-certificates-2020.2.41-65.1.el6_10.src.rpm
+curl -o ca-certificates-2021.2.50-72.el7_9.src.rpm https://vault.centos.org/7.9.2009/updates/Source/SPackages/ca-certificates-2021.2.50-72.el7_9.src.rpm
+rpm2cpio ca-certificates-2021.2.50-72.el7_9.src.rpm | cpio -idmv
+cp certdata.txt ~/rpmbuild/SOURCES/
+sed -i 's/Version: 2020.2.41/Version: 2021.2.50/g' ~/rpmbuild/SPECS/ca-certificates.spec
+cd ~/rpmbuild/SPECS
+rpmbuild -bb ca-certificates.spec
+cd /root/rpmbuild/RPMS/noarch/
+rpm -U ca-certificates-2021.2.50-65.1.el6.noarch.rpm</code></pre>
+
+<p>这样就可以解决了，用下面这个验证 ：</p>
+<pre><code class="hljs shell">wget https://vault.centos.org/6.8/os/x86_64/repodata/repomd.xml</code></pre>
+
+<p>修改 /etc/yum.repos.d/CentOS-Base.repo ：</p>
+<pre><code class="hljs properties"><span class="hljs-attr">[base]</span>
+<span class="hljs-attr">name</span>=<span class="hljs-string">CentOS-6</span>
+<span class="hljs-attr">failovermethod</span>=<span class="hljs-string">priority</span>
+<span class="hljs-attr">baseurl</span>=<span class="hljs-string">https://vault.centos.org/6.8/os/x86_64/</span>
+<span class="hljs-comment">#baseurl=file:///mnt/</span>
+<span class="hljs-attr">gpgcheck</span>=<span class="hljs-string">0</span></code></pre>
+
+<p>然后：</p>
+<pre><code class="hljs shell">yum clean all
+yum makecache</code></pre>
+
+
+
+<p>centos6.8 对应内核版本<code>2.6.32-642.el6.x86_64</code>,安装对应的内核调试信息与src包。  </p>
+<pre><code class="hljs shell">
+https://vault.centos.org/6.8/isos/x86_64/CentOS-6.8-x86_64-bin-DVD1.iso
+
+wget http://debuginfo.centos.org/6/x86_64/kernel-debuginfo-common-x86_64-2.6.32-642.el6.x86_64.rpm
+wget http://debuginfo.centos.org/6/x86_64/kernel-debuginfo-2.6.32-642.el6.x86_64.rpm
+wget http://www.central.org/dl/linuxdev/centos6/x86_64/kernel-devel-2.6.32-642.el6.x86_64.rpm
+wget https://vault.centos.org/6.8/os/Source/SPackages/kernel-2.6.32-642.el6.src.rpm
+
+
+sudo rpm -ivh kernel-devel-2.6.32-642.el6.x86_64.rpm
+sudo rpm -ivh kernel-debuginfo-common-x86_64-2.6.32-642.el6.x86_64.rpm
+sudo rpm -ivh kernel-debuginfo-2.6.32-642.el6.x86_64.rpm</code></pre>
+
+
+
+<p>安装并验证:</p>
+<pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> 这步骤如果安装网络下载太慢 可以从本地iso安装，跟上面一样改repo文件</span>
+sudo yum install systemtap
+
+stap -e 'probe begin&#123;printf("Hello, World"); exit();&#125;'
+
+sudo stap -l 'kernel.function("*")'
+
+sudo stap -l 'kernel.function("read")'
+<span class="hljs-meta">#</span><span class="bash"> 成功执行的话能看到  kernel.function(<span class="hljs-string">"read@fs/sysfs/bin.c:70"</span>)</span>
+<span class="hljs-meta">#</span><span class="bash"> /usr/src/debug/kernel-2.6.32-642.el6/linux-2.6.32-642.el6.x86_64/fs/sysfs/bin.c</span></code></pre>
+
+
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/program-language-practice/">program-language-practice</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/system/">system</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2022/01/08/distribute-consistency/">
+                        <span class="hidden-mobile">关于分布式系统中一致性的相关概念</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "centos 6.x ssl证书问题解决及systemtap环境准备&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

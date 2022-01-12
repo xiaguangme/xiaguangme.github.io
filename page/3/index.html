@@ -175,6 +175,57 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/13/kafka-02-code-version-compile-cmd/">[kafka]02.代码版本、编译与常用命令</a>
+
+      <a href="/2021/05/13/kafka-02-code-version-compile-cmd/" class="index-excerpt">
+        
+        
+          
+        
+        <div>代码版本、编译与常用命令编译
+下载sbt  
+
+下载scalaIDE  
+
+下载gradle 选择4版本，可以跳过一些问题    设置对应环境变量  
+
+gradle -b build.gradle jar  编译kafka代码
+
+gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中, 导入后个别配置问题导致的报错fix一下就能没有错</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-13
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/05/12/kafka-01-read-guide/">[kafka]01.kafka源码阅读-导读提示</a>
 
       <a href="/2021/05/12/kafka-01-read-guide/" class="index-excerpt">
@@ -536,54 +587,6 @@ GenericFilter作用先讨论一个问题，rpc，最简单的场景是consumer�
         
         <div>25.TPS限流知识各种限流算法的称呼网上有很多文章介绍限流算法，但是对于这些算法的称呼与描述也是有点难以理解。不管那么多了。我先按我理解的维度梳理一下。主要维度是：是正向计数还是反向计数。是定点(时间点)重置当前计数器还是每次接口调用时按量调整当前还剩的可用请求数。  
 通俗理解正向计数且定点(时间点)重置的流程                       +------------------</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-06-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">dubbo源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/">[dubbo]24.调用链如何构建的？ProtocolFilterWrapper分析</a>
-
-      <a href="/2020/06/13/dubbo-24.ProtocolFilterWrapper-study/" class="index-excerpt">
-        
-        
-          
-        
-        <div>24.调用链如何构建的？ProtocolFilterWrapper分析调用链的构建，可以理解成多个invoker实例组成链的构建。
-调用链构建在dubbo中分为两步骤：
-
-JavassistProxyFactory$1的构建。此步骤是将真正的业务方法同规避反射的手段包起来。
-ProtocolFilterWrapper$1的构建。此步骤是将每个filter用Invoker实例包起来并串起来链来。
-
-</div>
       </a>
 
       <div class="index-btm post-metas">
