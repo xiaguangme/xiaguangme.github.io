@@ -247,7 +247,7 @@
     <link href="/2021/12/01/sofa-jraft-01-source-code-read-guide/"/>
     <url>/2021/12/01/sofa-jraft-01-source-code-read-guide/</url>
     
-    <content type="html"><![CDATA[<h1 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h1><p>此系列文章是sofa-jraft 1.3.7版本代码阅读的过程笔记。主要阐述了节点启动、选主、日志复制、快照机制、状态机对接、一致性读和优先级选举等机制的实现过程。</p><ol><li>sofa-jraft源码阅读-导读提示</li><li>前期准备、基础概念与机制</li><li>节点启动与leader选主分析</li><li>单节点存储分析</li><li>分布式状态机与计数器的例子分析</li><li>副本复制整体分析</li><li>快照机制分析</li><li>线性一致性读与优先级选举的实现</li></ol>]]></content>
+    <content type="html"><![CDATA[<h1 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h1><p>此系列文章是sofa-jraft 1.3.7版本代码阅读的过程笔记。主要阐述了节点启动、选主、日志复制、快照机制、状态机对接、一致性读和优先级选举等机制的实现过程。</p><ol><li><a href="https://www.code260.com/2021/12/01/sofa-jraft-01-source-code-read-guide/">sofa-jraft源码阅读-导读提示</a></li><li><a href="https://www.code260.com/2021/12/02/sofa-jraft-02-env-prepare-basic-concept/">前期准备、基础概念与机制</a></li><li><a href="https://www.code260.com/2021/12/03/sofa-jraft-03-node-init-leader-elect/">节点启动与leader选主分析</a></li><li><a href="https://www.code260.com/2021/12/04/sofa-jraft-04-local-store/">单节点存储分析</a></li><li><a href="https://www.code260.com/2021/12/05/sofa-jraft-05-counter-fsm/">分布式状态机与计数器的例子分析</a></li><li><a href="https://www.code260.com/2021/12/06/sofa-jraft-06-replicator/">副本复制整体分析</a></li><li><a href="https://www.code260.com/2021/12/07/sofa-jraft-07-snapshot/">快照机制分析</a></li><li><a href="https://www.code260.com/2021/12/08/sofa-jraft-08-linearizability-read/">线性一致性读与优先级选举的实现</a></li></ol>]]></content>
     
     
     <categories>
