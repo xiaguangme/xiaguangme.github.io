@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[sofa-jraft]04.单节点存储分析 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-12-04 23:39">
+                    星期六, 十二月 4日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    1.5k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    18
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="单节点存储分析"><a href="#单节点存储分析" class="headerlink" title="单节点存储分析"></a>单节点存储分析</h1><h2 id="存储相关类是怎么串起来的"><a href="#存储相关类是怎么串起来的" class="headerlink" title="存储相关类是怎么串起来的"></a>存储相关类是怎么串起来的</h2><p>LogManager  StableClosureEventHandler  AppendBatcher   LogStorage(RocksDBLogStorage)是怎么串起来的？</p>
+<p>整体关系如下：  </p>
+<p>org.rocksdb.AbstractWriteBatch.put(ColumnFamilyHandle, byte[], byte[])</p>
+<p>RocksDBLogStorage.addDataBatch(LogEntry, WriteBatch, WriteContext)</p>
+<p>RocksDBLogStorage.appendEntries(List<LogEntry>)</p>
+<p>LogStorage.appendEntries(List<LogEntry>)</p>
+<p>​    – LogManagerImpl.appendToStorage(List<LogEntry>)</p>
+<p>​        – LogManagerImpl.AppendBatcher.flush()</p>
+<p>​            – LogManagerImpl.StableClosureEventHandler.onEvent</p>
+<p>StableClosureEventHandler自己几个部件的关系如下：  </p>
+<p>com.alipay.sofa.jraft.storage.impl.LogManagerImpl.StableClosureEventHandler</p>
+<p>com.alipay.sofa.jraft.storage.impl.LogManagerImpl.disruptor</p>
+<p>com.alipay.sofa.jraft.storage.impl.LogManagerImpl.diskQueue</p>
+<p>事件的队列是又如何被offer的？关系如下：  </p>
+<p>LogManagerImpl.tryOfferEvent(StableClosure, EventTranslator<StableClosureEvent>)</p>
+<p>– LogManagerImpl.appendEntries(List<LogEntry>, StableClosure)</p>
+<p>​    – NodeImpl.executeApplyingTasks(List<LogEntryAndClosure>)   LeaderStableClosure  </p>
+<p>​    – NodeImpl.handleAppendEntriesRequest(AppendEntriesRequest, RpcRequestClosure)   FollowerStableClosure</p>
+<p>executeApplyingTasks   LeaderStableClosure   这个是leader节点写日志，对应的闭包命名也能看出来。闭包回调中会通过ballotBox.commitAt去触发FSM状态机的apply。  </p>
+<p>handleAppendEntriesRequest    FollowerStableClosure  这个是follower节点写日志，同样对应的闭包命名也是显而易见。  </p>
+<h2 id="AppendBatcher的append与flush机制分析"><a href="#AppendBatcher的append与flush机制分析" class="headerlink" title="AppendBatcher的append与flush机制分析"></a>AppendBatcher的append与flush机制分析</h2><p>AppendBatcher的内部属性有StableClosure的列表storage，cap，size，bufferSize，LogEntry的列表toAppend，lastId等。</p>
+<h3 id="append"><a href="#append" class="headerlink" title="append"></a>append</h3><p>append的主要逻辑有：</p>
+<ul>
+<li>达到阈值，触发flush。达到阈值的判断逻辑是：size到达了cap的值，或者buf到达了maxAppendBufferSize的配置值。</li>
+<li>将回调闭包StableClosure实例done加入storage列表。</li>
+<li>size 加1。</li>
+<li>toAppend将回调闭包中携带的Entries列表加进来。</li>
+<li>bufferSize将回调闭包中携带的Entries的data的大小加进来。</li>
+</ul>
+<h3 id="flush"><a href="#flush" class="headerlink" title="flush"></a>flush</h3><p>flush的主要逻辑有：</p>
+<ul>
+<li>将LogEntry的列表toAppend交由logStorage去做appendEntries(下面有更细的分析)。</li>
+<li>度量数据处理。</li>
+<li>异常与错误上报。</li>
+<li>toAppend清空。</li>
+<li>返回lastId。lastId是toAppend列表中最后一个LogEntry的id。对于最后一个LogEntry的id是谁设置的，在哪里设置的，此系列文章中有其他地方对此做详细阐述。  </li>
+</ul>
+<h2 id="LogStorage的appendEntries分析"><a href="#LogStorage的appendEntries分析" class="headerlink" title="LogStorage的appendEntries分析"></a>LogStorage的appendEntries分析</h2><p>在sofa-jrat中，LogStorage的默认实现是RocksDBLogStorage。也就是说<strong>存储默认是基于RocksDB完成</strong>。  </p>
+<p>append时对LogEntry分两类处理，一类是<strong>ENTRY_TYPE_CONFIGURATION</strong>，配置类的，另一类是其他，也就是数据类的。处理方式略有差异，所以要分两类处理。</p>
+<p>db写完之后，writeCtx joinAll。 其实现RocksDBSegmentLogStorage对此做的逻辑是等待事件全部完成和hooks调用完成。</p>
+<p>然后doSync。其实现RocksDBSegmentLogStorage对此做的逻辑是获取到最后一次SegmentFile，让其sync。sync的最下层的实现在com.alipay.sofa.jraft.storage.log.SegmentFile.fsync，通过调用MappedByteBuffer的force方法完成。</p>
+<h3 id="配置类的处理"><a href="#配置类的处理" class="headerlink" title="配置类的处理"></a>配置类的处理</h3><p>key是LogEntry的id中的index。</p>
+<p>value是用<code>logEntryEncoder</code>对LogEntry进行编码后的值。</p>
+<p>ColumnFamilyHandle有两个，一个是defaultHandle，一个是confHandle。</p>
+<p>ColumnFamilyHandle是RocksDB的概念。相当于我们通常理解的表。</p>
+<h3 id="数据类的处理"><a href="#数据类的处理" class="headerlink" title="数据类的处理"></a>数据类的处理</h3><p>key与value的约定与配置类相同。</p>
+<p>但是ColumnFamilyHandle只有一个，是defaultHandle。</p>
+<p>同时，还有一个能力是执行onDataAppend逻辑，onDataAppend逻辑就是让WriteContext finishJob</p>
+<h2 id="LastLogId读取逻辑"><a href="#LastLogId读取逻辑" class="headerlink" title="LastLogId读取逻辑"></a>LastLogId读取逻辑</h2><p>LastLogId读取的入口在<code>LogManager</code>接口中，其签名如下：</p>
+<p>com.alipay.sofa.jraft.storage.LogManager.getLastLogId(boolean)</p>
+<p>读取时分为两种场景，一种是需要在flush之后读取的，一种是不需要的。</p>
+<ul>
+<li>不需要在flush之后获取的逻辑比较简单，就是在<code>lastLogIndex</code>、<code>firstLogIndex</code>、<code>lastSnapshotId</code>中进行处理。如果<strong>lastLogIndex &gt;= firstLogIndex</strong>，则用lastLogIndex返回,<strong>否则用lastSnapshotId返回</strong>。</li>
+<li>需要在flush之后获取的逻辑就复杂一些了。下面详细分解。</li>
+</ul>
+<p>需要在flush之后获取LastLogId的逻辑入口处也是要处理lastLogIndex与lastSnapshotId的比较，若相同，则直接返回lastSnapshotId，否则要走LastLogIdClosure和<code>LAST_LOG_ID</code>这个事件机制。  </p>
+<p>基于上面的事件机制分析，我们直接阅读com.alipay.sofa.jraft.storage.impl.LogManagerImpl.StableClosureEventHandler.onEvent中对于<code>LAST_LOG_ID</code>事件的处理即可。</p>
+<p>在整个事件处理逻辑中，分为两类分支： </p>
+<ul>
+<li>回调中带了Entries列表<strong>不为空</strong>的，交由<code>AppendBatcher</code>去做<strong>append</strong>。</li>
+<li>回调中带了Entries列表<strong>为空</strong>的，交由<code>AppendBatcher</code>去做<strong>flush</strong>，flush后返回的id就是lastId，就是我们要获取的。整个flush的机制是怎么样的，上面已经分析了。 </li>
+</ul>
+<h2 id="存储相关的初始化"><a href="#存储相关的初始化" class="headerlink" title="存储相关的初始化"></a>存储相关的初始化</h2><h3 id="NodeImpl中关于LogStorage的初始化"><a href="#NodeImpl中关于LogStorage的初始化" class="headerlink" title="NodeImpl中关于LogStorage的初始化"></a>NodeImpl中关于LogStorage的初始化</h3><p>node中关于存储的初始化逻辑在com.alipay.sofa.jraft.core.NodeImpl.initLogStorage()中。  </p>
+<p>整个存储机制大概分层是： </p>
+<p>LogManagerImpl  – </p>
+<p>准备存储机制所需要的选项LogManagerOptions：</p>
+<ul>
+<li>LogEntryCodecFactory</li>
+<li>LogStorage //   这个是真正完成存储职责的角色。本系统中是RocksDBLogStorage和RocksDBSegmentLogStorage。</li>
+<li>ConfigurationManager</li>
+<li>FsmCaller</li>
+<li>NodeMetrics</li>
+<li>DisruptorBufferSize</li>
+<li>RaftOptions</li>
+</ul>
+<p>用上述步骤准备好的选项进行logManager.init(opts)</p>
+<h3 id="LogManagerImpl中init分析"><a href="#LogManagerImpl中init分析" class="headerlink" title="LogManagerImpl中init分析"></a>LogManagerImpl中init分析</h3><p>int的主要逻辑是：</p>
+<ul>
+<li><p>准备logStorage.init时需要的LogStorageOptions，其需要setConfigurationManager和LogEntryCodecFactory</p>
+</li>
+<li><p>调用logStorage.init。</p>
+</li>
+<li><p>从logStorage中获取firstLogIndex，lastLogIndex。并基于此构建diskId。</p>
+<p>diskId的index是lastLogIndex，diskId的term是根据lastLogIndex获取的，获取逻辑是：</p>
+<ul>
+<li>根据这个到logStorage中获取对应entry。如果取不到entry，那么term就是0。</li>
+<li>如果能取到，就返回entry的term。此外，会根据配置项，决定是否对这个entry做checksum校验。</li>
+</ul>
+</li>
+<li><p>build disruptor实例。</p>
+<ul>
+<li>EventFactory是StableClosureEventFactory；</li>
+<li>RingBufferSize来自于配置项，默认1024；</li>
+<li>ThreadFactory是NamedThreadFactory，前缀是JRaft-LogManager-Disruptor-；</li>
+<li>ProducerType是MULTI；</li>
+<li>WaitStrategy是disruptor自带的TimeoutBlockingWaitStrategy。</li>
+</ul>
+</li>
+<li><p>disruptor handleEventsWith是StableClosureEventHandler。相应细节在相应用到的章节有阐述。  </p>
+</li>
+<li><p>disruptor DefaultExceptionHandler是LogExceptionHandler</p>
+</li>
+<li><p>启动disruptor，并得到RingBuffer实例diskQueue</p>
+</li>
+<li><p>注册DisruptorMetricSet</p>
+</li>
+</ul>
+<h3 id="logStorage中init分析"><a href="#logStorage中init分析" class="headerlink" title="logStorage中init分析"></a>logStorage中init分析</h3><p>首先先看下创建实例的地方，在com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory.createLogStorage(String, RaftOptions)中。</p>
+<p>代码如下:</p>
+<pre><code class="hljs java"><span class="hljs-keyword">this</span>.logStorage = <span class="hljs-keyword">this</span>.serviceFactory.createLogStorage(<span class="hljs-keyword">this</span>.options.getLogUri(), <span class="hljs-keyword">this</span>.raftOptions);<span class="hljs-comment">// NodeImpl中的代码    </span>
+
+<span class="hljs-comment">// DefaultJRaftServiceFactory中的代码</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> LogStorage <span class="hljs-title">createLogStorage</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String uri, <span class="hljs-keyword">final</span> RaftOptions raftOptions)</span> </span>&#123;
+        Requires.requireTrue(StringUtils.isNotBlank(uri), <span class="hljs-string">"Blank log storage uri."</span>);
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> RocksDBLogStorage(uri, raftOptions);
+    &#125;</code></pre>
+
+<p>可以看到创建的是RocksDBLogStorage。</p>
+<p>init逻辑分析：</p>
+<p>处理DBOptions，默认是StorageOptionsFactory.getDefaultRocksDBOptions，主要设置的选项有：</p>
+<p>CreateIfMissing true</p>
+<p>CreateMissingColumnFamilies true</p>
+<p>MaxOpenFiles -1 // -1表示不限制打开的文件数</p>
+<p>MaxBackgroundCompactions   Math.<em>min</em>(Utils.<em>cpus</em>(), 4)</p>
+<p>MaxBackgroundFlushes   1 // 并发flush操作的最大数 一般都设置成1</p>
+<p>按需开启统计，DebugStatistic。</p>
+<p>开始initAndLoad。</p>
+<p>columnFamilyDescriptors中加入两个ColumnFamilyDescriptor，一个是Configuration，一个是 DEFAULT_COLUMN_FAMILY，即default。</p>
+<p>打开db。 openDB()。</p>
+<p>主要代码： </p>
+<p>com.alipay.sofa.jraft.storage.impl.RocksDBLogStorage.openDB</p>
+<pre><code class="hljs java"><span class="hljs-keyword">this</span>.db = RocksDB.open(<span class="hljs-keyword">this</span>.dbOptions, <span class="hljs-keyword">this</span>.path, columnFamilyDescriptors, columnFamilyHandles);</code></pre>
+
+<p>加载db。 load()。</p>
+<p>com.alipay.sofa.jraft.storage.impl.RocksDBLogStorage.load</p>
+<p>用confHandle迭代存储的所有配置数据</p>
+<p>每迭代到一条时，如果key的长度是8则build一个ConfigurationEntry实例，并纳入ConfigurationManager管理；</p>
+<p>如果不是，则比较是否是meta/firstLogIndex，如果是，则用其值来设置FirstLogIndex，并truncatePrefixInBackground。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/05/sofa-jraft-05-counter-fsm/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[sofa-jraft]05.分布式状态机与计数器的例子分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/03/sofa-jraft-03-node-init-leader-elect/">
+                        <span class="hidden-mobile">[sofa-jraft]03.节点启动与leader选主分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[sofa-jraft]04.单节点存储分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -175,6 +175,392 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/compile-hotspot8/">step by step 编译hotspot8</a>
+
+      <a href="/2020/04/24/compile-hotspot8/" class="index-excerpt">
+        
+        
+          
+        
+        <div>编译hotspot8ubuntu desktop 18 全新准备与编译过程再记录下：
+ # 建议使用此gcc和g++版本，过高版本比如gcc7或引发编译报错
+ sudo apt-get install gcc-4.8
+ sudo apt-get install g++-4.8
+ 
+ # 安装相关依赖
+sudo apt-get install  libxext-dev libxrender-dev </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/24/gc-static-field/">静态字段引用的对象为什么不会被GC回收</a>
+
+      <a href="/2020/04/24/gc-static-field/" class="index-excerpt">
+        
+        
+          
+        
+        <div>示例代码import java.util.ArrayList;
+import java.util.List;
+
+public class StaticFieldClass &#123;
+	
+	public static List&lt;Team&gt; staticField1 = new ArrayList&lt;Team&gt;();
+	
+	static &#123;
+		staticFiel</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-24
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/program-language-practice/">program-language-practice</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/gc/">gc</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-request/">kafka-clients 1.0 内部请求接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-request/" class="index-excerpt">
+        
+        
+          
+        
+        <div>AddOffsetsToTxnRequestversion:0nametypedefaultValuedocStringtransactional_idSTRINGnullThe transactional id corresponding to the transaction.
+producer_idINT64nullCurrent producer id in use by the trans</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/">kafka-clients 1.0 内部响应接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-inner-rpc-doc-reponse/" class="index-excerpt">
+        
+        
+          
+        
+        <div>AddOffsetsToTxnResponseversion:0nametypedefaultValuedocStringthrottle_time_msINT320Duration in milliseconds for which the request was throttled due to quota violation (Zero if the request did not viol</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/kafka1-0-generate-rpc-doc/">生成kafka内部请求与响应的接口文档</a>
+
+      <a href="/2020/04/22/kafka1-0-generate-rpc-doc/" class="index-excerpt">
+        
+        
+          
+        
+        <div>生成kafka内部请求与响应的接口文档/**
+ */
+package com.code260.ss.kafka10demo;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.ne</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/c-cpp-call-simple-fun/">简单的main方法调用一个加减法函数背后的细节</a>
+
+      <a href="/2020/04/22/c-cpp-call-simple-fun/" class="index-excerpt">
+        
+        
+          
+        
+        <div>测试程序/*
+ * AddTest.c
+ *
+ *  Created on: 2019年10月13日
+ *      Author: appweb
+ */
+#include &lt;stdio.h&gt;
+
+int add(int a, int b) &#123;
+	int c = addAgain(a, b);
+	return c;
+&#125;
+
+int addAgain(int a, int</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/hotspot-object-model/">JVM中对象模型及相应名词概念</a>
+
+      <a href="/2020/04/22/hotspot-object-model/" class="index-excerpt">
+        
+        
+          
+        
+        <div>JVM中对象模型及相应名词概念java对象在jvm中的模型是OOP-Klass 模型；
+klassklass对应元数据，包括常量池、字段、方法等。是在加载class阶段创建instanceKlass。存放在方法区。
+oopoop对应java中的实例。oop是指向oopDesc的指针。  
+// share/vm/oops/oopsHierarchy.hpp
+typedef class oopDes</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2020/04/22/c-cpp-point-function/">函数指针与指针函数，直接向内存区域写入操作码并转成函数指针并调用</a>
+
+      <a href="/2020/04/22/c-cpp-point-function/" class="index-excerpt">
+        
+        
+          
+        
+        <div>函数指针与指针函数阅读hotspot的代码，需要先弄清楚这两个很容易混淆的概念。最近我想到一个办法去区分折扣两个，就是在中间加个“的”：  
+
+函数的指针
+指针的函数  
+
+这样就很容易区分了。  
+
+函数指针，实际上是指针，是指向函数的指针  
+指针函数，实际上函数，是指返回指针的函数  
+
+其实在C语言中，指针数组和数组指针也是一样的区分办法。  加个“的”便可以解决。为什么会有这样的问题？老</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/hotspot%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">hotspot源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2020/04/22/c-cpp-point-convert/">指针转换</a>
 
       <a href="/2020/04/22/c-cpp-point-convert/" class="index-excerpt">
@@ -264,362 +650,11 @@ typedef void (*CallStub)(
     </div>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-offset-range-query/">offset range 查询</a>
-
-      <a href="/2020/04/22/kafka1-0-offset-range-query/" class="index-excerpt">
-        
-        
-          
-        
-        <div>offset range 查询我们在实际使用过程中经常需要查询某个topic的某分区的offset的range命令行：  
-kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list xxxx:9092 -topic xxxtopic --time -2      
-kafka-run-class.sh kafka.tools.GetOf</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-message-write/">消息写入</a>
-
-      <a href="/2020/04/22/kafka1-0-message-write/" class="index-excerpt">
-        
-        
-          
-        
-        <div>消息写入生产消息时的rpc请求日志leader节点  
-[2019-09-25 19:40:22,266] INFO Handling request:RequestHeader(apiKey=FETCH, apiVersion=5, clientId=broker-0-fetcher-0, correlationId=8855) -- &#123;replica_id=0,max_wait_ti</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-metadata-update/">MetadataCache更新</a>
-
-      <a href="/2020/04/22/kafka1-0-metadata-update/" class="index-excerpt">
-        
-        
-          
-        
-        <div>MetadataCache什么时候更新updateCache方法用来更新缓存的。   
-发起线程  controller-event-threadcontroller选举的时候
-CLASS_NAME     METHOD_NAME    LINE_NUM  
-kafka/controller/KafkaController   sendUpdateMetadataRequest      1043</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-replica-sync/">副本同步</a>
-
-      <a href="/2020/04/22/kafka1-0-replica-sync/" class="index-excerpt">
-        
-        
-          
-        
-        <div>几个概念的解释
-LEO 日志的结尾位置，也是最后写入(append)消息的位置+1。这个位置不代表消费者能看到，仅仅表示单机的日志写入位置，因为要考虑其他副本的写入情况。leader与follower都有此指标。
-HW high water mark的简称，对外公开的消费者的非事务消息(即未提交读模式)的位置。这个值的更新过程比较复杂。leader与follower都有此指标。与LEO的区别参见这</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-consmer-high-level/">kafka-clients 1.0 高阶API消费消息(未完)</a>
-
-      <a href="/2020/04/22/kafka1-0-clietns-consmer-high-level/" class="index-excerpt">
-        
-        
-          
-        
-        <div>消费消息的请求(按序)
-org/apache/kafka/common/requests/RequestHeader  
-org/apache/kafka/common/requests/ApiVersionsRequest  
-org/apache/kafka/common/requests/MetadataRequest  批量查询topic的元数据信息  
-org/apache/kafka/</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer-semd-message/">clients-producer-组包发送消息</a>
-
-      <a href="/2020/04/22/kafka1-0-clietns-producer-semd-message/" class="index-excerpt">
-        
-        
-          
-        
-        <div>
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/kafka1-0-clietns-producer/">clients-producer-网络处理与请求响应对接部分</a>
-
-      <a href="/2020/04/22/kafka1-0-clietns-producer/" class="index-excerpt">
-        
-        
-          
-        
-        <div>
-</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-              <a href="/tags/kafka1-0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka1.0源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2020/04/22/jmx-basic/">JMX基本概念</a>
-
-      <a href="/2020/04/22/jmx-basic/" class="index-excerpt">
-        
-        
-          
-        
-        <div>Object name的语法
-形似 com.sun.someapp:type=Whatsit,name=25  
-com.sun.someapp 是domain，冒号后面的是key-property-list，每组kv的顺序随意，但是不能有空格，空格字符有特殊含义，不能有冒号。domain名不能含有冒号，不能含有/。  
-key-property-list中的key支持和？somedomain:t</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2020-04-22
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/java/">java</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <a class="extend prev" rel="prev" href="/page/9/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/11/"><i class="iconfont icon-arrowright"></i></a>
+      <a class="extend prev" rel="prev" href="/page/9/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="page-number" href="/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/page/11/">11</a><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/11/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

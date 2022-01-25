@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[sofa-jraft]07.快照机制分析 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-12-07 23:39">
+                    星期二, 十二月 7日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    32
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="快照机制分析"><a href="#快照机制分析" class="headerlink" title="快照机制分析"></a>快照机制分析</h1><p>我有几个疑问:</p>
+<p><code>SnapshotPath</code>根据什么确定？ </p>
+<p>这个目录下都有什么文件？</p>
+<p>这些文件是什么时候怎们样的方式写入进来的？</p>
+<p>快照存储的逻辑是怎么样的？</p>
+<p>给follower安装快照的时机是怎么样的？</p>
+<p>安装快照请求带了哪些参数过去？</p>
+<p>follower挂掉一段时间再起来后如何优化那么多没被apply的log再在状态机中apply一遍的消耗？</p>
+<p>这个目录下的文件是：</p>
+<p> – /tmp/server1/snapshot/snapshot_{lastSnapshotIndex}/</p>
+<p>  – __raft_snapshot_meta</p>
+<p>  – data</p>
+<p>/tmp/server1/snapshot  是根据 NodeOptions 的getSnapshotUri()确定的，此处是用的默认值。</p>
+<p>lastSnapshotIndex维护在LocalSnapshotStorage中，除了init时对此字段赋值外，在snapshot存储完成时，也会更新改字段的值。  </p>
+<pre><code class="hljs java"> <span class="hljs-comment">// com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage.close(LocalSnapshotWriter, boolean)</span>
+
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> newIndex = writer.getSnapshotIndex();  <span class="hljs-comment">// 217行</span>
+
+<span class="hljs-keyword">this</span>.lastSnapshotIndex = newIndex;  <span class="hljs-comment">// 241行</span></code></pre>
+
+<h2 id="快照存储"><a href="#快照存储" class="headerlink" title="快照存储"></a>快照存储</h2><h3 id="整个链路"><a href="#整个链路" class="headerlink" title="整个链路"></a>整个链路</h3><p>快照存储的整个链路是：</p>
+<pre><code class="hljs mermaid">flowchart TD
+A(snapshotTimer:imerRepeatedTimer)-.-&gt;|计时器异步|B(NodeImpl.handleSnapshotTimeout)
+B--&gt;C(SnapshotExecutorImpl.doSnapshot)
+C--&gt;F(FSMCallerImpl.onSnapshotSave:enqueueTask:TaskType.SNAPSHOT_SAVE)
+F-.-&gt;|disruptor事件异步|G(FSMCallerImpl.doSnapshotSave)
+G--&gt;H(业务自定义快照保存逻辑CounterStateMachine.onSnapshotSave)
+H-.-&gt;|闭包回调异步|I(业务自定义将快照数据写入 $SnapshotWriter.path&#x2F;data)
+I--&gt;D(SaveSnapshotDone.continueRun)
+D--&gt;E(SnapshotExecutorImpl.onSnapshotSaveDone 保存元数据)</code></pre>
+
+<p>快照保存逻辑，触发快照保存(真正save的逻辑由业务侧实现)，异步触发注册的onSnapshotSave回调:</p>
+<ul>
+<li>stopped、downloadingSnapshot、savingSnapshot几种状态判断，不处理</li>
+<li>lastSnapshotIndex与LastAppliedIndex之间的差值未达到配置的<code>SnapshotLogIndexMargin</code> ，不处理。</li>
+<li><strong>触发快照保存</strong>。触发fsmCaller.onSnapshotSave，其中再触发StateMachine.onSnapshotSave。并将SaveSnapshotDone通过disruptor队列异步执行。<strong>注意：</strong>具体的快照保存逻辑是由业务自己在状态机中实现，如，上面的计数器的例子。<ul>
+<li>准备SnapshotMeta。<strong>元数据主要有 当前的以及之前的peers与learners，LastIncludedIndex，LastIncludedTerm</strong>。LastIncludedIndex就是lastAppliedIndex。也就是状态机apply到哪里了，快照就保存到哪里。 //  FSMCallerImpl.java 554行~577行</li>
+<li>调用业务侧实现的状态机的onSnapshotSave。此处是<strong>真正写快照数据</strong>的地方，<strong>计数器例子中快照数据就是当前计数器计数到哪里了，即计数器当前值是多少，这样在安装快照过后就避免了副本节点重新将那么多没有被apply的日志在状态机中再apply一遍了</strong>。对应文件是/tmp/server1/snapshot/snapshot_24/data</li>
+<li>业务实现的状态机的onSnapshotSave中会异步触发回调逻辑<strong>保存元数据</strong>，writer.saveMeta(meta) //SnapshotExecutorImpl.java 386行</li>
+</ul>
+</li>
+</ul>
+<p>这个逻辑在leader与follower节点都会执行。</p>
+<p>快照的元数据是在 LocalSnapshotStorage.close 中完成，每当快照存储完成后，便会调用close这个方法，这个方法里面调用了元数据保存。LocalSnapshotStorage.close具体逻辑是：</p>
+<ul>
+<li>判断writer的code，不成功的直接返回</li>
+<li>调用LocalSnapshotWriter.sync()触发元数据保存。<ul>
+<li>这个数据写在临时目录下的/tmp/server2/snapshot/<strong>temp</strong>/__raft_snapshot_meta。具体代码可以参见下面段落中的细节代码。</li>
+<li>通过前面准备的数据构建LocalSnapshotPbMeta。进一部分析，有两部分数据：<ul>
+<li>一是SnapshotMeta。在上面段落中触发快照保存 准备SnapshotMeta中已经阐述了。</li>
+<li>另一是fileMap。这个是filename和file元数据LocalFileMeta的映射。这个是<strong>在业务侧自行实现的状态机的onSnapshotSave中维护的：writer.addFile(“data”)</strong>。也就是你快照写了212哪个数据文件就维护进来，LocalFileMeta可以为null。</li>
+</ul>
+</li>
+<li>通过com.alipay.sofa.jraft.storage.io.ProtoBufFile.save(Message, boolean)将LocalSnapshotPbMeta实例以protobuf序列化后写磁盘落地。注意此处写的文件的内容，会先在protobuf序列化后的数据前面写上这个报文的name以及length等。具体可以参见前面《protobuf存储数据》部分。</li>
+</ul>
+</li>
+<li>将临时快照目录重名成当前SnapshotIndex对应的目录，即类似/tmp/server2/<strong>snapshot/snapshot_30</strong>。示例中的30是当前SnapshotIndex</li>
+<li>对oldIndex解除引用计数，对newIndex增加引用计数。</li>
+</ul>
+<h3 id="相关细节代码与调用堆栈"><a href="#相关细节代码与调用堆栈" class="headerlink" title="相关细节代码与调用堆栈"></a>相关细节代码与调用堆栈</h3><p>写元数据是先写在临时目录下，确定这个临时目录的代码是：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// LocalSnapshotStorage.java 275行</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> SnapshotWriter <span class="hljs-title">create</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> fromEmpty)</span> </span>&#123;
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">final</span> String snapshotPath = <span class="hljs-keyword">this</span>.path + File.separator + TEMP_PATH;
+<span class="hljs-comment">// ...</span>
+writer = <span class="hljs-keyword">new</span> LocalSnapshotWriter(snapshotPath, <span class="hljs-keyword">this</span>, <span class="hljs-keyword">this</span>.raftOptions)</code></pre>
+
+
+
+<p>snapshot存储完成后回调含触发元数据保存的调用栈如下：   </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">01</span> <span class="hljs-number">17</span>:<span class="hljs-number">25</span>:<span class="hljs-number">16</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">1</span>;id=<span class="hljs-number">4</span>e;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage.close() <span class="hljs-comment">// 这里会通过调用LocalSnapshotWriter.sync()触发元数据保存</span>
+        at com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotWriter.close(LocalSnapshotWriter.java:<span class="hljs-number">98</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotWriter.close(LocalSnapshotWriter.java:<span class="hljs-number">93</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl.onSnapshotSaveDone(SnapshotExecutorImpl.java:<span class="hljs-number">396</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl$SaveSnapshotDone.continueRun(SnapshotExecutorImpl.java:<span class="hljs-number">145</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl$SaveSnapshotDone.lambda$run$<span class="hljs-number">0</span>(SnapshotExecutorImpl.java:<span class="hljs-number">141</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>SaveSnapshotDone什么时候进入disruptor队列？</p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl.doSnapshot(Closure)</span>
+<span class="hljs-keyword">final</span> SaveSnapshotDone saveSnapshotDone = <span class="hljs-keyword">new</span> SaveSnapshotDone(writer, done, <span class="hljs-keyword">null</span>); <span class="hljs-comment">// 350行</span>
+<span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.fsmCaller.onSnapshotSave(saveSnapshotDone)) &#123; <span class="hljs-comment">// SaveSnapshotDone进入disruptor队列</span>
+  Utils.runClosureInThread(done, <span class="hljs-keyword">new</span> Status(RaftError.EHOSTDOWN, <span class="hljs-string">"The raft node is down."</span>));
+  <span class="hljs-keyword">return</span>;
+&#125;</code></pre>
+
+<p>调用栈如下：</p>
+<pre><code class="hljs java">Affect(class count: 1 , method count: 1) cost in 77 ms, listenerId: 2
+ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">01</span> <span class="hljs-number">17</span>:<span class="hljs-number">28</span>:<span class="hljs-number">46</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">3</span>;id=<span class="hljs-number">50</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl.doSnapshot()
+        at com.alipay.sofa.jraft.core.NodeImpl.doSnapshot(NodeImpl.java:<span class="hljs-number">3098</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.lambda$handleSnapshotTimeout$<span class="hljs-number">0</span>(NodeImpl.java:<span class="hljs-number">607</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>handleSnapshotTimeout是snapshot定时器的回调</p>
+<pre><code class="hljs java"><span class="hljs-keyword">this</span>.snapshotTimer = <span class="hljs-keyword">new</span> RepeatedTimer(name, <span class="hljs-keyword">this</span>.options.getSnapshotIntervalSecs() * <span class="hljs-number">1000</span>,
+                                       TIMER_FACTORY.getSnapshotTimer(<span class="hljs-keyword">this</span>.options.isSharedSnapshotTimer(), name)) &#123;
+
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> <span class="hljs-keyword">boolean</span> firstSchedule = <span class="hljs-keyword">true</span>;
+
+  <span class="hljs-meta">@Override</span>
+  <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onTrigger</span><span class="hljs-params">()</span> </span>&#123;
+    handleSnapshotTimeout(); <span class="hljs-comment">// NodeImpl.java 953行</span>
+  &#125;
+<span class="hljs-comment">// ...</span></code></pre>
+
+<p><strong>执行快照保存堆栈</strong>(由业务侧定义快照保存逻辑，即快照中存什么？)</p>
+<pre><code class="hljs java"><span class="hljs-comment">// stack com.alipay.sofa.jraft.StateMachine onSnapshotSave</span>
+ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">02</span> <span class="hljs-number">08</span>:<span class="hljs-number">29</span>:<span class="hljs-number">48</span>;thread_name=JRaft-FSMCaller-Disruptor-<span class="hljs-number">0</span>;id=<span class="hljs-number">14</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.example.counter.CounterStateMachine.onSnapshotSave()
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.doSnapshotSave(FSMCallerImpl.java:<span class="hljs-number">583</span>)
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.runApplyTask(FSMCallerImpl.java:<span class="hljs-number">392</span>)</code></pre>
+
+<p>raft中状态机caller中doSnapshotSave以及业务侧定义的快照保存逻辑的代码示例(计数器)：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.core.FSMCallerImpl.doSnapshotSave(SaveSnapshotClosure)</span>
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doSnapshotSave</span><span class="hljs-params">(<span class="hljs-keyword">final</span> SaveSnapshotClosure done)</span> </span>&#123;
+        Requires.requireNonNull(done, <span class="hljs-string">"SaveSnapshotClosure is null"</span>);
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> lastAppliedIndex = <span class="hljs-keyword">this</span>.lastAppliedIndex.get();
+        <span class="hljs-keyword">final</span> RaftOutter.SnapshotMeta.Builder metaBuilder = RaftOutter.SnapshotMeta.newBuilder() <span class="hljs-comment">//</span>
+            .setLastIncludedIndex(lastAppliedIndex) <span class="hljs-comment">// **准备元数据**</span>
+            .setLastIncludedTerm(<span class="hljs-keyword">this</span>.lastAppliedTerm);
+<span class="hljs-comment">// ...</span>
+        <span class="hljs-keyword">final</span> SnapshotWriter writer = done.start(metaBuilder.build());
+<span class="hljs-comment">// ...</span>
+        <span class="hljs-keyword">this</span>.fsm.onSnapshotSave(writer, done); <span class="hljs-comment">// **调用业务实现的状态机写快照数据**</span>
+    &#125;
+
+<span class="hljs-comment">// com/alipay/sofa/jraft/example/counter/CounterStateMachine.java </span>
+<span class="hljs-meta">@Override</span>
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onSnapshotSave</span><span class="hljs-params">(<span class="hljs-keyword">final</span> SnapshotWriter writer, <span class="hljs-keyword">final</span> Closure done)</span> </span>&#123;
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> currVal = <span class="hljs-keyword">this</span>.value.get();
+    Utils.runInThread(() -&gt; &#123;
+      <span class="hljs-keyword">final</span> CounterSnapshotFile snapshot = <span class="hljs-keyword">new</span> CounterSnapshotFile(writer.getPath() + File.separator + <span class="hljs-string">"data"</span>);
+      <span class="hljs-keyword">if</span> (snapshot.save(currVal)) &#123; <span class="hljs-comment">// **真正保存快照，值就是当前计数器计数到哪里了，即计数器当前值是多少**</span>
+        <span class="hljs-keyword">if</span> (writer.addFile(<span class="hljs-string">"data"</span>)) &#123;
+          done.run(Status.OK());
+<span class="hljs-comment">// ...</span>
+    &#125;);
+  &#125;</code></pre>
+
+
+
+<h2 id="发起快照安装请求"><a href="#发起快照安装请求" class="headerlink" title="发起快照安装请求"></a>发起快照安装请求</h2><p>快照安装由leader节点发起installSnapshot的rpc请求，由follower节点处理这个请求完成快照安装。  </p>
+<p>installSnapshot的rpc的请求体定义如下： </p>
+<pre><code class="hljs protobuf"><span class="hljs-class"><span class="hljs-keyword">message</span> <span class="hljs-title">InstallSnapshotRequest</span> </span>&#123;
+  <span class="hljs-keyword">required</span> <span class="hljs-built_in">string</span> group_id = <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">required</span> <span class="hljs-built_in">string</span> server_id = <span class="hljs-number">2</span>;
+  <span class="hljs-keyword">required</span> <span class="hljs-built_in">string</span> peer_id = <span class="hljs-number">3</span>;
+  <span class="hljs-keyword">required</span> <span class="hljs-built_in">int64</span> term = <span class="hljs-number">4</span>;
+  <span class="hljs-keyword">required</span> SnapshotMeta meta = <span class="hljs-number">5</span>; <span class="hljs-comment">// 重点是这个</span>
+  <span class="hljs-keyword">required</span> <span class="hljs-built_in">string</span> uri = <span class="hljs-number">6</span>;
+&#125;;
+
+<span class="hljs-class"><span class="hljs-keyword">message</span> <span class="hljs-title">SnapshotMeta</span> </span>&#123;
+    <span class="hljs-keyword">required</span> <span class="hljs-built_in">int64</span> last_included_index = <span class="hljs-number">1</span>; <span class="hljs-comment">// 1 2 这两个字段在快照存储的时候落地的</span>
+    <span class="hljs-keyword">required</span> <span class="hljs-built_in">int64</span> last_included_term = <span class="hljs-number">2</span>; 
+    <span class="hljs-keyword">repeated</span> <span class="hljs-built_in">string</span> peers = <span class="hljs-number">3</span>;
+    <span class="hljs-keyword">repeated</span> <span class="hljs-built_in">string</span> old_peers = <span class="hljs-number">4</span>;
+    <span class="hljs-keyword">repeated</span> <span class="hljs-built_in">string</span> learners = <span class="hljs-number">5</span>;
+    <span class="hljs-keyword">repeated</span> <span class="hljs-built_in">string</span> old_learners = <span class="hljs-number">6</span>;
+&#125;</code></pre>
+
+<p>通过请求体不难看出，主要是将leader当前的存储的快照信息发过去，这个信息中有状态机apply到哪了。</p>
+<p>请求体中的SnapshotMeta meta通过SnapshotReader.load 读取的。</p>
+<p>安装快照的具体代码在com.alipay.sofa.jraft.core.Replicator.installSnapshot()。</p>
+<p>什么时候发起快照安装？</p>
+<p>在向follower发送appendEntry请求时(含空的，即sendEntries和sendEmptyEntries)时会对应构建AppendEntriesRequest<strong>做fillCommonFields，如果返回false，则对follower做快照安装</strong>。那么fillCommonFields什么时候会返回false呢？</p>
+<p><strong>在不是心跳请求且prevLogIndex不为0且prevLogIndex对应的term为0时。我理解是根据prevLogIndex取不到对应term了(对应数据没在follower落地)则要安装快照</strong>。</p>
+<p>安装完了会回调Replicator.onInstallSnapshotReturned。主要是打印日志，是否超时判断，Replicator实例状态的切换等等。</p>
+<h2 id="处理快照安装请求"><a href="#处理快照安装请求" class="headerlink" title="处理快照安装请求"></a>处理快照安装请求</h2><p>处理快照安装的请求是在NodeImpl.handleInstallSnapshot。</p>
+<p>大体逻辑是:</p>
+<ul>
+<li>从快照安装的请求中获取远端快照信息。</li>
+<li>从follower向leader发起下载快照的rpc请求，复制文件到follower。</li>
+</ul>
+<p>整个copy的调用栈：</p>
+<pre><code class="hljs java">DefaultRaftClientService.getFile(Endpoint, GetFileRequest, <span class="hljs-keyword">int</span>, RpcResponseClosure&lt;GetFileResponse&gt;)
+remote.CopySession.sendNextRpc()
+remote.RemoteFileCopier.startCopyToFile(String, String, CopyOptions)
+local.LocalSnapshotCopier.copyFile(String)
+local.LocalSnapshotCopier.internalCopy()
+local.LocalSnapshotCopier.startCopy()
+local.LocalSnapshotCopier.start() <span class="hljs-comment">// 异步调用startCopy</span>
+local.LocalSnapshotStorage.startToCopyFrom(String, SnapshotCopierOptions)<span class="hljs-comment">// this.curCopier = this.snapshotStorage.startToCopyFrom(ds.request.getUri(), newCopierOpts());</span>
+SnapshotExecutorImpl.registerDownloadingSnapshot(DownloadingSnapshot)
+SnapshotExecutorImpl.installSnapshot(InstallSnapshotRequest, Builder, RpcRequestClosure)  <span class="hljs-comment">// this.snapshotExecutor.installSnapshot(request, InstallSnapshotResponse.newBuilder(), done);</span>
+NodeImpl.handleInstallSnapshot(InstallSnapshotRequest, RpcRequestClosure)</code></pre>
+
+<p><strong>计数器例子中快照数据就是当前计数器计数到哪里了，即计数器当前值是多少，这样在安装快照过后就避免了副本节点重新将那么多没有被apply的日志在状态机中再apply一遍了</strong>。对应文件是/tmp/server1/snapshot/snapshot_24/data。这也可以理解成快照机制的优化目的。</p>
+<h2 id="快照加载"><a href="#快照加载" class="headerlink" title="快照加载"></a>快照加载</h2><p>快照加载也是由业务自行决定业务逻辑。比如计数器例子中的CounterStateMachine.onSnapshotLoad(SnapshotReader)</p>
+<p>。</p>
+<p>sofa-jraft会将SnapshotReader实例在onSnapshotLoad时传递到业务侧，这样业务侧就能拿到data文件的路径，就能从中加载出数据，设置为当前状态机的状态(计数器例子中就是计数器的当前值)。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/08/sofa-jraft-08-linearizability-read/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[sofa-jraft]08.线性一致性读与优先级选举的实现</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/06/sofa-jraft-06-replicator/">
+                        <span class="hidden-mobile">[sofa-jraft]06.副本复制整体分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[sofa-jraft]07.快照机制分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

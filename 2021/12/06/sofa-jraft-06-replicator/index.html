@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[sofa-jraft]06.副本复制整体分析 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-12-06 23:39">
+                    星期一, 十二月 6日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    4.4k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    73
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="副本复制整体分析"><a href="#副本复制整体分析" class="headerlink" title="副本复制整体分析"></a>副本复制整体分析</h1><p>我有几个疑问:</p>
+<ul>
+<li>复制是 leader push 给 follower，还是 follower 不断到 leader 那 pull？</li>
+<li>leader 是怎么安排多个 follower 复制的，并行的还是串行的？</li>
+<li>一条一条 entry 复制还是一批一批？</li>
+<li>副本复制的大致整体过程与细节过程是怎样的？</li>
+</ul>
+<h2 id="过程分析"><a href="#过程分析" class="headerlink" title="过程分析"></a>过程分析</h2><h3 id="大致过程"><a href="#大致过程" class="headerlink" title="大致过程"></a>大致过程</h3><p>大致过程是：</p>
+<ul>
+<li><p>业务调用Node.apply，触发新的log产生</p>
+</li>
+<li><p>leader收到newLogCallBack后，leader不断向follower发送appendEntries的rpc请求来复制副本，是push模式。</p>
+</li>
+<li><p>follower响应正常返回时触发业务状态机执行。  <strong>Replicator.onAppendEntriesReturned中触发BallotBox.commitAt，所以表示副本复制完成了才触发BallotBox commitAt，进而触发业务状态机执行。</strong>作者加的注释是Only commit index when the response is from follower.这个在前一章节有讲。</p>
+</li>
+<li><p>follower响应返回状态不正常，则block到心跳超时后再尝试发送，如果此时还是不行，此follower实例应该被移除了。</p>
+</li>
+</ul>
+<p>leader端给follower发送副本复制请求是通过发送appendEntries的rpc请求，其入口是：com.alipay.sofa.jraft.core.Replicator.sendEntries。</p>
+<p>有几个follower就有几个replicator实例：</p>
+<p>ts=2021-12-19 20:18:39; [cost=0.5668ms] result=@String[Replicator [state=Replicate, statInfo=&lt;running=APPENDING_ENTRIES, firstLogIndex=3065, lastLogIncluded=0, lastLogIndex=3067, lastTermIncluded=0&gt;, peerId=127.0.0.1:8082, type=Follower]]<br>ts=2021-12-19 20:18:39; [cost=0.777639ms] result=@String[Replicator [state=Replicate, statInfo=&lt;running=APPENDING_ENTRIES, firstLogIndex=3065, lastLogIncluded=0, lastLogIndex=3067, lastTermIncluded=0&gt;, peerId=127.0.0.1:8083, type=Follower]] </p>
+<p>此处也间接说明了，<strong>多个follower场景下，是并行发送的</strong>。  </p>
+<p>leader怎么触发了向follower发送复制请求的流程图如下：  </p>
+<pre><code class="hljs mermaid">flowchart TD
+L(Node.apply) -.-&gt; |disruptor异步| F
+F(LogEntryAndClosureHandler.onEvent) --&gt; G
+G(NodeImpl.executeApplyingTasks) --&gt; H
+H(LogManagerImpl.appendEntries) --&gt;  I
+I(LogManagerImpl.wakeupAllWaiter) -.-&gt; |异步调用| E
+E(LogManagerImpl.lambda$wakeupAllWaiter$6) --&gt; D
+D(Replicator.lambda$waitMoreEntries$9) --&gt; A
+
+A(Replicator.continueSending) --&gt; B(Replicator.getNextSendIndex)
+B --&gt; C(Replicator.sendEntries)
+C --&gt; |spin 直至nextSendingIndex&lt;&#x3D;prevSendIndex| B 
+C -.-&gt; |rpc请求异步返回| M
+M(Replicator.onRpcReturned) --&gt; |正常返回且需要继续发| B
+
+M --&gt; |返回状态不OK| N(block一段时间,具体是block到心跳超时)
+N -.-&gt; |超时后继续尝试发送| B
+
+C --&gt; |如果待发送entries个数为0| O(waitMoreEntries 向LogManager注册有新日志的回掉并wait)
+O -.- |注册有新日志的回调| D</code></pre>
+
+
+
+<p>Replicator.sendEntries被调用时，两个线程对应两个follower，即两个replicator实例。</p>
+<p>上面这个流程图还不够详细，重新画了一张如下：</p>
+<p><img src="https://www.code260.com/img/sofa-jraft-replcator-process.png" srcset="/img/loading.gif" alt=""></p>
+<h3 id="onNewLog-新日志产生触发sendEntries"><a href="#onNewLog-新日志产生触发sendEntries" class="headerlink" title="onNewLog 新日志产生触发sendEntries"></a>onNewLog 新日志产生触发sendEntries</h3><p>具体调用栈如下：</p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">20</span>:<span class="hljs-number">12</span>:<span class="hljs-number">52</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">2</span>;id=<span class="hljs-number">4f</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.Replicator.sendEntries(
+        at com.alipay.sofa.jraft.core.Replicator.sendEntries(Replicator.java:<span class="hljs-number">1564</span>)
+        at com.alipay.sofa.jraft.core.Replicator.continueSending(Replicator.java:<span class="hljs-number">989</span>)
+        at com.alipay.sofa.jraft.core.Replicator.lambda$waitMoreEntries$<span class="hljs-number">9</span>(Replicator.java:<span class="hljs-number">1547</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.runOnNewLog(LogManagerImpl.java:<span class="hljs-number">1133</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.lambda$wakeupAllWaiter$<span class="hljs-number">6</span>(LogManagerImpl.java:<span class="hljs-number">405</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)
+  
+  
+ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">20</span>:<span class="hljs-number">12</span>:<span class="hljs-number">52</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">3</span>;id=<span class="hljs-number">50</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.Replicator.sendEntries()
+        at com.alipay.sofa.jraft.core.Replicator.sendEntries(Replicator.java:<span class="hljs-number">1564</span>)
+        at com.alipay.sofa.jraft.core.Replicator.continueSending(Replicator.java:<span class="hljs-number">989</span>)
+        at com.alipay.sofa.jraft.core.Replicator.lambda$waitMoreEntries$<span class="hljs-number">9</span>(Replicator.java:<span class="hljs-number">1547</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.runOnNewLog(LogManagerImpl.java:<span class="hljs-number">1133</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.lambda$wakeupAllWaiter$<span class="hljs-number">6</span>(LogManagerImpl.java:<span class="hljs-number">405</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>在没有请求空闲时，Replicator实例会在waitMoreEntries等待有新的entries进来(onNewLog回调)。Replicator.java 1546行。具体代码如下：  </p>
+<pre><code class="hljs java"> <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">waitMoreEntries</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> nextWaitIndex)</span> </span>&#123;
+     <span class="hljs-keyword">try</span> &#123;
+         LOG.debug(<span class="hljs-string">"Node &#123;&#125; waits more entries"</span>, <span class="hljs-keyword">this</span>.options.getNode().getNodeId());
+         <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.waitId &gt;= <span class="hljs-number">0</span>) &#123;
+             <span class="hljs-keyword">return</span>;
+         &#125;
+<span class="hljs-comment">/**1546行**/</span>         <span class="hljs-keyword">this</span>.waitId = <span class="hljs-keyword">this</span>.options.getLogManager().wait(nextWaitIndex - <span class="hljs-number">1</span>,
+             (arg, errorCode) -&gt; continueSending((ThreadId) arg, errorCode), <span class="hljs-keyword">this</span>.id);
+         <span class="hljs-keyword">this</span>.statInfo.runningState = RunningState.IDLE;
+     &#125; <span class="hljs-keyword">finally</span> &#123;
+         <span class="hljs-keyword">this</span>.id.unlock();
+     &#125;
+ &#125;</code></pre>
+
+<p>LogManager.wait的方法签名是com.alipay.sofa.jraft.storage.LogManager.wait(long, NewLogCallback, Object)。 所以1546行送进来的第二个参数那个lambda表达式是<strong>NewLogCallback的实现</strong>，用于监听一旦有新日志产生后执行什么，即onNewLog。新日志产生后就继续发送continueSending，正好合乎自然逻辑。</p>
+<p>我们看下at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.lambda$wakeupAllWaiter$6(LogManagerImpl.java:405)的代码：</p>
+<pre><code class="hljs java">    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">wakeupAllWaiter</span><span class="hljs-params">(<span class="hljs-keyword">final</span> Lock lock)</span> </span>&#123;
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.waitMap.isEmpty()) &#123;
+            lock.unlock();
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;
+        &#125;
+        <span class="hljs-keyword">final</span> List&lt;WaitMeta&gt; wms = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;(<span class="hljs-keyword">this</span>.waitMap.values());
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> errCode = <span class="hljs-keyword">this</span>.stopped ? RaftError.ESTOP.getNumber() : RaftError.SUCCESS.getNumber();
+        <span class="hljs-keyword">this</span>.waitMap.clear();
+        lock.unlock();
+
+        <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> waiterCount = wms.size();
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; waiterCount; i++) &#123;
+            <span class="hljs-keyword">final</span> WaitMeta wm = wms.get(i);
+            wm.errorCode = errCode;
+<span class="hljs-comment">/**405行**/</span>            Utils.runInThread(() -&gt; runOnNewLog(wm));
+        &#125;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;
+    &#125;</code></pre>
+
+<p>405行有个Runnable的lambda表达式，那么Replicator.sendEntries是被异步触发的。也就是说我们要分析下wakeupAllWaiter是谁触发的？抓取其具体调用栈如下：</p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">20</span>:<span class="hljs-number">42</span>:<span class="hljs-number">38</span>;thread_name=JRaft-NodeImpl-Disruptor-<span class="hljs-number">0</span>;id=<span class="hljs-number">12</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.storage.impl.LogManagerImpl.wakeupAllWaiter()
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.appendEntries(LogManagerImpl.java:<span class="hljs-number">345</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.executeApplyingTasks(NodeImpl.java:<span class="hljs-number">1391</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.access$<span class="hljs-number">300</span>(NodeImpl.java:<span class="hljs-number">138</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl$LogEntryAndClosureHandler.onEvent(NodeImpl.java:<span class="hljs-number">311</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl$LogEntryAndClosureHandler.onEvent(NodeImpl.java:<span class="hljs-number">291</span>)
+        at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:<span class="hljs-number">137</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>简单分析也就是说，在LogEntryAndClosureHandler处理事件时会executeApplyingTasks，executeApplyingTasks中会调用LogManagerImpl.appendEntries，LogManagerImpl.appendEntries其中的关键代码如下：  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// LogManagerImpl.appendEntries</span>
+<span class="hljs-keyword">while</span> (<span class="hljs-keyword">true</span>) &#123;
+  <span class="hljs-keyword">if</span> (tryOfferEvent(done, translator)) &#123; <span class="hljs-comment">// 给存储模块提交appendEntries事件</span>
+    <span class="hljs-keyword">break</span>;
+  &#125; <span class="hljs-keyword">else</span> &#123;
+    retryTimes++;
+    <span class="hljs-keyword">if</span> (retryTimes &gt; APPEND_LOG_RETRY_TIMES) &#123;
+      reportError(RaftError.EBUSY.getNumber(), <span class="hljs-string">"LogManager is busy, disk queue overload."</span>);
+      <span class="hljs-keyword">return</span>;
+    &#125;
+    ThreadHelper.onSpinWait();
+  &#125;
+&#125;
+doUnlock = <span class="hljs-keyword">false</span>;
+<span class="hljs-comment">/**345行**/</span><span class="hljs-keyword">if</span> (!wakeupAllWaiter(<span class="hljs-keyword">this</span>.writeLock)) &#123; <span class="hljs-comment">// 触发有新的log事件， <span class="hljs-doctag">TODO:</span> 异常场景构建，如果这个时候存储数据还没落地怎么办？还是说只要从内存中取就可以了？</span>
+  notifyLastLogIndexListeners();
+&#125;</code></pre>
+
+
+
+<h3 id="Replicator-onRpcReturned返回状态OK触发继续sendEntries"><a href="#Replicator-onRpcReturned返回状态OK触发继续sendEntries" class="headerlink" title="Replicator.onRpcReturned返回状态OK触发继续sendEntries"></a>Replicator.onRpcReturned返回状态OK触发继续sendEntries</h3><p>Replicator.onRpcReturned 当发送appendEntries请求返回时，也会触发继续sendEntries。具体调用栈如下：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">20</span>:<span class="hljs-number">12</span>:<span class="hljs-number">52</span>;thread_name=Append-Entries-Thread-Send0;id=<span class="hljs-number">2</span>b;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.Replicator.sendEntries()
+        at com.alipay.sofa.jraft.core.Replicator.sendEntries(Replicator.java:<span class="hljs-number">1564</span>)
+        at com.alipay.sofa.jraft.core.Replicator.onRpcReturned(Replicator.java:<span class="hljs-number">1352</span>)
+        at com.alipay.sofa.jraft.core.Replicator$<span class="hljs-number">4</span>.run(Replicator.java:<span class="hljs-number">1655</span>)
+        at com.alipay.sofa.jraft.rpc.impl.AbstractClientService$<span class="hljs-number">1</span>.complete(AbstractClientService.java:<span class="hljs-number">241</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient$BoltCallback.onResponse(BoltRpcClient.java:<span class="hljs-number">175</span>)
+        at com.alipay.remoting.rpc.RpcInvokeCallbackListener$CallbackTask.run(RpcInvokeCallbackListener.java:<span class="hljs-number">182</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)
+
+ 
+ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">20</span>:<span class="hljs-number">12</span>:<span class="hljs-number">52</span>;thread_name=Append-Entries-Thread-Send1;id=<span class="hljs-number">4</span>e;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.Replicator.sendEntries()
+        at com.alipay.sofa.jraft.core.Replicator.onRpcReturned(Replicator.java:<span class="hljs-number">1352</span>)
+        at com.alipay.sofa.jraft.core.Replicator$<span class="hljs-number">4</span>.run(Replicator.java:<span class="hljs-number">1655</span>)
+        at com.alipay.sofa.jraft.rpc.impl.AbstractClientService$<span class="hljs-number">1</span>.complete(AbstractClientService.java:<span class="hljs-number">241</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient$BoltCallback.onResponse(BoltRpcClient.java:<span class="hljs-number">175</span>)
+        at com.alipay.remoting.rpc.RpcInvokeCallbackListener$CallbackTask.run(RpcInvokeCallbackListener.java:<span class="hljs-number">182</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<h3 id="Replicator-onRpcReturned返回状态不OK，block一段时间后再继续sendEntries"><a href="#Replicator-onRpcReturned返回状态不OK，block一段时间后再继续sendEntries" class="headerlink" title="Replicator.onRpcReturned返回状态不OK，block一段时间后再继续sendEntries"></a>Replicator.onRpcReturned返回状态不OK，block一段时间后再继续sendEntries</h3><p>具体代码在： </p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.core.Replicator.block(long, int) 1001行</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> dueTime = startTimeMs + <span class="hljs-keyword">this</span>.options.getDynamicHeartBeatTimeoutMs();
+        <span class="hljs-keyword">try</span> &#123;
+            LOG.debug(<span class="hljs-string">"Blocking &#123;&#125; for &#123;&#125; ms"</span>, <span class="hljs-keyword">this</span>.options.getPeerId(), <span class="hljs-keyword">this</span>.options.getDynamicHeartBeatTimeoutMs());
+            <span class="hljs-keyword">this</span>.blockTimer = <span class="hljs-keyword">this</span>.timerManager.schedule(() -&gt; onBlockTimeout(<span class="hljs-keyword">this</span>.id), dueTime - Utils.nowMs(),
+                TimeUnit.MILLISECONDS);
+            <span class="hljs-keyword">this</span>.statInfo.runningState = RunningState.BLOCKING;
+
+<span class="hljs-comment">// com.alipay.sofa.jraft.core.Replicator.onBlockTimeoutInNewThread(ThreadId) 941行</span>
+<span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">onBlockTimeoutInNewThread</span><span class="hljs-params">(<span class="hljs-keyword">final</span> ThreadId id)</span> </span>&#123;
+        <span class="hljs-keyword">if</span> (id != <span class="hljs-keyword">null</span>) &#123;
+            continueSending(id, RaftError.ETIMEDOUT.getNumber());
+        &#125;
+    &#125;</code></pre>
+
+<p>follower响应返回状态不正常，则block到心跳超时后再尝试发送，如果此时还是不行，此follower实例应该被移除了。</p>
+<h2 id="副本复制优化与细节"><a href="#副本复制优化与细节" class="headerlink" title="副本复制优化与细节"></a>副本复制优化与细节</h2><h3 id="leader节点批量发送后在follower端保证顺序"><a href="#leader节点批量发送后在follower端保证顺序" class="headerlink" title="leader节点批量发送后在follower端保证顺序"></a>leader节点批量发送后在follower端保证顺序</h3><p>批量是指一次发送多个entry，而不是一个一个entry发送。  </p>
+<p>每次发送的entry个数，this.raftOptions.getMaxEntriesSize()， 具体代码如下：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.core.Replicator.sendEntries(long) 1598行</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> maxEntriesSize = <span class="hljs-keyword">this</span>.raftOptions.getMaxEntriesSize();
+<span class="hljs-keyword">final</span> RecyclableByteBufferList byteBufList = RecyclableByteBufferList.newInstance();
+<span class="hljs-keyword">try</span> &#123;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; maxEntriesSize; i++) &#123;
+    <span class="hljs-keyword">final</span> RaftOutter.EntryMeta.Builder emb = RaftOutter.EntryMeta.newBuilder();
+    <span class="hljs-keyword">if</span> (!prepareEntry(nextSendingIndex, i, emb, byteBufList)) &#123;
+      <span class="hljs-keyword">break</span>;
+    &#125;
+    rb.addEntries(emb.build());
+  &#125;</code></pre>
+
+<p>follower在接收处理appendEntries时，要保证消息的顺序是OK的，怎做到的？</p>
+<p>com.alipay.sofa.jraft.storage.impl.LogManagerImpl.checkAndResolveConflict  </p>
+<p>follower节点的调用栈：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">19</span> <span class="hljs-number">23</span>:<span class="hljs-number">11</span>:<span class="hljs-number">23</span>;thread_name=election_test/PeerPair[<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> -&gt; <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>]-AppendEntriesThread0;id=<span class="hljs-number">22</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.storage.impl.LogManagerImpl.checkAndResolveConflict()
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl.appendEntries(LogManagerImpl.java:<span class="hljs-number">299</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.handleAppendEntriesRequest(NodeImpl.java:<span class="hljs-number">2003</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">460</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.NodeRequestProcessor.processRequest(NodeRequestProcessor.java:<span class="hljs-number">60</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">35</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>.handleRequest(BoltRpcServer.java:<span class="hljs-number">123</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.dispatchToUserProcessor(RpcRequestProcessor.java:<span class="hljs-number">234</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.doProcess(RpcRequestProcessor.java:<span class="hljs-number">145</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor$ProcessTask.run(RpcRequestProcessor.java:<span class="hljs-number">384</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>两种情况下能为true，即检查通过。如果检查不通过，上层appendEntries就直接返回了，不再将append进行下去了。  </p>
+<ol>
+<li>firstLogEntry.getId().getIndex() == <strong>this</strong>.lastLogIndex + 1 这个是fast path。要append的第一个entry的index正好是上一个index加1.</li>
+<li>要点1不成立时，就要去掉一部分冲突的(重复的)entry  [0,conflictingIndex)。conflictingIndex是通过判term不相等来确定的。</li>
+</ol>
+<p>TODO: checkAndResolveConflict还有些细节需要分析如下。</p>
+<p>firstLogEntry.getId().getIndex() == 0</p>
+<p>firstLogEntry.getId().getIndex() &gt; <strong>this</strong>.lastLogIndex + 1 的情况</p>
+<p>lastLogEntry.getId().getIndex() &lt;= appliedIndex 的情况</p>
+<p>firstLogEntry.getId().getIndex() == <strong>this</strong>.lastLogIndex + 1不成立时，即上述要点2中的细节</p>
+<h3 id="follower节点对应复制响应返回的处理"><a href="#follower节点对应复制响应返回的处理" class="headerlink" title="follower节点对应复制响应返回的处理"></a>follower节点对应复制响应返回的处理</h3><p>LogManager.StableClosure  具备给rpc异步返回响应的能力，所以你看到com.alipay.sofa.jraft.core.NodeImpl.handleAppendEntriesRequest(AppendEntriesRequest, RpcRequestClosure)中方法最后在request中有entries时，返回的null。 实际上，leader收到了返回。他就是在FollowerStableClosure中返回的。</p>
+<p>FollowerStableClosure是LogManager.StableClosure的实现，</p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.core.NodeImpl.FollowerStableClosure.run(Status)</span>
+<span class="hljs-comment">// Don't touch node any more.</span>
+<span class="hljs-keyword">this</span>.responseBuilder.setSuccess(<span class="hljs-keyword">true</span>).setTerm(<span class="hljs-keyword">this</span>.term);
+
+<span class="hljs-comment">// Ballot box is thread safe and tolerates disorder.</span>
+<span class="hljs-keyword">this</span>.node.ballotBox.setLastCommittedIndex(<span class="hljs-keyword">this</span>.committedIndex);
+
+<span class="hljs-keyword">this</span>.done.sendResponse(<span class="hljs-keyword">this</span>.responseBuilder.build());</code></pre>
+
+<p>相关关键代码与调用栈</p>
+<p>副本节点appendEntries栈：</p>
+<pre><code class="hljs java">stack com.alipay.sofa.jraft.storage.impl.LogManagerImpl appendEntries
+Press Q or Ctrl+C to abort.
+Affect(class count: 1 , method count: 1) cost in 236 ms, listenerId: 1
+ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">09</span>:<span class="hljs-number">42</span>;thread_name=election_test/PeerPair[<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> -&gt; <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>]-AppendEntriesThread0;id=<span class="hljs-number">20</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.storage.impl.LogManagerImpl.appendEntries()
+        at com.alipay.sofa.jraft.core.NodeImpl.handleAppendEntriesRequest(NodeImpl.java:<span class="hljs-number">2003</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">460</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.NodeRequestProcessor.processRequest(NodeRequestProcessor.java:<span class="hljs-number">60</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">35</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>.handleRequest(BoltRpcServer.java:<span class="hljs-number">123</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.dispatchToUserProcessor(RpcRequestProcessor.java:<span class="hljs-number">234</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.doProcess(RpcRequestProcessor.java:<span class="hljs-number">145</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor$ProcessTask.run(RpcRequestProcessor.java:<span class="hljs-number">384</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>Follower append entries之后的闭包回调栈：  </p>
+<pre><code class="hljs java">stack com.alipay.sofa.jraft.core.NodeImpl$FollowerStableClosure run
+Press Q or Ctrl+C to abort.
+Affect(class count: 1 , method count: 1) cost in 50 ms, listenerId: 2
+ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">11</span>:<span class="hljs-number">09</span>;thread_name=JRaft-LogManager-Disruptor-<span class="hljs-number">0</span>;id=<span class="hljs-number">13</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.NodeImpl$FollowerStableClosure.run()
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$AppendBatcher.flush(LogManagerImpl.java:<span class="hljs-number">469</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">565</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">496</span>)
+        at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:<span class="hljs-number">137</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>闭包回调触发之后发送rpc响应(返回rpc响应)的栈：</p>
+<pre><code class="hljs java">[arthas@<span class="hljs-number">40915</span>]$ stack com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor sendSequenceResponse <span class="hljs-comment">// 这个发送响应是不同于其他rpc的 是有顺序的  通过优先级队列 PriorityQueue&lt;SequenceMessage&gt;实现</span>
+Press Q or Ctrl+C to abort.
+Affect(class count: 1 , method count: 1) cost in 56 ms, listenerId: 3
+ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">13</span>:<span class="hljs-number">46</span>;thread_name=JRaft-LogManager-Disruptor-<span class="hljs-number">0</span>;id=<span class="hljs-number">13</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.sendSequenceResponse()
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor$SequenceRpcRequestClosure.sendResponse(AppendEntriesRequestProcessor.java:<span class="hljs-number">124</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl$FollowerStableClosure.run(NodeImpl.java:<span class="hljs-number">1872</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$AppendBatcher.flush(LogManagerImpl.java:<span class="hljs-number">469</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">565</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">496</span>)
+        at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:<span class="hljs-number">137</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>RPCContext 往外发送副本复制后的响应（这个不同于心跳包的响应发送，可以看下面的栈）：</p>
+<pre><code class="hljs java">stack io.netty.channel.AbstractChannelHandlerContext write 
+<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">54</span>:<span class="hljs-number">49</span> [JRaft-LogManager-Disruptor-<span class="hljs-number">0</span>] INFO  result -ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">54</span>:<span class="hljs-number">49</span>;thread_name=JRaft-LogManager-Disruptor-<span class="hljs-number">0</span>;id=<span class="hljs-number">13</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@io</span>.netty.channel.AbstractChannelHandlerContext.write()
+        at io.netty.channel.AbstractChannelHandlerContext.writeAndFlush(AbstractChannelHandlerContext.java:<span class="hljs-number">757</span>)
+        at io.netty.channel.AbstractChannelHandlerContext.writeAndFlush(AbstractChannelHandlerContext.java:<span class="hljs-number">812</span>)
+        at com.alipay.remoting.RemotingContext.writeAndFlush(RemotingContext.java:<span class="hljs-number">112</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.sendResponseIfNecessary(RpcRequestProcessor.java:<span class="hljs-number">183</span>)
+        at com.alipay.remoting.rpc.protocol.RpcAsyncContext.sendResponse(RpcAsyncContext.java:<span class="hljs-number">62</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>$<span class="hljs-number">1</span>.sendResponse(BoltRpcServer.java:<span class="hljs-number">105</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor$SequenceMessage.sendResponse(AppendEntriesRequestProcessor.java:<span class="hljs-number">150</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.sendSequenceResponse(AppendEntriesRequestProcessor.java:<span class="hljs-number">334</span>) <span class="hljs-comment">// **在JRaft-LogManager-Disruptor-0 直接发送 没有异步**</span>
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor$SequenceRpcRequestClosure.sendResponse(AppendEntriesRequestProcessor.java:<span class="hljs-number">124</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl$FollowerStableClosure.run(NodeImpl.java:<span class="hljs-number">1872</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$AppendBatcher.flush(LogManagerImpl.java:<span class="hljs-number">469</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">565</span>)
+        at com.alipay.sofa.jraft.storage.impl.LogManagerImpl$StableClosureEventHandler.onEvent(LogManagerImpl.java:<span class="hljs-number">496</span>)
+        at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:<span class="hljs-number">137</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>心跳包的响应发送栈（与上面的副本复制请求的返回响应的场景不同，所在线程，发起方都不同）：  </p>
+<pre><code class="hljs java"><span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">54</span>:<span class="hljs-number">49</span> [election_test/PeerPair[<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> -&gt; <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>]-AppendEntriesThread0] INFO  result -ts=<span class="hljs-number">2022</span>-<span class="hljs-number">01</span>-<span class="hljs-number">23</span> <span class="hljs-number">11</span>:<span class="hljs-number">54</span>:<span class="hljs-number">49</span>;thread_name=election_test/PeerPair[<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> -&gt; <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>]-AppendEntriesThread0;id=<span class="hljs-number">20</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@io</span>.netty.channel.AbstractChannelHandlerContext.write()
+        at io.netty.channel.AbstractChannelHandlerContext.writeAndFlush(AbstractChannelHandlerContext.java:<span class="hljs-number">757</span>)
+        at io.netty.channel.AbstractChannelHandlerContext.writeAndFlush(AbstractChannelHandlerContext.java:<span class="hljs-number">812</span>)
+        at com.alipay.remoting.RemotingContext.writeAndFlush(RemotingContext.java:<span class="hljs-number">112</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.sendResponseIfNecessary(RpcRequestProcessor.java:<span class="hljs-number">183</span>)
+        at com.alipay.remoting.rpc.protocol.RpcAsyncContext.sendResponse(RpcAsyncContext.java:<span class="hljs-number">62</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>$<span class="hljs-number">1</span>.sendResponse(BoltRpcServer.java:<span class="hljs-number">105</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">464</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.NodeRequestProcessor.processRequest(NodeRequestProcessor.java:<span class="hljs-number">60</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">35</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>.handleRequest(BoltRpcServer.java:<span class="hljs-number">123</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.dispatchToUserProcessor(RpcRequestProcessor.java:<span class="hljs-number">234</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.doProcess(RpcRequestProcessor.java:<span class="hljs-number">145</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor$ProcessTask.run(RpcRequestProcessor.java:<span class="hljs-number">384</span>) <span class="hljs-comment">//  通过ProcessTask(他是一个Runnable的对象) 异步执行</span>
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+
+
+<pre><code class="hljs java"><span class="hljs-function"><span class="hljs-keyword">public</span> Message <span class="hljs-title">processRequest0</span><span class="hljs-params">(<span class="hljs-keyword">final</span> RaftServerService service, <span class="hljs-keyword">final</span> AppendEntriesRequest request,</span></span>
+<span class="hljs-function"><span class="hljs-params">                                   <span class="hljs-keyword">final</span> RpcRequestClosure done)</span> </span>&#123;
+
+        <span class="hljs-keyword">final</span> Node node = (Node) service;
+
+        <span class="hljs-keyword">if</span> (node.getRaftOptions().isReplicatorPipeline()) &#123;
+            <span class="hljs-keyword">final</span> String groupId = request.getGroupId();
+            <span class="hljs-keyword">final</span> PeerPair pair = pairOf(request.getPeerId(), request.getServerId());
+
+            <span class="hljs-keyword">boolean</span> isHeartbeat = isHeartbeatRequest(request);
+            <span class="hljs-keyword">int</span> reqSequence = -<span class="hljs-number">1</span>;
+            <span class="hljs-keyword">if</span> (!isHeartbeat) &#123;
+                reqSequence = getAndIncrementSequence(groupId, pair, done.getRpcCtx().getConnection());
+            &#125;
+            <span class="hljs-keyword">final</span> Message response = service.handleAppendEntriesRequest(request, <span class="hljs-keyword">new</span> SequenceRpcRequestClosure(done,
+                defaultResp(), groupId, pair, reqSequence, isHeartbeat));
+            <span class="hljs-keyword">if</span> (response != <span class="hljs-keyword">null</span>) &#123;
+                <span class="hljs-keyword">if</span> (isHeartbeat) &#123;
+                    done.getRpcCtx().sendResponse(response); <span class="hljs-comment">// 副本心跳包的响应发回去是走这里 因为service.handleAppendEntriesRequest此时是有返回的 此时线程是election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8081]-AppendEntriesThread0 然后就在此线程触发响应返回，所以你看心跳的响应返回调用栈是在这个线程上。 </span>
+                  <span class="hljs-comment">// 然而复制副本的 响应返回不是在这里发出去 复制副本时service.handleAppendEntriesRequest返回是null，他的响应返回是靠service.handleAppendEntriesRequest里面的闭包FollowerStableClosure回调发出去的，所以他的线程是JRaft-LogManager-Disruptor-0   </span>
+                &#125; <span class="hljs-keyword">else</span> &#123;
+                    sendSequenceResponse(groupId, pair, reqSequence, done.getRpcCtx(), response);
+                &#125;
+            &#125;
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            <span class="hljs-keyword">return</span> service.handleAppendEntriesRequest(request, done);
+        &#125;
+    &#125;</code></pre>
+
+
+
+<p>顺序发送响应的代码片段：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.sendSequenceResponse(String, PeerPair, int, RpcContext, Message)</span>
+<span class="hljs-comment">// 这个发送响应是不同于其他rpc的, 是有顺序的  通过优先级队列 PriorityQueue&lt;SequenceMessage&gt;实现</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">sendSequenceResponse</span><span class="hljs-params">(<span class="hljs-keyword">final</span> String groupId, <span class="hljs-keyword">final</span> PeerPair pair, <span class="hljs-keyword">final</span> <span class="hljs-keyword">int</span> seq, <span class="hljs-keyword">final</span> RpcContext rpcCtx,</span></span>
+<span class="hljs-function"><span class="hljs-params">                              <span class="hljs-keyword">final</span> Message msg)</span> </span>&#123;
+        <span class="hljs-keyword">final</span> PeerRequestContext ctx = getPeerRequestContext(groupId, pair);
+        <span class="hljs-keyword">if</span> (ctx == <span class="hljs-keyword">null</span>) &#123;
+            <span class="hljs-comment">// the context was destroyed, so the response can be ignored.</span>
+            <span class="hljs-keyword">return</span>;
+        &#125;
+        <span class="hljs-keyword">final</span> PriorityQueue&lt;SequenceMessage&gt; respQueue = ctx.responseQueue;
+        <span class="hljs-keyword">assert</span> (respQueue != <span class="hljs-keyword">null</span>);
+
+        <span class="hljs-keyword">synchronized</span> (Utils.withLockObject(respQueue)) &#123;
+            respQueue.add(<span class="hljs-keyword">new</span> SequenceMessage(rpcCtx, msg, seq));<span class="hljs-comment">// 维护到优先级队列中，保持有序</span>
+
+            <span class="hljs-keyword">if</span> (!ctx.hasTooManyPendingResponses()) &#123;
+                <span class="hljs-keyword">while</span> (!respQueue.isEmpty()) &#123;
+                    <span class="hljs-keyword">final</span> SequenceMessage queuedPipelinedResponse = respQueue.peek();
+
+                    <span class="hljs-keyword">if</span> (queuedPipelinedResponse.sequence != ctx.getNextRequiredSequence()) &#123; <span class="hljs-comment">// 一直等到期望的那个seq的响应来，再往外发，这样能保证leader端的顺序</span>
+                        <span class="hljs-comment">// sequence mismatch, waiting for next response.</span>
+                        <span class="hljs-keyword">break</span>;
+                    &#125;
+                    respQueue.remove();
+                    <span class="hljs-keyword">try</span> &#123;
+                        queuedPipelinedResponse.sendResponse();
+                    &#125; <span class="hljs-keyword">finally</span> &#123;
+                        ctx.getAndIncrementNextRequiredSequence();
+                    &#125;
+                &#125;
+            &#125; <span class="hljs-keyword">else</span> &#123;
+                <span class="hljs-keyword">final</span> Connection connection = rpcCtx.getConnection();
+                LOG.warn(<span class="hljs-string">"Closed connection to peer &#123;&#125;/&#123;&#125;, because of too many pending responses, queued=&#123;&#125;, max=&#123;&#125;"</span>,
+                    ctx.groupId, pair, respQueue.size(), ctx.maxPendingResponses);
+                connection.close();
+                <span class="hljs-comment">// Close the connection if there are too many pending responses in queue.</span>
+                removePeerRequestContext(groupId, pair);
+            &#125;
+        &#125;
+    &#125;</code></pre>
+
+
+
+<h3 id="单个follower发送通道只有一个"><a href="#单个follower发送通道只有一个" class="headerlink" title="单个follower发送通道只有一个"></a>单个follower发送通道只有一个</h3><h4 id="单个follower只与leader建立一个网络通道"><a href="#单个follower只与leader建立一个网络通道" class="headerlink" title="单个follower只与leader建立一个网络通道"></a>单个follower只与leader建立一个网络通道</h4><p>io.netty.channel.epoll.AbstractEpollChannel.doConnect0(SocketAddress). netty创建连接</p>
+<p>com.alipay.remoting.DefaultConnectionManager.doCreate(Url, ConnectionPool, String, int)  bolt创建连接</p>
+<p>com.alipay.remoting.connection.AbstractConnectionFactory.doCreateConnection(String, int, int)  bolt创建连接</p>
+<p>一个独立的url建几个连接，默认是1.</p>
+<p>com.alipay.remoting.Url.connNum   com.alipay.remoting.config.Configs.DEFAULT_CONN_NUM_PER_URL  </p>
+<h4 id="io线程跟业务线程在同一个线程"><a href="#io线程跟业务线程在同一个线程" class="headerlink" title="io线程跟业务线程在同一个线程"></a>io线程跟业务线程在同一个线程</h4><p>com.alipay.remoting.rpc.protocol.RpcCommandHandler.handle(RemotingContext, Object)</p>
+<p>com.alipay.remoting.rpc.RpcConfigManager.dispatch_msg_list_in_default_executor()</p>
+<p>com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory.ensurePipeline()  </p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/07/sofa-jraft-07-snapshot/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[sofa-jraft]07.快照机制分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/05/sofa-jraft-05-counter-fsm/">
+                        <span class="hidden-mobile">[sofa-jraft]05.分布式状态机与计数器的例子分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[sofa-jraft]06.副本复制整体分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

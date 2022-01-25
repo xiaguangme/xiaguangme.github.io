@@ -262,77 +262,27 @@ CAP Theory中的 co</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/09/05/about-pointer/">关于指针</a>
+      <a class="index-header" href="/2021/12/08/sofa-jraft-08-linearizability-read/">[sofa-jraft]08.线性一致性读与优先级选举的实现</a>
 
-      <a href="/2021/09/05/about-pointer/" class="index-excerpt">
+      <a href="/2021/12/08/sofa-jraft-08-linearizability-read/" class="index-excerpt">
         
         
           
         
-        <div>关于指针为了弄明白**  * &amp; 等这些奇怪的符号的意思，比如下面这段leveldb代码    
-Status DB::Open(const Options&amp; options, const std::string&amp; dbname, DB** dbptr) &#123;
-  *dbptr = nullptr;
-// ...
-每次看c cpp代码时都对这些”奇怪的”符号表示很难</div>
+        <div>线性一致性读与优先级选举的实现线性一致性读的概念与raft算法中实现线性一致性读的两种方法关于线性一致性的相关概念可以参见我的写文章：关于分布式系统中一致性的相关概念
+raft算法中实现线性一致性读的两种方法
+
+ReadIndex Read
+Lease Read
+
+ReadIndex Read
+第一种是 ReadIndex Read，当 Leader 需要处理 Read 请求时，Leader 与过</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-09-05
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/cpp/">cpp</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/08/30/leveldb-source-code-study/">[leveldb]leveldb源码阅读</a>
-
-      <a href="/2021/08/30/leveldb-source-code-study/" class="index-excerpt">
-        
-        
-          
-        
-        <div>leveldb源码阅读文章结构
-
-01.前期准备
-02.整体架构与相关图解
-03.写数据分析
-04.读数据分析
-05.LRU与skiplist实现
-06.compact分析
-07.多种iter实现
-08.系统api对接调用
-
-01. 前期准备版本 v1.20
-编译# master 
-git clone --recurse-submodules https://github.com/google/l</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-08-30
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-08
           </div>
         
         
@@ -340,52 +290,6 @@ git clone --recurse-submodules https://github.com/google/l</div>
             <i class="iconfont icon-category"></i>
             
               <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/cpp/">cpp</a>
-            
-              <a href="/tags/leveldb%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">leveldb源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/08/01/c3p0-practice/">c3p0相关</a>
-
-      <a href="/2021/08/01/c3p0-practice/" class="index-excerpt">
-        
-        
-          
-        
-        <div>c3p0相关 由于一些历史原因，工作中部分项目还在使用c3p0。这个连接池相对古老，问题相对较多，所以抽时间稍微了解了下。  
-官方或者maven仓库提供的0.9.1.2版本的source，或多或少的有些编译问题。或者是部分类是编译时生成的，比如Newxxx等类。下面的分支对其做了补齐。
-没有编译错误的代码分支
-demo在这里
-整体大致逻辑有：获取(取出)连接、归还连接、创建真实物理连接、最小最大</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-08-01
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/program-language-practice/">program-language-practice</a>
             
           </div>
         
@@ -395,6 +299,8 @@ demo在这里
             
               <a href="/tags/java/">java</a>
             
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+            
           </div>
         
       </div>
@@ -405,111 +311,29 @@ demo在这里
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/06/14/kindergarten-exercises/">kindergarten-exercises</a>
+      <a class="index-header" href="/2021/12/07/sofa-jraft-07-snapshot/">[sofa-jraft]07.快照机制分析</a>
 
-      <a href="/2021/06/14/kindergarten-exercises/" class="index-excerpt">
+      <a href="/2021/12/07/sofa-jraft-07-snapshot/" class="index-excerpt">
         
         
           
         
-        <div>
-
-
-
-
-
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  幼儿园练习题
-
-  
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-    
-  
-    &nbsp;Code to 60&nbsp;
-
-    
-      
-    
-
-    
-    
-      
-        
-          
-          
-          
-    </div>
+        <div>快照机制分析我有几个疑问:
+SnapshotPath根据什么确定？ 
+这个目录下都有什么文件？
+这些文件是什么时候怎们样的方式写入进来的？
+快照存储的逻辑是怎么样的？
+给follower安装快照的时机是怎么样的？
+安装快照请求带了哪些参数过去？
+follower挂掉一段时间再起来后如何优化那么多没被apply的log再在状态机中apply一遍的消耗？
+这个目录下的文件是：
+ – /tmp/serv</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-06-14
-          </div>
-        
-        
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/27/kafka-16-inner-rpc-doc/">[kafka]16.内部rpc接口文档</a>
-
-      <a href="/2021/05/27/kafka-16-inner-rpc-doc/" class="index-excerpt">
-        
-        
-          
-        
-        <div>内部rpc接口文档AddOffsetsToTxnRequestversion:0nametypedefaultValuedocStringtransactional_idSTRINGnullThe transactional id corresponding to the transaction.
-producer_idINT64nullCurrent producer id in use by </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-27
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-07
           </div>
         
         
@@ -524,9 +348,9 @@ producer_idINT64nullCurrent producer id in use by </div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/scala/">scala</a>
+              <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
             
           </div>
         
@@ -538,23 +362,31 @@ producer_idINT64nullCurrent producer id in use by </div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/26/kafka-15-replica-exp-case/">[kafka]15.副本复制异常场景及样例case分析</a>
+      <a class="index-header" href="/2021/12/06/sofa-jraft-06-replicator/">[sofa-jraft]06.副本复制整体分析</a>
 
-      <a href="/2021/05/26/kafka-15-replica-exp-case/" class="index-excerpt">
+      <a href="/2021/12/06/sofa-jraft-06-replicator/" class="index-excerpt">
         
         
           
         
-        <div>副本复制异常场景及样例case分析crash时机列表(下面简称C)前提都是leader节点写盘成功
+        <div>副本复制整体分析我有几个疑问:
 
-L(leader)还没给R(replica)返回第一个请求 //  参见 关键环节与注入点整理要点2
-R没有收到第一个请求的响应体(或者是收到了但是还没来得及处理)  1 2 是不是可以合并掉？(可以合并)有个问题要考虑消息落盘后 到 给R回复第一次请求的响应这个时间段内leader做了哪些逻辑，</div>
+复制是 leader push 给 follower，还是 follower 不断到 leader 那 pull？
+leader 是怎么安排多个 follower 复制的，并行的还是串行的？
+一条一条 entry 复制还是一批一批？
+副本复制的大致整体过程与细节过程是怎样的？
+
+过程分析大致过程大致过程是：
+
+业务调用Node.apply，触发新的log产生
+
+l</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-26
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-06
           </div>
         
         
@@ -569,9 +401,9 @@ R没有收到第一个请求的响应体(或者是收到了但是还没来得及
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/scala/">scala</a>
+              <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
             
           </div>
         
@@ -583,27 +415,29 @@ R没有收到第一个请求的响应体(或者是收到了但是还没来得及
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/">[kafka]14.LEADER_AND_ISR和UPDATE_METADATA请求分析</a>
+      <a class="index-header" href="/2021/12/05/sofa-jraft-05-counter-fsm/">[sofa-jraft]05.分布式状态机与计数器的例子分析</a>
 
-      <a href="/2021/05/25/kafka-14-LEADER_AND_ISR-adn-UPDATE_METADATA-req-impl/" class="index-excerpt">
+      <a href="/2021/12/05/sofa-jraft-05-counter-fsm/" class="index-excerpt">
         
         
           
         
-        <div>LEADER_AND_ISR和UPDATE_METADATA请求分析节点常规启动时每个节点收到的请求的列表梳理node0
-启动0：  
-apiKey=UPDATE_METADATA    
-apiKey=LEADER_AND_ISR  
-apiKey=UPDATE_METADATA    
-启动1：   
-apiKey=UPDATE_METADATA    
-apiKey=UPDATE_METAD</div>
+        <div>分布式状态机与计数器的例子分析计数器例子分析分析计数器例子，我们有几个疑问：
+
+计数器例子中涉及哪些部件？
+
+他们是怎么相互协作的？
+
+raft组件在协作中处于什么环节，跟他们怎么相互衔接的？
+
+
+计数器在jraft-example/src/main/java/com/alipay/sofa/jraft/example/counter/目录下，我在前期准备章节中准备了其server与client的</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-25
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-05
           </div>
         
         
@@ -618,9 +452,9 @@ apiKey=UPDATE_METAD</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/scala/">scala</a>
+              <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
             
           </div>
         
@@ -632,25 +466,23 @@ apiKey=UPDATE_METAD</div>
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/24/kafka-13-partition-stm/">[kafka]13.分区选主、分区状态机定义与变换逻辑</a>
+      <a class="index-header" href="/2021/12/04/sofa-jraft-04-local-store/">[sofa-jraft]04.单节点存储分析</a>
 
-      <a href="/2021/05/24/kafka-13-partition-stm/" class="index-excerpt">
+      <a href="/2021/12/04/sofa-jraft-04-local-store/" class="index-excerpt">
         
         
           
         
-        <div>分区选主、分区状态机定义与变换逻辑分区状态机启动kafka.controller.PartitionStateMachine.startup()    
-
-初始化分区状态，按online offline new分类。  
-触发分区上线事件。事件的处理的逻辑主要是给partition选leader。  
-
-给分区选举leader关于分区的leader是如何选取的，涉及的情况比较多，现在大概列举几个要</div>
+        <div>单节点存储分析存储相关类是怎么串起来的LogManager  StableClosureEventHandler  AppendBatcher   LogStorage(RocksDBLogStorage)是怎么串起来的？
+整体关系如下：  
+org.rocksdb.AbstractWriteBatch.put(ColumnFamilyHandle, byte[], byte[])
+RocksDB</div>
       </a>
 
       <div class="index-btm post-metas">
         
           <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-24
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-04
           </div>
         
         
@@ -665,9 +497,164 @@ apiKey=UPDATE_METAD</div>
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/scala/">scala</a>
+              <a href="/tags/java/">java</a>
             
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/12/03/sofa-jraft-03-node-init-leader-elect/">[sofa-jraft]03.节点启动与leader选主分析</a>
+
+      <a href="/2021/12/03/sofa-jraft-03-node-init-leader-elect/" class="index-excerpt">
+        
+        
+          
+        
+        <div>节点启动与leader选主分析节点启动过程node init的过程：  
+
+new NodeMetrics
+
+创建 timerManager
+
+创建需要的定时器:  
+
+voteTimer
+
+electionTimer
+这两个 timer 的倒计时时间都是根据配置的 (ElectionTimeoutMs, ElectionTimeoutMs + maxElectionDelayMs) 之间进行随机</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-03
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/12/02/sofa-jraft-02-env-prepare-basic-concept/">[sofa-jraft]02.前期准备、基础概念与机制</a>
+
+      <a href="/2021/12/02/sofa-jraft-02-env-prepare-basic-concept/" class="index-excerpt">
+        
+        
+          
+        
+        <div>前期准备、基础概念与机制版本1.3.7
+相关脚本# 启动ElectionBootstrap脚本 boot_example1.sh 放在jraft-example目录中
+#!/bin/bash
+DATA_PATH=$1
+ID=$2
+ENDPOINT=$3
+ENDPOINT_LIST=$4
+CLASSPATH=$(echo target/jraft-bin/lib/*.jar|tr ' ' ':' )</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-02
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/12/01/sofa-jraft-01-source-code-read-guide/">[sofa-jraft]01.sofa-jraft源码阅读-导读提示</a>
+
+      <a href="/2021/12/01/sofa-jraft-01-source-code-read-guide/" class="index-excerpt">
+        
+        
+          
+        
+        <div>目录结构此系列文章是sofa-jraft 1.3.7版本代码阅读的过程笔记。主要阐述了节点启动、选主、日志复制、快照机制、状态机对接、一致性读和优先级选举等机制的实现过程。
+
+sofa-jraft源码阅读-导读提示
+前期准备、基础概念与机制
+节点启动与leader选主分析
+单节点存储分析
+分布式状态机与计数器的例子分析
+副本复制整体分析
+快照机制分析
+线性一致性读与优先级选举的实现
+
+</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-12-01
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/java/">java</a>
+            
+              <a href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
             
           </div>
         
@@ -679,7 +666,7 @@ apiKey=UPDATE_METAD</div>
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/2/"><i class="iconfont icon-arrowright"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/2/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   

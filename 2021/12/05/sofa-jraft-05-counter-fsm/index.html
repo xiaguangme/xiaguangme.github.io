@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[sofa-jraft]05.分布式状态机与计数器的例子分析 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-12-05 23:39">
+                    星期日, 十二月 5日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    2k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    31
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="分布式状态机与计数器的例子分析"><a href="#分布式状态机与计数器的例子分析" class="headerlink" title="分布式状态机与计数器的例子分析"></a>分布式状态机与计数器的例子分析</h1><h2 id="计数器例子分析"><a href="#计数器例子分析" class="headerlink" title="计数器例子分析"></a>计数器例子分析</h2><p>分析计数器例子，我们有几个疑问：</p>
+<ul>
+<li><p>计数器例子中涉及哪些部件？</p>
+</li>
+<li><p>他们是怎么相互协作的？</p>
+</li>
+<li><p>raft组件在协作中处于什么环节，跟他们怎么相互衔接的？</p>
+</li>
+</ul>
+<p>计数器在jraft-example/src/main/java/com/alipay/sofa/jraft/example/counter/目录下，我在前期准备章节中准备了其server与client的启动脚本。  </p>
+<h3 id="工作流程与相关部件"><a href="#工作流程与相关部件" class="headerlink" title="工作流程与相关部件"></a>工作流程与相关部件</h3><p>整个计数器大致工作流程：</p>
+<pre><code class="hljs mermaid">flowchart TD
+A(客户端 CounterClient) --&gt; B(CounterServer RPC接入  注:1)
+B --&gt; C(CounterServiceImpl &#x2F; CounterOperation &#x2F; Task &#x2F; CounterClosure)
+C --&gt; E(Node.Apply)
+E --&gt; F(Log.append &#x2F; Replcator  注:2)
+F --&gt; G(BallotBox.commitAt &#x2F; FSMCallerImpl.onCommitted)
+G --&gt; H(CounterStateMachine.onApply完成操作  注:3)</code></pre>
+
+<p>注:1 处CounterServer需要的部件如下：  </p>
+<p>– RaftGroupService </p>
+<p>​    – CounterStateMachine</p>
+<p>​    – RpcServer</p>
+<p>​        – GetValueRequestProcessor // 省略分析，看IncrementAndGetRequestProcessor即可</p>
+<p>​            – CounterService </p>
+<p>​        – IncrementAndGetRequestProcessor</p>
+<p>​            – CounterService  //  incrementAndGet增加的工作由他完成</p>
+<p>​            – CounterClosure // 1. 给计数器的客户端发响应 2. 携带了CounterOperation，当状态机被onapply时，从其中取到CounterOperation反序列化后得到相应的操作信息，然后在状态机中完成操作。注:3也有详细解释</p>
+<p>​                – CounterOperation</p>
+<p>注:2 此处会完成leader节点的日志落盘，和副本节点的日志复制。  </p>
+<h3 id="onApply"><a href="#onApply" class="headerlink" title="onApply"></a>onApply</h3><p>注:3 <strong>CounterStateMachine.onApply是怎么完成操作的？</strong></p>
+<ul>
+<li><p>BallotBox.commitAt中会触发FSMCallerImpl.onCommitted</p>
+</li>
+<li><p>FSMCallerImpl.onCommitted<strong>方法会将你向node apply task时Task中的done带过来，此处done就是CounterClosure</strong>，当然也会将你向node apply时Task中的data带过来，此例子中data是CounterOperation经Hessian2序列化后的值。例子中优先使用了done字段。  </p>
+</li>
+<li><p><strong>CounterClosure会携带CounterOperation</strong>， 通过<strong>CounterClosure拿到其携带的序列化后的CounterOperation进行反序列化</strong> 得到相应的操作信息，然后在状态机中完成操作。详细代码如下：  </p>
+<pre><code class="hljs java"><span class="hljs-comment">// com/alipay/sofa/jraft/example/counter/CounterStateMachine.java  93行</span>
+<span class="hljs-keyword">switch</span> (counterOperation.getOp()) &#123;
+	<span class="hljs-keyword">case</span> INCREMENT:
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> delta = counterOperation.getDelta();
+    <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> prev = <span class="hljs-keyword">this</span>.value.get();
+    current = <span class="hljs-keyword">this</span>.value.addAndGet(delta);
+    LOG.info(<span class="hljs-string">"Added value=&#123;&#125; by delta=&#123;&#125; at logIndex=&#123;&#125;"</span>, prev, delta, iter.getIndex());
+    <span class="hljs-keyword">break</span>;</code></pre>
+
+
+
+
+</li>
+</ul>
+<h3 id="onSnapshotSave"><a href="#onSnapshotSave" class="headerlink" title="onSnapshotSave"></a>onSnapshotSave</h3><p>计数器例子自己实现了onSnapshotSave(配对的还有onSnapshotLoad)逻辑，借助raft的快照机制能将当前的计数器的值存储到快照文件中。详细分析可以参见 《快照机制分析》一文。</p>
+<h2 id="raft组件中分布式状态机分析"><a href="#raft组件中分布式状态机分析" class="headerlink" title="raft组件中分布式状态机分析"></a>raft组件中分布式状态机分析</h2><p>我们有几个疑问:</p>
+<ul>
+<li>这个状态机的触发大致是怎么个过程？</li>
+<li>状态机的触发详细又是怎么个过程？</li>
+</ul>
+<h3 id="大致过程"><a href="#大致过程" class="headerlink" title="大致过程"></a>大致过程</h3><p>大致过程是：业务自己调用 Node 的 apply 方法，apply 时是需要提交 Task，在 Task 数据落地(完成存储)后，回调你的(业务按需实现的)状态机，完成你的业务逻辑。</p>
+<p>Task需要指定 Closure，即在数据落地完成后要处理的回调闭包，其字段名是done，也可以看出来。Task 还有个字段是 data，即你需要落地的数据，在计数器例子中就是 CounterOperation 经 Hessian2 序列化后的值。你可以在你的自定义 Closure 实现中放上你的业务逻辑Operation，也可以将data反序列化成你的业务逻辑Operation。这个在上面的计数器例子分析中已经阐述了。</p>
+<p>Task的代码截取：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Task</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Serializable</span> </span>&#123;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> serialVersionUID = <span class="hljs-number">2971309899898274575L</span>;
+
+    <span class="hljs-comment">/** Associated  task data*/</span>
+    <span class="hljs-keyword">private</span> ByteBuffer        data             = LogEntry.EMPTY_DATA;
+    <span class="hljs-comment">/** task closure, called when the data is successfully committed to the raft group or failures happen.*/</span>
+    <span class="hljs-keyword">private</span> Closure           done;
+    <span class="hljs-comment">/** Reject this task if expectedTerm doesn't match the current term of this Node if the value is not -1, default is -1.*/</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">long</span>              expectedTerm     = -<span class="hljs-number">1</span>;</code></pre>
+
+<h3 id="详细过程"><a href="#详细过程" class="headerlink" title="详细过程"></a>详细过程</h3><p>业务状态机被触发时的调用栈如下：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// leader节点</span>
+Daemon Thread [JRaft-FSMCaller-Disruptor-<span class="hljs-number">0</span>] (Suspended (breakpoint at line <span class="hljs-number">73</span> in CounterStateMachine))	
+	CounterStateMachine.onApply(Iterator) line: <span class="hljs-number">73</span>	
+	FSMCallerImpl.doApplyTasks(IteratorImpl) line: <span class="hljs-number">539</span>	
+	FSMCallerImpl.doCommitted(<span class="hljs-keyword">long</span>) line: <span class="hljs-number">508</span>	 
+	FSMCallerImpl.runApplyTask(FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">440</span>	
+	FSMCallerImpl.access$<span class="hljs-number">100</span>(FSMCallerImpl, FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">73</span>	
+	FSMCallerImpl$ApplyTaskHandler.onEvent(FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">148</span>	
+	FSMCallerImpl$ApplyTaskHandler.onEvent(Object, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">142</span>	
+	BatchEventProcessor&lt;T&gt;.run() line: <span class="hljs-number">137</span>	
+	Thread.run() line: <span class="hljs-number">745</span>	
+
+<span class="hljs-comment">// follower节点  跟leader节点一样 </span>
+Daemon Thread [JRaft-FSMCaller-Disruptor-<span class="hljs-number">0</span>] (Suspended (breakpoint at line <span class="hljs-number">73</span> in CounterStateMachine))	
+	CounterStateMachine.onApply(Iterator) line: <span class="hljs-number">73</span>	
+	FSMCallerImpl.doApplyTasks(IteratorImpl) line: <span class="hljs-number">539</span>	
+	FSMCallerImpl.doCommitted(<span class="hljs-keyword">long</span>) line: <span class="hljs-number">508</span>	
+	FSMCallerImpl.runApplyTask(FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">440</span>	
+	FSMCallerImpl.access$<span class="hljs-number">100</span>(FSMCallerImpl, FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">73</span>	
+	FSMCallerImpl$ApplyTaskHandler.onEvent(FSMCallerImpl$ApplyTask, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">148</span>	
+	FSMCallerImpl$ApplyTaskHandler.onEvent(Object, <span class="hljs-keyword">long</span>, <span class="hljs-keyword">boolean</span>) line: <span class="hljs-number">142</span>	
+	BatchEventProcessor&lt;T&gt;.run() line: <span class="hljs-number">137</span>	
+	Thread.run() line: <span class="hljs-number">745</span></code></pre>
+
+<p>不难看出，这也是走了Disruptor的队列的异步机制，设计的组件如下：  </p>
+<p>com.alipay.sofa.jraft.core.FSMCallerImpl.disruptor</p>
+<p>com.alipay.sofa.jraft.core.FSMCallerImpl.ApplyTaskHandler  //this.disruptor.handleEventsWith(new ApplyTaskHandler());</p>
+<p>com.alipay.sofa.jraft.core.FSMCallerImpl.taskQueue</p>
+<p>抓取队列中publish event的调用栈。</p>
+<p>leader端的如下：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">18</span> <span class="hljs-number">23</span>:<span class="hljs-number">58</span>:<span class="hljs-number">38</span>;thread_name=Append-Entries-Thread-Send0;id=<span class="hljs-number">42</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.FSMCallerImpl.enqueueTask()
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.onCommitted(FSMCallerImpl.java:<span class="hljs-number">245</span>)
+        at com.alipay.sofa.jraft.core.BallotBox.commitAt(BallotBox.java:<span class="hljs-number">137</span>)
+        at com.alipay.sofa.jraft.core.Replicator.onAppendEntriesReturned(Replicator.java:<span class="hljs-number">1494</span>) <span class="hljs-comment">// 表示副本复制完成了才触发BallotBox commitAt，进而触发业务状态机执行。作者加的注释是Only commit index when the response is from follower.</span>
+        at com.alipay.sofa.jraft.core.Replicator.onRpcReturned(Replicator.java:<span class="hljs-number">1324</span>)
+        at com.alipay.sofa.jraft.core.Replicator$<span class="hljs-number">4</span>.run(Replicator.java:<span class="hljs-number">1655</span>)
+        at com.alipay.sofa.jraft.rpc.impl.AbstractClientService$<span class="hljs-number">1</span>.complete(AbstractClientService.java:<span class="hljs-number">241</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient$BoltCallback.onResponse(BoltRpcClient.java:<span class="hljs-number">175</span>)
+        at com.alipay.remoting.rpc.RpcInvokeCallbackListener$CallbackTask.run(RpcInvokeCallbackListener.java:<span class="hljs-number">182</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)
+
+ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">18</span> <span class="hljs-number">23</span>:<span class="hljs-number">59</span>:<span class="hljs-number">04</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">2</span>;id=<span class="hljs-number">20</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.FSMCallerImpl.enqueueTask()
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.onSnapshotSave(FSMCallerImpl.java:<span class="hljs-number">274</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl.doSnapshot(SnapshotExecutorImpl.java:<span class="hljs-number">351</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.doSnapshot(NodeImpl.java:<span class="hljs-number">3098</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.lambda$handleSnapshotTimeout$<span class="hljs-number">0</span>(NodeImpl.java:<span class="hljs-number">607</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p><strong>一个是Append-Entries-Thread-Send0，在给副本发送后返回时触发</strong>。</p>
+<p><strong>Replicator.onAppendEntriesReturned中触发BallotBox.commitAt，所以表示副本复制完成了才触发BallotBox commitAt，进而触发业务状态机执行。</strong>作者加的注释是Only commit index when the response is from follower.</p>
+<p><strong>一个是快照时触发</strong>。</p>
+<p>follower端的如下：  </p>
+<pre><code class="hljs java">ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">18</span> <span class="hljs-number">23</span>:<span class="hljs-number">58</span>:<span class="hljs-number">38</span>;thread_name=election_test/PeerPair[<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> -&gt; <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8083</span>]-AppendEntriesThread0;id=<span class="hljs-number">56</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.FSMCallerImpl.enqueueTask()
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.onCommitted(FSMCallerImpl.java:<span class="hljs-number">245</span>)
+        at com.alipay.sofa.jraft.core.BallotBox.setLastCommittedIndex(BallotBox.java:<span class="hljs-number">241</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.handleAppendEntriesRequest(NodeImpl.java:<span class="hljs-number">1963</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">460</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.AppendEntriesRequestProcessor.processRequest0(AppendEntriesRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.impl.core.NodeRequestProcessor.processRequest(NodeRequestProcessor.java:<span class="hljs-number">60</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">53</span>)
+        at com.alipay.sofa.jraft.rpc.RpcRequestProcessor.handleRequest(RpcRequestProcessor.java:<span class="hljs-number">35</span>)
+        at com.alipay.sofa.jraft.rpc.impl.BoltRpcServer$<span class="hljs-number">2</span>.handleRequest(BoltRpcServer.java:<span class="hljs-number">123</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.dispatchToUserProcessor(RpcRequestProcessor.java:<span class="hljs-number">234</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor.doProcess(RpcRequestProcessor.java:<span class="hljs-number">145</span>)
+        at com.alipay.remoting.rpc.protocol.RpcRequestProcessor$ProcessTask.run(RpcRequestProcessor.java:<span class="hljs-number">384</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:<span class="hljs-number">352</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:<span class="hljs-number">336</span>)
+        at com.alipay.sofa.jraft.util.concurrent.MpscSingleThreadExecutor.lambda$doStartWorker$<span class="hljs-number">3</span>(MpscSingleThreadExecutor.java:<span class="hljs-number">263</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)
+
+ts=<span class="hljs-number">2021</span>-<span class="hljs-number">12</span>-<span class="hljs-number">18</span> <span class="hljs-number">23</span>:<span class="hljs-number">58</span>:<span class="hljs-number">56</span>;thread_name=JRaft-Closure-Executor-<span class="hljs-number">3</span>;id=<span class="hljs-number">24</span>;is_daemon=<span class="hljs-keyword">true</span>;priority=<span class="hljs-number">5</span>;TCCL=sun.misc.Launcher$AppClassLoader@<span class="hljs-number">18</span>b4aac2
+    <span class="hljs-meta">@com</span>.alipay.sofa.jraft.core.FSMCallerImpl.enqueueTask()
+        at com.alipay.sofa.jraft.core.FSMCallerImpl.onSnapshotSave(FSMCallerImpl.java:<span class="hljs-number">274</span>)
+        at com.alipay.sofa.jraft.storage.snapshot.SnapshotExecutorImpl.doSnapshot(SnapshotExecutorImpl.java:<span class="hljs-number">351</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.doSnapshot(NodeImpl.java:<span class="hljs-number">3098</span>)
+        at com.alipay.sofa.jraft.core.NodeImpl.lambda$handleSnapshotTimeout$<span class="hljs-number">0</span>(NodeImpl.java:<span class="hljs-number">607</span>)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:<span class="hljs-number">511</span>)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="hljs-number">266</span>)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:<span class="hljs-number">1142</span>)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:<span class="hljs-number">617</span>)
+        at java.lang.Thread.run(Thread.java:<span class="hljs-number">745</span>)</code></pre>
+
+<p>一个是election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8083]-AppendEntriesThread0，接收到leader端push过来的append请求完成后触发。</p>
+<p>一个是快照时触发。</p>
+<p>BallotBox.commitAt(BallotBox.java:137)   BallotBox.setLastCommittedIndex(BallotBox.java:241)  代码：</p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BallotBox</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Lifecycle</span>&lt;<span class="hljs-title">BallotBoxOptions</span>&gt;, <span class="hljs-title">Describer</span> </span>&#123;
+<span class="hljs-comment">// ...  </span>
+<span class="hljs-keyword">private</span> FSMCaller                 waiter;
+<span class="hljs-comment">// ...</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">commitAt</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> firstLogIndex, <span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> lastLogIndex, <span class="hljs-keyword">final</span> PeerId peer)</span> </span>&#123;
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">this</span>.waiter.onCommitted(lastCommittedIndex); <span class="hljs-comment">// 137行  waiter就是FSMCaller</span>
+<span class="hljs-comment">// ...  </span>
+&#125; 
+<span class="hljs-comment">// ... </span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">setLastCommittedIndex</span><span class="hljs-params">(<span class="hljs-keyword">final</span> <span class="hljs-keyword">long</span> lastCommittedIndex)</span> </span>&#123;
+<span class="hljs-comment">// ...   </span>
+<span class="hljs-keyword">this</span>.waiter.onCommitted(lastCommittedIndex);<span class="hljs-comment">//241行</span>
+<span class="hljs-comment">// ... </span>
+&#125;</code></pre>
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/06/sofa-jraft-06-replicator/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[sofa-jraft]06.副本复制整体分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/04/sofa-jraft-04-local-store/">
+                        <span class="hidden-mobile">[sofa-jraft]04.单节点存储分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[sofa-jraft]05.分布式状态机与计数器的例子分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="羽衣">
+  <meta name="keywords" content="spring dubbo netty kafka 源码剖析 java 程序">
+  <title>[sofa-jraft]03.节点启动与leader选主分析 - Code to 60</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+<link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/9.18.1/styles/github-gist.min.css" />
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_fmb4a04yx8h.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_ijqayz9ro8k.css">
+
+
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body>
+  <header style="height: 40vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Code to 60</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <i class="iconfont icon-home-fill"></i>
+              首页</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/think/">
+              
+              零碎思索记录</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/program-language-practice">
+              
+              编程语言实践</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/opensource-code-study">
+              
+              开源项目学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/book-paper-study">
+              
+              书籍论文学习</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/life">
+              
+              美食旅行运动</a>
+          </li>
+        
+          
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">
+              <i class="iconfont icon-user-fill"></i>
+              关于</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/c-1.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.1)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+                <div class="mt-3 post-meta">
+                  <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+                  <time datetime="2021-12-03 23:39">
+                    星期五, 十二月 3日 2021, 11:39 晚上
+                  </time>
+                </div>
+              
+
+              <div class="mt-1">
+                
+                  
+                  <span class="post-meta mr-2">
+                    <i class="iconfont icon-chart"></i>
+                    3.8k 字
+                  </span>
+                
+
+                
+                  
+                  <span class="post-meta mr-2">
+                      <i class="iconfont icon-clock-fill"></i>
+                    
+                    
+                    64
+                     分钟
+                  </span>
+                
+
+                
+              </div>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- <div class="d-none d-lg-block col-lg-2"></div> -->
+    <div class="col-lg-10 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="节点启动与leader选主分析"><a href="#节点启动与leader选主分析" class="headerlink" title="节点启动与leader选主分析"></a>节点启动与leader选主分析</h1><h2 id="节点启动过程"><a href="#节点启动过程" class="headerlink" title="节点启动过程"></a>节点启动过程</h2><p>node init的过程：  </p>
+<ul>
+<li><p>new NodeMetrics</p>
+</li>
+<li><p>创建 timerManager</p>
+</li>
+<li><p>创建需要的定时器:  </p>
+<ul>
+<li><p>voteTimer</p>
+</li>
+<li><p>electionTimer</p>
+<p>这两个 timer 的倒计时时间都是根据配置的 (ElectionTimeoutMs, ElectionTimeoutMs + maxElectionDelayMs) 之间进行随机出一个整数作为其倒计时时间。<br>这两个timer看起来差不多，一个是voteTimer，一个是electionTimer。为啥？ 成为候选人之后再投票？ 没成为候选人时先触发选举？应该是对的， 看对应的回调handleVoteTimeout和handleElectionTimeout的处理，一个是检查STATE_FOLLOWER，另一个是STATE_CANDIDATE。 所以按此角色的判定，要<strong>electionTimer的回调逻辑先执行到才行</strong>。</p>
+</li>
+<li><p>stepDownTimer</p>
+</li>
+<li><p>snapshotTimer</p>
+</li>
+</ul>
+</li>
+<li><p>创建 applyDisruptor 和 applyQueue</p>
+</li>
+<li><p>创建 FSMCallerImpl</p>
+</li>
+<li><p>initLogStorage</p>
+</li>
+<li><p>initMetaStorage</p>
+</li>
+<li><p>initFSMCaller</p>
+</li>
+<li><p>创建BallotBox 并初始化</p>
+</li>
+<li><p>initSnapshotStorage</p>
+</li>
+<li><p>logManager.checkConsistency</p>
+</li>
+<li><p>创建ReplicatorGroupImpl 并在稍后初始化</p>
+</li>
+<li><p>创建DefaultRaftClientService</p>
+</li>
+<li><p>创建ReadOnlyServiceImpl并初始化</p>
+</li>
+<li><p><strong>节点状态初始化为STATE_FOLLOWER</strong> 这个对应leader选举 章节中讲到的节点状态机的初始状态</p>
+</li>
+<li><p>如果这个group只有自己一个节点，那么触发选举自己</p>
+</li>
+</ul>
+<h2 id="节点角色状态机"><a href="#节点角色状态机" class="headerlink" title="节点角色状态机"></a>节点角色状态机</h2><p>在理解投票与选举逻辑之前，先要搞清楚节点的状态变化的状态机，这个内容在论文的5.1章节有图讲到。</p>
+<pre><code class="hljs mermaid">stateDiagram-v2
+    [*] --&gt; Follower:starts up
+    Follower --&gt; Candidate: time out, starts election
+    Candidate --&gt; Leader: receives votes from majority of servers
+    Candidate --&gt; Candidate: times out, new election
+    Leader --&gt; Follower: discovers server with higher term
+    Candidate --&gt; Follower: discovers current leader or new term</code></pre>
+
+<p>最简的理想的变换过程是：</p>
+<p><strong>Follower – Candidate – Leader</strong></p>
+<h2 id="leader选举过程的简易图示"><a href="#leader选举过程的简易图示" class="headerlink" title="leader选举过程的简易图示"></a>leader选举过程的简易图示</h2><p><img src="https://www.code260.com/img/leader-election-process.png" srcset="/img/loading.gif" alt=""></p>
+<h2 id="授权成功的解释"><a href="#授权成功的解释" class="headerlink" title="授权成功的解释"></a>授权成功的解释</h2><p>授权成功分为两部分逻辑：</p>
+<ul>
+<li>远端(即接收到请求的服务端)授权成功</li>
+<li>本端(即发起请求的客户端)授权成功</li>
+</ul>
+<h3 id="远端授权成功逻辑"><a href="#远端授权成功逻辑" class="headerlink" title="远端授权成功逻辑"></a>远端授权成功逻辑</h3><p>分析远端授权其实就是分析服务端对预投票和投票的处理逻辑。</p>
+<h4 id="handlePreVoteRequest"><a href="#handlePreVoteRequest" class="headerlink" title="handlePreVoteRequest"></a>handlePreVoteRequest</h4><p>主要逻辑有：</p>
+<ul>
+<li>一些合法性校验，比如请求发起端是否在配置的 peer 列表中。 </li>
+<li><strong>请求中的term是否已经小于当前的term，如果是的，那么此次请求授权失败</strong>，直接返回响应给发起方。 </li>
+<li>checkReplicator</li>
+<li><strong>比较requestLastLogId和此时再次获取到的lastLogId，如果大于等于，则授权成功</strong>，返回响应给发起方。</li>
+</ul>
+<h4 id="handleRequestVoteRequest"><a href="#handleRequestVoteRequest" class="headerlink" title="handleRequestVoteRequest"></a>handleRequestVoteRequest</h4><p>服务端处理投票和预投票的逻辑还是有些不同的，服务端处理投票的主要逻辑有：</p>
+<ul>
+<li>一些合法性校验，比如请求发起端是否在配置的 peer 列表中。</li>
+<li>如果请求的term小于当前term，则此次请求授权失败，并将当前term返回给发起方。</li>
+<li>如果请求的term大于当前term，则要进入stepDown逻辑(TODO)，后续逻辑继续执行。</li>
+<li>拿request中的lastLogId和当前获取到的lastLogId比较，如果是大于等于的则算是logIsOK</li>
+<li>这个时候如果logIsOk，term也是合法(请求term大于等于当前term),且votedId是空的，则处理stepDown逻辑(TODO)且将发起请求的serverid作为votedId，并用metaStorage存储为这个candidateId在投票。</li>
+<li>最后返回是否授权成功，此处，是否授权成功，还是再判断一次的，判断规则是：<strong>request.getTerm() == this.currTerm &amp;&amp; candidateId.equals(this.votedId)</strong></li>
+</ul>
+<h3 id="本端授权成功逻辑"><a href="#本端授权成功逻辑" class="headerlink" title="本端授权成功逻辑"></a>本端授权成功逻辑</h3><p>分析本端授权主要是分析Ballot的授权逻辑。分析Ballot授权逻辑之前要分析其init逻辑。</p>
+<h4 id="Ballot-init分析"><a href="#Ballot-init分析" class="headerlink" title="Ballot init分析"></a>Ballot init分析</h4><p>Ballot的grant之前都会init， 且这两个同时出现执行，出现在preVote和electSelf中，preVote对应的是prevVoteCtx(Ballot的实例)，electSelf对应的是voteCtx(Ballot的实例)。</p>
+<p>init逻辑</p>
+<ul>
+<li>init时将迭代conf中所有的peer构建为UnfoundPeerId，并用index按序标志。并将UnfoundPeerId实例添加到Ballot的peers字段中。  </li>
+<li>Ballot的quorum字段初始化为peer个数的一半加1。    </li>
+<li>如果有oldConf则按上述逻辑同样处理，不过相应的结果都是维护在oldXX字段中。</li>
+</ul>
+<h4 id="Ballot-grant分析"><a href="#Ballot-grant分析" class="headerlink" title="Ballot grant分析"></a>Ballot grant分析</h4><p><strong>grant逻辑</strong>：</p>
+<ul>
+<li><p>如果直接对某个peer grant，则用new 的PosHint，PosHint初始的pos0、pos1都是-1 , -1则意味着按serverid比对迭代查找(逻辑没啥区别，只是不是直接取到)。  </p>
+</li>
+<li><p>如果这个<strong>peer没有被found，那么quorm减1</strong>。这个peer包括发起预投票或者投票时的<strong>发起方自己</strong>，也包括<strong>应答了这个请求并且授权成功的对端</strong>。这个逻辑非常重要。<br>详细的过程可以参见下面相关日志做了注释的部分：</p>
+<pre><code class="hljs java"><span class="hljs-comment">// node1的日志，这个节点接下来会被选为leader</span>
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-ElectionTimer-&lt;election_test/<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>&gt;<span class="hljs-number">0</span>] INFO  NodeImpl:<span class="hljs-number">2669</span> - preVote before grant, serverId <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span> ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">0</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">1</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8083</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">2</span>]], quorum=<span class="hljs-number">2</span>, oldPeers=[], oldQuorum=<span class="hljs-number">0</span>]
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-ElectionTimer-&lt;election_test/<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>&gt;<span class="hljs-number">0</span>] INFO  NodeImpl:<span class="hljs-number">2670</span> - preVote after grant, serverId <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span> ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>, found=<span class="hljs-keyword">true</span>, index=<span class="hljs-number">0</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">1</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8083</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">2</span>]], quorum=<span class="hljs-number">1</span>, oldPeers=[], oldQuorum=<span class="hljs-number">0</span>] <span class="hljs-comment">// 此时quorum 变成1    Ballot grant的是他自己： serverId 127.0.0.1:8081</span>
+    
+    
+    <span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-RPC-Processor-<span class="hljs-number">0</span>] INFO  NodeImpl:<span class="hljs-number">2577</span> - Node &lt;election_test/<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>&gt; received PreVoteResponse from <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, term=<span class="hljs-number">0</span>, granted=<span class="hljs-keyword">true</span>.
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-RPC-Processor-<span class="hljs-number">0</span>] INFO  NodeImpl:<span class="hljs-number">2580</span> - handlePreVoteResponse before grant, peerId <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>, found=<span class="hljs-keyword">true</span>, index=<span class="hljs-number">0</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">1</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8083</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">2</span>]], quorum=<span class="hljs-number">1</span>, oldPeers=[], oldQuorum=<span class="hljs-number">0</span>]
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-RPC-Processor-<span class="hljs-number">0</span>] INFO  NodeImpl:<span class="hljs-number">2581</span> - handlePreVoteResponse after grant, peerId <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8081</span>, found=<span class="hljs-keyword">true</span>, index=<span class="hljs-number">0</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, found=<span class="hljs-keyword">true</span>, index=<span class="hljs-number">1</span>], UnfoundPeerId [peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8083</span>, found=<span class="hljs-keyword">false</span>, index=<span class="hljs-number">2</span>]], quorum=<span class="hljs-number">0</span>, oldPeers=[], oldQuorum=<span class="hljs-number">0</span>] <span class="hljs-comment">// 此时quorum 变成0  那么表示pre vote成功    Ballot grant的是他发送的对端： peerId 127.0.0.1:8082</span>
+<span class="hljs-comment">//............</span>
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-RPC-Processor-<span class="hljs-number">1</span>] INFO  Replicator:<span class="hljs-number">897</span> - Replicator=Replicator [state=Created, statInfo=&lt;running=<span class="hljs-keyword">null</span>, firstLogIndex=<span class="hljs-number">0</span>, lastLogIncluded=<span class="hljs-number">0</span>, lastLogIndex=<span class="hljs-number">0</span>, lastTermIncluded=<span class="hljs-number">0</span>&gt;, peerId=<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span>, type=Follower]@<span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span>:<span class="hljs-number">8082</span> is started
+<span class="hljs-comment">//成为leader之后就是一直发空的AppendEntriesRequest请求了    此时per_log_term和pre_log_index都是0</span>
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-RPC-Processor-<span class="hljs-number">1</span>] INFO  AbstractClientService:<span class="hljs-number">195</span> - ===invokeWithDone, request is : <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">com</span>.<span class="hljs-title">alipay</span>.<span class="hljs-title">sofa</span>.<span class="hljs-title">jraft</span>.<span class="hljs-title">rpc</span>.<span class="hljs-title">RpcRequests</span>$<span class="hljs-title">AppendEntriesRequest</span> </span>
+group_id: "election_test"
+server_id: <span class="hljs-string">"127.0.0.1:8081"</span>
+peer_id: <span class="hljs-string">"127.0.0.1:8082"</span>
+term: <span class="hljs-number">1</span>
+prev_log_term: <span class="hljs-number">0</span>
+prev_log_index: <span class="hljs-number">0</span>
+committed_index: <span class="hljs-number">0</span>
+data: <span class="hljs-string">""</span> 
+<span class="hljs-comment">//............</span>
+<span class="hljs-number">2021</span>-<span class="hljs-number">10</span>-<span class="hljs-number">23</span> <span class="hljs-number">22</span>:<span class="hljs-number">46</span>:<span class="hljs-number">59</span> [JRaft-FSMCaller-Disruptor-<span class="hljs-number">0</span>] INFO  StateMachineAdapter:<span class="hljs-number">62</span> - onLeaderStart: term=<span class="hljs-number">1</span>.
+[ElectionBootstrap] Leader<span class="hljs-string">'s ip is: 127.0.0.1, port: 8081</span>
+<span class="hljs-string">[ElectionBootstrap] Leader start on term: 1</span>
+<span class="hljs-string">2021-10-23 22:46:59 [JRaft-Rpc-Closure-Executor-1] INFO  AbstractClientService:195 - ===invokeWithDone, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 1</span>
+<span class="hljs-string">prev_log_term: 1</span>
+<span class="hljs-string">prev_log_index: 1</span>
+<span class="hljs-string">committed_index: 1</span>
+<span class="hljs-string">//............</span>
+<span class="hljs-string">2021-10-23 22:47:55 [election_test/PeerPair[127.0.0.1:8081 -&gt; 127.0.0.1:8083]-AppendEntriesThread0] INFO  NodeImpl:1878 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">prev_log_term: 2</span>
+<span class="hljs-string">prev_log_index: 2</span>
+<span class="hljs-string">committed_index: 2</span>
+<span class="hljs-string">data: ""</span>
+<span class="hljs-string">// ............</span>
+<span class="hljs-string"> 2021-10-23 22:47:56 [election_test/PeerPair[127.0.0.1:8081 -&gt; 127.0.0.1:8083]-AppendEntriesThread0] INFO  NodeImpl:1878 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">prev_log_term: 1</span>
+<span class="hljs-string">prev_log_index: 1</span>
+<span class="hljs-string">entries &#123;</span>
+<span class="hljs-string">  term: 2</span>
+<span class="hljs-string">  type: ENTRY_TYPE_CONFIGURATION</span>
+<span class="hljs-string">  peers: "127.0.0.1:8081"</span>
+<span class="hljs-string">  peers: "127.0.0.1:8082"</span>
+<span class="hljs-string">  peers: "127.0.0.1:8083"</span>
+<span class="hljs-string">  data_len: 0</span>
+<span class="hljs-string">&#125;</span>
+<span class="hljs-string">committed_index: 2   </span>
+<span class="hljs-string">    </span>
+<span class="hljs-string">    </span>
+<span class="hljs-string">// node2的日志，他响应了node1的预投票和投票请求</span>
+<span class="hljs-string">2021-10-23 22:46:58 [main] INFO  RaftGroupService:136 - Start the RaftGroupService successfully.</span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-2] INFO  NodeImpl:1635 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 1</span>
+<span class="hljs-string">last_log_term: 0</span>
+<span class="hljs-string">last_log_index: 0</span>
+<span class="hljs-string">pre_vote: true  // 预投票的日志</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-2] INFO  NodeImpl:1689 - Node &lt;election_test/127.0.0.1:8082&gt; received PreVoteRequest from 127.0.0.1:8081, term=1, currTerm=0, granted=true, requestLastLogId=LogId [index=0, term=0], lastLogId=LogId [index=0, term=0].</span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-3] INFO  NodeImpl:1736 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 1</span>
+<span class="hljs-string">last_log_term: 0</span>
+<span class="hljs-string">last_log_index: 0</span>
+<span class="hljs-string">pre_vote: false // 投票的日志</span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-3] INFO  NodeImpl:1760 - Node &lt;election_test/127.0.0.1:8082&gt; received RequestVoteRequest from 127.0.0.1:8081, term=1, currTerm=0.</span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-3] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=/tmp/server2/meta, term=1, votedFor=0.0.0.0:0, cost time=155 ms</span>
+<span class="hljs-string">2021-10-23 22:46:59 [Bolt-default-executor-6-thread-3] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=/tmp/server2/meta, term=1, votedFor=127.0.0.1:8081, cost time=77 ms</span>
+<span class="hljs-string">//............</span>
+<span class="hljs-string">2021-10-23 22:46:59 [election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8081]-AppendEntriesThread0] INFO  NodeImpl:1878 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 1</span>
+<span class="hljs-string">prev_log_term: 0</span>
+<span class="hljs-string">prev_log_index: 0</span>
+<span class="hljs-string">committed_index: 0</span>
+<span class="hljs-string">data: ""</span>
+<span class="hljs-string">//............    </span>
+<span class="hljs-string">2021-10-23 22:46:59 [election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8081]-AppendEntriesThread0] INFO  NodeImpl:1878 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8081"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 1</span>
+<span class="hljs-string">prev_log_term: 1</span>
+<span class="hljs-string">prev_log_index: 1</span>
+<span class="hljs-string">committed_index: 1</span>
+<span class="hljs-string">//............        </span>
+<span class="hljs-string">2021-10-23 22:47:35 [Bolt-conn-event-executor-10-thread-1] INFO  RpcRequestProcessor:279 - Destroyed peer request context for election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8081]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-5] INFO  NodeImpl:1635 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">last_log_term: 1</span>
+<span class="hljs-string">last_log_index: 1</span>
+<span class="hljs-string">pre_vote: true</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-5] INFO  NodeImpl:1689 - Node &lt;election_test/127.0.0.1:8082&gt; received PreVoteRequest from 127.0.0.1:8083, term=2, currTerm=1, granted=true, requestLastLogId=LogId [index=1, term=1], lastLogId=LogId [index=1, term=1].</span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-6] INFO  NodeImpl:1736 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">last_log_term: 1</span>
+<span class="hljs-string">last_log_index: 1</span>
+<span class="hljs-string">pre_vote: false</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-6] INFO  NodeImpl:1760 - Node &lt;election_test/127.0.0.1:8082&gt; received RequestVoteRequest from 127.0.0.1:8083, term=2, currTerm=1.</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-FSMCaller-Disruptor-0] INFO  StateMachineAdapter:84 - onStopFollowing: LeaderChangeContext [leaderId=127.0.0.1:8081, term=1, status=Status[EHIGHERTERMRESPONSE&lt;10008&gt;: Raft node receives higher term RequestVoteRequest.]].</span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-6] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=/tmp/server2/meta, term=2, votedFor=0.0.0.0:0, cost time=71 ms</span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-default-executor-6-thread-6] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=/tmp/server2/meta, term=2, votedFor=127.0.0.1:8083, cost time=71 ms</span>
+<span class="hljs-string">2021-10-23 22:47:37 [election_test/PeerPair[127.0.0.1:8082 -&gt; 127.0.0.1:8083]-AppendEntriesThread0] INFO  NodeImpl:1878 - ===handle rpc request, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">prev_log_term: 1</span>
+<span class="hljs-string">prev_log_index: 1</span>
+<span class="hljs-string">committed_index: 1</span>
+<span class="hljs-string">data: ""</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">// node3 日志，主要体现当时做了一次leader切换的过程(此时停了node1了，node3上来接管了)</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  AbstractClientService:195 - ===invokeWithDone, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">last_log_term: 1</span>
+<span class="hljs-string">last_log_index: 1</span>
+<span class="hljs-string">pre_vote: true</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  BoltRpcClient:102 - ==== invokeSync 127.0.0.1:8081, class com.alipay.sofa.jraft.rpc.RpcRequests$PingRequest</span>
+<span class="hljs-string"></span>
+<span class="hljs-string">=============</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  NodeImpl:2669 - preVote before grant, serverId 127.0.0.1:8083 ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=false, index=2]], quorum=2, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  NodeImpl:2670 - preVote after grant, serverId 127.0.0.1:8083 ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=1, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:2577 - Node &lt;election_test/127.0.0.1:8083&gt; received PreVoteResponse from 127.0.0.1:8082, term=1, granted=true.</span>
+<span class="hljs-string">=============</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:2580 - handlePreVoteResponse before grant, peerId 127.0.0.1:8082 ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=1, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:2581 - handlePreVoteResponse after grant, peerId 127.0.0.1:8082 ,,, prevVoteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=true, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=0, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">=============</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:1120 - Node &lt;election_test/127.0.0.1:8083&gt; start vote and grant vote self, term=1.</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  AbstractClientService:195 - ===invokeWithDone, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">last_log_term: 1</span>
+<span class="hljs-string">last_log_index: 1</span>
+<span class="hljs-string">pre_vote: false</span>
+<span class="hljs-string">    </span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=/tmp/server3/meta, term=2, votedFor=127.0.0.1:8083, cost time=95 ms</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:1172 - electSelf before grant, serverId 127.0.0.1:8083 ,,, voteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=false, index=2]], quorum=2, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-0] INFO  NodeImpl:1173 - electSelf after grant, serverId 127.0.0.1:8083 ,,, voteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=1, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-1] INFO  NodeImpl:2518 - handleRequestVoteResponse before grant, peerId 127.0.0.1:8082 ,,, voteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=false, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=1, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-1] INFO  NodeImpl:2519 - handleRequestVoteResponse after grant, peerId 127.0.0.1:8082 ,,, voteCtx Ballot [peers=[UnfoundPeerId [peerId=127.0.0.1:8081, found=false, index=0], UnfoundPeerId [peerId=127.0.0.1:8082, found=true, index=1], UnfoundPeerId [peerId=127.0.0.1:8083, found=true, index=2]], quorum=0, oldPeers=[], oldQuorum=0]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-1] INFO  NodeImpl:1217 - Node &lt;election_test/127.0.0.1:8083&gt; become leader of group, term=2, conf=127.0.0.1:8081,127.0.0.1:8082,127.0.0.1:8083, oldConf=.// node3变成leader</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-1] INFO  Replicator:897 - Replicator=Replicator [state=Created, statInfo=&lt;running=null, firstLogIndex=0, lastLogIncluded=0, lastLogIndex=0, lastTermIncluded=0&gt;, peerId=127.0.0.1:8082, type=Follower]@127.0.0.1:8082 is started</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-RPC-Processor-1] INFO  AbstractClientService:195 - ===invokeWithDone, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$AppendEntriesRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">prev_log_term: 1</span>
+<span class="hljs-string">prev_log_index: 1</span>
+<span class="hljs-string">committed_index: 1</span>
+<span class="hljs-string">data: ""</span>
+<span class="hljs-string">// ............</span>
+<span class="hljs-string">2021-10-23 22:47:35 [Bolt-conn-event-executor-10-thread-1] INFO  RpcRequestProcessor:279 - Destroyed peer request context for election_test/PeerPair[127.0.0.1:8083 -&gt; 127.0.0.1:8081]</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-FSMCaller-Disruptor-0] INFO  StateMachineAdapter:84 - onStopFollowing: LeaderChangeContext [leaderId=127.0.0.1:8081, term=1, status=Status[ERAFTTIMEDOUT&lt;10001&gt;: Lost connection from leader 127.0.0.1:8081.]].</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  NodeImpl:2623 - Node &lt;election_test/127.0.0.1:8083&gt; term 1 start preVote.</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  BoltRpcClient:102 - ==== invokeSync 127.0.0.1:8082, class com.alipay.sofa.jraft.rpc.RpcRequests$PingRequest</span>
+<span class="hljs-string">2021-10-23 22:47:37 [Bolt-conn-event-executor-5-thread-1] INFO  ClientServiceConnectionEventProcessor:50 - Peer 127.0.0.1:8082 is connected</span>
+<span class="hljs-string">2021-10-23 22:47:37 [JRaft-ElectionTimer-&lt;election_test/127.0.0.1:8083&gt;0] INFO  AbstractClientService:195 - ===invokeWithDone, request is : class com.alipay.sofa.jraft.rpc.RpcRequests$RequestVoteRequest </span>
+<span class="hljs-string">group_id: "election_test"</span>
+<span class="hljs-string">server_id: "127.0.0.1:8083"</span>
+<span class="hljs-string">peer_id: "127.0.0.1:8082"</span>
+<span class="hljs-string">term: 2</span>
+<span class="hljs-string">last_log_term: 1</span>
+<span class="hljs-string">last_log_index: 1</span>
+<span class="hljs-string">pre_vote: true</span></code></pre>
+
+<p>如上有两条重要的地方，如日志中的注释：</p>
+<p><strong>此时quorum 变成1    Ballot grant的是他自己： serverId 127.0.0.1:8081</strong></p>
+<p><strong>此时quorum 变成0  那么表示pre vote成功    Ballot grant的是他发送的对端： peerId 127.0.0.1:8082</strong></p>
+</li>
+</ul>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/opensource-code-study/">opensource-code-study</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/java/">java</a>
+                    
+                      <a class="hover-with-bg" href="/tags/sofa-jraft%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">sofa-jraft源码分析</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" target="_blank" rel="nofollow noopener noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/12/04/sofa-jraft-04-local-store/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">[sofa-jraft]04.单节点存储分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2021/12/02/sofa-jraft-02-env-prepare-basic-concept/">
+                        <span class="hidden-mobile">[sofa-jraft]02.前期准备、基础概念与机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/main.js" ></script>
+
+
+  <script  src="/js/lazyload.js" ></script>
+
+
+
+  
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '.post-content',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+<!-- Plugins -->
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "[sofa-jraft]03.节点启动与leader选主分析&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/mermaid/8.4.8/mermaid.min.js" ></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({"theme":"default"});
+    }
+  </script>
+
+
+
+
+
+</body>
+</html>
