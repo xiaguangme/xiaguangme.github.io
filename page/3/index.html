@@ -175,6 +175,50 @@
     
     
     <div class="col-12 col-md-12 mx-auto index-info">
+      <a class="index-header" href="/2021/05/22/kafka-11-controller-elected-leader-boot/">[kafka]11.controller如何选主及其启动过程分析</a>
+
+      <a href="/2021/05/22/kafka-11-controller-elected-leader-boot/" class="index-excerpt">
+        
+        
+          
+        
+        <div>controller如何选主及其启动过程分析broker启动
+kafka.controller.KafkaController.startup()   // controller启动  注册了启动Startup事件用于选择controller，即controller选主(KafkaController.scala 1141行)  以及RegisterBrokerAndReelec
+kafka.se</div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>&nbsp;2021-05-22
+          </div>
+        
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-category"></i>
+            
+              <a href="/categories/opensource-code-study/">opensource-code-study</a>
+            
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/scala/">scala</a>
+            
+              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
+            
+          </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <div class="col-12 col-md-12 mx-auto index-info">
       <a class="index-header" href="/2021/05/21/kafka-10-HW-update/">[kafka]10.HW更新</a>
 
       <a href="/2021/05/21/kafka-10-HW-update/" class="index-excerpt">
@@ -557,54 +601,6 @@ gradle -b build.gradle eclispe  生成eclipse的工程 然后导入到eclispe中
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>&nbsp;2021-05-13
-          </div>
-        
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-category"></i>
-            
-              <a href="/categories/opensource-code-study/">opensource-code-study</a>
-            
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/scala/">scala</a>
-            
-              <a href="/tags/kafka%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">kafka源码分析</a>
-            
-          </div>
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <div class="col-12 col-md-12 mx-auto index-info">
-      <a class="index-header" href="/2021/05/12/kafka-01-read-guide/">[kafka]01.kafka源码阅读-导读提示</a>
-
-      <a href="/2021/05/12/kafka-01-read-guide/" class="index-excerpt">
-        
-        
-          
-        
-        <div>目录结构 此系列文章主要阐述了kafka 1.1.1版本中：生产者批量提交，消费者分组协调，WAL数据刷盘与恢复，副本复制及异常场景分析，LEO与HW更新，controller选主与分区选主的实现，副本状态机与分区状态机的实现等等实现。
-
-01.kafka源码阅读-导读提示
-02.代码版本、编译与常用命令
-03.生产者批量发送机制实现
-04.消费者组机制实现
-05.offset range查询的实</div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>&nbsp;2021-05-12
           </div>
         
         
